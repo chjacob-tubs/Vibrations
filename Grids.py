@@ -2,11 +2,22 @@ import numpy as np
 import Misc
 
 class Grid:
+    """
+    Class containing and manipulating the grids, which are used both for Potential Energy Surface (PES) or Dipole Moment
+    Surface (DMS) evaluation, and for VSCF/VCI calculations
+    """
 
     def __init__(self, mol=None, modes=None):
+        """
+        The class can be initialized with objects referring to the molecular structure and the normal modes. By default,
+        an empty grid is created, this may be used to read in an existing grid from *.npy file, see read_np method
 
-        # mol -- PyADF molecule
-        # modes -- VibTools modes
+        @param mol: molecule object
+        @type mol: PyADF Molecule
+        @param modes: vibrational modes object
+        @type modes: VibTools Modes
+        """
+
         if mol is None and modes is None:
             self.natoms = 0
             self.nmodes = 0
@@ -25,24 +36,31 @@ class Grid:
 
     def __str__(self):
 
-        #printing in a neat form
-        print 'Grids:\n'
-        print 'Number of modes:       ', self.nmodes
-        print 'Number of grid points: ', self.ngrid
-        print ''
+        s = ''
+        s +=  'Grids:\n'
+        s += 'Number of modes:       ' + str(self.nmodes) + '\n'
+        s += 'Number of grid points: ' + str(self.ngrid) + '\n'
+        s += '\n'
         for i in range(self.nmodes):
-            print ' Mode ', i
-            s = ''
+            s += ' Mode ' + str(i) + '\n'
+            s += '\n'
             for j in range(self.ngrid):
-                s += ' ' + ('%6.2f' % self.grids[i, j]) + ' '
+                st += ' ' + ('%6.2f' % self.grids[i, j]) + ' '
 
-            print ' Normal coordinates: '
-            print s
+            s += ' Normal coordinates: \n'
+            s += st
 
-        return ''
+        return s
 
     def generate_grids(self, ngrid, amp):   # generate grid with ngrid number of points per mode and amp amplitude
+        """
+        Method generating the grids for a given molecule and vibrational modes
 
+        @param ngrid: number of grid points
+        @type ngrid: Integer
+        @param amp: grid amplitude
+        @type amp: Real+
+        """
         grids = np.zeros((self.nmodes, ngrid))
         self.ngrid = ngrid
         self.amp = amp
@@ -58,7 +76,13 @@ class Grid:
 
         self.grids = np.copy(grids)
 
-    def read_np(self, fname):  # read numpy binary file (npy)
+    def read_np(self, fname):
+        """
+        Read in an already existing grid from NumPy formatted binary file *.npy
+
+        @param fname: file name
+        @type fname: String
+        """
         tmparray = np.load(fname)
         self.grids = tmparray.copy()
         self.nmodes = self.grids.shape[0]
@@ -71,7 +95,12 @@ class Grid:
         return self.nmodes
 
     def save_grids(self, fname='grids'):
+        """
+        Save the grid contained in the object to a NumPy formatted binary file *.npy
 
+        @param fname: file name, without extension
+        @type fname: String
+        """
         from time import strftime
         fname = fname + '_' + strftime('%Y%m%d%H%M') + '.npy'
         np.save(fname, self.grids)
