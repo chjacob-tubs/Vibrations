@@ -1,12 +1,29 @@
+"""
+The module related to the VCI class for Vibrational Configuration Interaction calculations
+"""
+
 import numpy as np
+import Misc
+
 
 class VCI:
-
+    """
+    The class performing and storing VCI calculations
+    """
     def __init__(self, grids, wavefunctions, *potentials):
+        """
+        The class must be initialized with grids, some, e.g. VSCF, wave functions, and potentials
 
-        # initialize with object corresponding to grids, potentials and wavefunctions
-        self.grids = grids.grids
-        self.wfns = wavefunctions.wfns  # these are VSCF optimized wave functions
+        @param grids: The object containing the grids
+        @type grids: Vibrations/Grid
+        @param wavefunctions: The object containing the reference wave function, e.g. VSCF wfn
+        @type wavefunctions: Vibrations/Wavefunction
+        @param *potentials: The potentials
+        @type *potentials: Vibrations/Potential
+        """
+
+        self.grids = grids.grids  # TODO this must be done with some method like grids.get_grids() or so
+        self.wfns = wavefunctions.wfns  # these are VSCF optimized wave functions TODO must be done as above
 
         self.nmodes = grids.nmodes
         self.ngrid = grids.ngrid
@@ -20,7 +37,7 @@ class VCI:
         self.coefficients = np.zeros((self.nmodes, self.ngrid, self.ngrid))  # TODO number of VSCF states in wfn
         self._calculate_coeff()
 
-        self.sij = np.zeros((self.nmodes, self.ngrid, self.ngrid))  # caculate Sij only once
+        self.sij = np.zeros((self.nmodes, self.ngrid, self.ngrid))  # calculate Sij only once
         self._calculate_ovrlp_integrals()
 
         self.tij = np.zeros((self.nmodes, self.ngrid, self.ngrid))  # calculate Tij only once as well
@@ -43,6 +60,9 @@ class VCI:
         # 1. Check shapes of data stored in objects
 
     def solve(self):
+        """
+        Runs the VCI calculations
+        """
         import itertools
 
         if len(self.states) == 0:
@@ -68,7 +88,7 @@ class VCI:
 
             n = comb[i][0]  # left state
             m = comb[i][1]  # right state
-            print 'Working on configruation %i out of %i' % (i+1, ncomb)
+            print 'Working on configuration %i out of %i' % (i+1, ncomb)
             print ' < %s | H | %s >' % (str(n), str(m))
 
             # 1-mode integrals
@@ -135,12 +155,21 @@ class VCI:
         self.solved = True
 
     def print_states(self):
+        """
+        Prints the vibrational states used in the VCI calculations
+        """
         print ''
         print Misc.fancy_box('CI Space')
         print self.states
 
     def generate_states(self, maxexc=1):
-        # maxexc - maximal excitation, 1-Singles, 2-Doubles etc.
+        """
+        Generates the states for the VCI calcualtions
+
+        @param maxexc: Maximal excitation quanta, 1 -- Singles, 2 -- Doubles, etc.
+        @type maxexc: Integer
+        """
+
         if maxexc > 4:
             raise Exception('At most quadruple excitations supported')
 
@@ -237,6 +266,13 @@ class VCI:
         self.states = states
 
     def calculate_intensities(self, *dipolemoments):
+        """
+        Calculates VCI intensities using the dipole moment surfaces
+
+        @param *dipolemoments: dipole moment surfaces, so far only 1- and 2-mode DMS supported
+        @type dipolemoments: numpy.array
+        """
+        # TODO use dipole moment objects instead of pure arrays
 
         if len(dipolemoments) == 0:
             raise Exception('No dipole moments given')
@@ -301,13 +337,13 @@ class VCI:
 
                             for l in range(self.ngrid):
                                 for m in range(self.ngrid):
-                                    tmpd2[0] += self.dx[j] * self.dx[k] * self.dm2[j, k, l, m,0] \
+                                    tmpd2[0] += self.dx[j] * self.dx[k] * self.dm2[j, k, l, m, 0] \
                                         * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
                                         * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
-                                    tmpd2[1] += self.dx[j] * self.dx[k] * self.dm2[j, k, l, m,1] \
+                                    tmpd2[1] += self.dx[j] * self.dx[k] * self.dm2[j, k, l, m, 1] \
                                         * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
                                         * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
-                                    tmpd2[2] += self.dx[j] * self.dx[k] * self.dm2[j, k, l, m,2] \
+                                    tmpd2[2] += self.dx[j] * self.dx[k] * self.dm2[j, k, l, m, 2] \
                                         * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
                                         * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
                             tmpovrlp = 1.0

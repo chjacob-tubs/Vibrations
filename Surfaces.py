@@ -1,10 +1,31 @@
+"""
+The module containing the classes related to hypersurfaces: potential energy surface, dipole moment surface, and other
+properties surfaces.
+"""
+
 import numpy as np
 import Misc
 
+
 class Potential:
-
+    """
+    The class for containing and manipulating potential energy surfaces
+    """
     def __init__(self, order=1, mol=None, modes=None, grids=None):
+        """
+        The class can be initialized with a PyADF/Molecule object, VibTools/VibModes object, and vibrations/Grid object.
+        If the object are not given, an empty object is created, which can be used to read in an existing potential
+        energy surface stored in a NumPy formatted binary file *.npy
 
+        @param order: The dimensionality of the potential energy surface, 1 -- one-mode terms, 2 -- two-mode terms
+        @type order: Integer
+        @param mol: Object containing the molecular structure
+        @type mol: PyADF/Molecule
+        @param modes: Object containing the vibrational modes
+        @type modes: VibTools/VibModes
+        @param grids: Object containing the grids
+        @type grids: Vibrations/Grid
+        """
         if mol is None and modes is None and grids is None:
             self.natoms = 0
             self.nmodes = 0
@@ -14,7 +35,7 @@ class Potential:
         else:
             self.nmodes = modes.nmodes
             self.ngrid = grids.get_number_of_grid_points()
-            self.grids = grids.grids
+            self.grids = grids.grids  # TODO this should be done via some method (using .copy()) not directly
             self.modes = modes
             self.empty = False
 
@@ -30,6 +51,9 @@ class Potential:
             raise Exception('Higher order potentials are not supported')
 
     def __str__(self):
+        """
+        Prints out some general informations about the potential energy surface
+        """
         s = ''
         s += 'Potentials\n'
         s += 'Number of modes:        '+str(self.nmodes)
@@ -38,33 +62,37 @@ class Potential:
 
         return s
 
-    def generate_harmonic(self,cmat=None):
+    def generate_harmonic(self, cmat=None):
 
         if not self.empty:
             if cmat is None:
                 if self.order == 1:
                     for i in range(self.nmodes):
                         self.pot[i] = (self.grids[i] ** 2 * (self.modes.freqs[i] /
-                                                               Misc.cm_in_au)**2) / 2.0
+                                                             Misc.cm_in_au)**2) / 2.0
             else:
                 if self.order == 1:
                     for i in range(self.nmodes):
-                        self.pot[i] = (self.grids[i] ** 2 * cmat[i,i] ) / 2.0
+                        self.pot[i] = (self.grids[i] ** 2 * cmat[i, i]) / 2.0
 
                 elif self.order == 2:
                     for i in range(self.nmodes):
-                        for j in range(i+1,self.nmodes):
+                        for j in range(i+1, self.nmodes):
                             for k in range(self.ngrid):
                                 for l in range(self.ngrid):
-                                    self.pot[i,j,k,l] = self.grids[i,k] * self.grids[j,l] * cmat[i,j]
-                                    self.pot[j,i,l,k] = self.pot[i,j,k,l]
+                                    self.pot[i, j, k, l] = self.grids[i, k] * self.grids[j, l] * cmat[i, j]
+                                    self.pot[j, i, l, k] = self.pot[i, j, k, l]
 
     def read_np(self, fname):
-        # read numpy binary file
+        """
+        Reads in the existing potential energy surface from a NumPy formatted binary file *.npy
+
+        @param fname: File name, without extension
+        @type fname: String
+        """
 
         tmparray = np.load(fname)
 
-        # check if orders are correct, warn when are different
         if len(tmparray.shape) == 2:
             if self.order != 1:
                 print 'Warning: order of the potential and shape of the input array do not match.\
@@ -93,11 +121,19 @@ class Potential:
             self.ngrid = self.pot.shape[3]
 
     def read_gamess(self, fname, order, ngrid, modeslist):
+        """
+        Reads in the GAMESS-formatted potential energy surface
 
-        # fname - file with GAMESS formatted potential
-        # order - 1 or 2 mode potential
-        # ngrid - number of grid points per mode
-        # modelist - list of modes to be included
+        @param fname: The file containing the potential energy surface
+        @type fname: String
+        @param order: PES dimensionality
+        @type order: Integer
+        @param ngrid: Number of grid points
+        @type ngrid: Integer
+        @param modeslist: List of modes (in Gamess numbering -- starts from 7, frequency sorted) to be read in
+        @type modeslist: List of Integers
+        """
+
         self.nmodes = len(modeslist)
         self.order = int(order)
         self.ngrid = int(ngrid)
@@ -165,7 +201,12 @@ class Potential:
             raise Exception('Something went wrong')
 
     def save_potentials(self, fname='potentials'):
+        """
+        Saves the potential energy surface to a NumPy formatted binary file *.npy
 
+        @param fname: Filename, without extension. A time-stamp is added.
+        @type fname: String
+        """
         from time import strftime
         fname = fname + '_' + strftime('%Y%m%d%H%M') + '.npy'
         np.save(fname, self.pot)

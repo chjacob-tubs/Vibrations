@@ -1,18 +1,31 @@
+"""
+Module containing all Vibrational SCF classes
+"""
 import numpy as np
 import Misc
+import Wavefunctions
+
 
 class VSCF:
-
-    # mother class for VSCF
+    """
+    The mother class for VSCF.
+    """
 
     def __init__(self, grids, *potentials):  # always initialized with grids and (some) potentials
+        """
+        The class must be initialized with grids and potentials
 
+        @param grids: The grids
+        @type grids: Vibrations/Grid
+        @param *potentials: The potentials
+        @type *potentials: Vibrations/Potential
+        """
         self.nmodes = grids.get_number_of_modes()
         self.ngrid = grids.get_number_of_grid_points()
         self.nstates = self.ngrid
 
         #self.wavefunction = Wavefunction(grids)  # initialize an object to store wave function
-        self.wavefunction = Wavefunction(grids)
+        self.wavefunction = Wavefunctions.Wavefunction(grids)
         self.wfns = self.wavefunction.wfns
         self.eigv = np.zeros((self.nmodes, self.nstates))
         self.grids = grids.grids
@@ -22,6 +35,9 @@ class VSCF:
         self.solved = False  # simple switch to check, whether VSCF was already solved
 
     def _collocation(self, grid, potential):
+        """
+        The collocation method, see Chem. Phys. Lett., 153(1988), 98. for details.
+        """
         # some basis set parameters
         c = 0.7
         a = c**2/((grid[1]-grid[0])**2)
@@ -101,23 +117,34 @@ class VSCF:
         return normphi
     
     def get_wave_functions(self):
+        """
+        Returns the wave functions as numpy.array
+        """
 
         return self.wfns
 
     def get_wave_function_object(self):
-
+        """
+        Returns the wave functions as Vibrations/Wavefunction object
+        """
         return self.wavefunction
 
     def save_wave_functions(self, fname='wavefunctions'):
-        
+        """
+        Saves the wave functions to a NumPy formatted binary file *.npy
+
+        @param fname: File name, without extension, time stamp is added
+        @type fname: String
+        """
         from time import strftime
         fname = fname + '_' + strftime('%Y%m%d%H%M') + '.npy'
         np.save(fname, self.wfns)
 
 
 class VSCFDiag(VSCF):
-
-    # diagonal VSCF class
+    """
+    The class for the diagonal VSCF -- using only 1-mode potentials
+    """
 
     def __init__(self, grids, *potentials):
 
@@ -136,7 +163,9 @@ class VSCFDiag(VSCF):
         self.solved = False
 
     def solve(self):
-
+        """
+        Solves the diagonal VSCF
+        """
         if self.solved:
             print 'Already solved, nothing to do. See results with print_results() method'
 
@@ -152,7 +181,9 @@ class VSCFDiag(VSCF):
             self.solved = True
 
     def print_results(self):
-
+        """
+        Prints the results
+        """
         if self.solved:
 
             print 'Fundamental transitions:'
@@ -166,7 +197,9 @@ class VSCFDiag(VSCF):
             print 'VSCF not solved yet. Use solve() method first'
 
     def print_eigenvalues(self):
-
+        """
+        Prints the eigenvalues
+        """
         for i in range(self.nmodes):
             print 'Mode %i' % i
 
@@ -174,16 +207,21 @@ class VSCFDiag(VSCF):
                 print self.eigv[i, j], self.eigv[i, j]/Misc.cm_in_au
 
     def save_wave_functions(self, fname='1D_wavefunctions'):
+        """
+        Saves the wave function to a NumPy formatted binary file *.npy
 
+        @param fname: File name, without extension, time stamp added
+        @type fname: String
+        """
         from time import strftime
         fname = fname + '_' + strftime('%Y%m%d%H%M') + '.npy'
         np.save(fname, self.wfns)
 
 
 class VSCF2D(VSCF):
-
-    # 2D VSCF, requires 2D potentials
-
+    """
+    The class for the 2-dimensional VSCF -- containing the mean-field potential for modes coupling
+    """
     def __init__(self, grids, wavefunctions, *potentials):
 
         VSCF.__init__(self, grids, potentials)
@@ -214,6 +252,13 @@ class VSCF2D(VSCF):
         self.vscf_wfns = np.zeros((len(self.states), self.nmodes, self.nstates, self.ngrid))  # all vscf_wfns
 
     def calculate_intensities(self, *dipolemoments):
+        """
+        Calculates VSCF intensities with dipole moment surfaces
+
+        @param *dipolemoments: dipole moment surfaces
+        @type *dipolemoments: numpy.array
+        """
+        # TODO use objects instead of numpy.array
 
         if len(dipolemoments) == 0:
             raise Exception('No dipole moments given')
@@ -297,16 +342,23 @@ class VSCF2D(VSCF):
             print '%s %7.1f %7.1f' % (s, self.energies[stateindex]-self.energies[0], intens)
 
     def get_groundstate_wfn(self):
-
+        """
+        Returns the ground state wave function, which can be used for VCI calculations
+        """
         if self.states[0] == [0]*self.nmodes and self.solved:
-            tmpwfn = Wavefunction(self.grid_object)
+            tmpwfn = Wavefunctions.Wavefunction(self.grid_object)
             tmpwfn.wfns = self.vscf_wfns[0]
             return tmpwfn
         else:
             raise Exception('Ground state not solved')
 
     def save_wave_functions(self, fname='2D_wavefunctions'):
+        """
+        Saves the wave functions to a NumPy formatted binary file *.npy
 
+        @param fname: File name
+        @type fname: String
+        """
         from time import strftime
         fname = fname + '_' + strftime('%Y%m%d%H%M') + '.npy'
         fname2 = 'States_' + fname
@@ -314,7 +366,9 @@ class VSCF2D(VSCF):
         np.save(fname2, np.array(self.states))  # list of states in wave_function file
 
     def solve_singles(self):
-        
+        """
+        Solves the VSCF for the ground state and all singly-excited states
+        """
         gs = [0]*self.nmodes
         states = [gs]
         
@@ -326,7 +380,12 @@ class VSCF2D(VSCF):
         self.solve(*states)
 
     def solve(self, *states):
+        """
+        Solves the VSCF for given states
 
+        @param *states: considered states, the first given is assumed to be the ground state
+        @type *states: List of Integer
+        """
         if len(states) == 0:
             states = [[0]*self.nmodes]  # if no states defined, only gs considered
 
@@ -350,7 +409,9 @@ class VSCF2D(VSCF):
             self.print_results()
 
     def print_results(self):
-
+        """
+        Prints the results
+        """
         if self.solved:
             print ''
             print Misc.fancy_box('VSCF Results')

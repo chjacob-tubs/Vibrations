@@ -1,10 +1,15 @@
+"""
+The module containing the grid-related class.
+"""
+
 import numpy as np
 import Misc
+
 
 class Grid:
     """
     Class containing and manipulating the grids, which are used both for Potential Energy Surface (PES) or Dipole Moment
-    Surface (DMS) evaluation, and for VSCF/VCI calculations
+    Surface (DMS) evaluation, and for VSCF/VCI calculations.
     """
 
     def __init__(self, mol=None, modes=None):
@@ -37,13 +42,14 @@ class Grid:
     def __str__(self):
 
         s = ''
-        s +=  'Grids:\n'
+        s += 'Grids:\n'
         s += 'Number of modes:       ' + str(self.nmodes) + '\n'
         s += 'Number of grid points: ' + str(self.ngrid) + '\n'
         s += '\n'
         for i in range(self.nmodes):
             s += ' Mode ' + str(i) + '\n'
             s += '\n'
+            st = ''
             for j in range(self.ngrid):
                 st += ' ' + ('%6.2f' % self.grids[i, j]) + ' '
 
