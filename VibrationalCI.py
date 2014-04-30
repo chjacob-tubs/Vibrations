@@ -18,8 +18,8 @@ class VCI:
         @type grids: Vibrations/Grid
         @param wavefunctions: The object containing the reference wave function, e.g. VSCF wfn
         @type wavefunctions: Vibrations/Wavefunction
-        @param *potentials: The potentials
-        @type *potentials: Vibrations/Potential
+        @param potentials: The potentials
+        @type potentials: Vibrations/Potential
         """
 
         self.grids = grids.grids  # TODO this must be done with some method like grids.get_grids() or so
@@ -269,7 +269,7 @@ class VCI:
         """
         Calculates VCI intensities using the dipole moment surfaces
 
-        @param *dipolemoments: dipole moment surfaces, so far only 1- and 2-mode DMS supported
+        @param dipolemoments: dipole moment surfaces, so far only 1- and 2-mode DMS supported
         @type dipolemoments: numpy.array
         """
         # TODO use dipole moment objects instead of pure arrays

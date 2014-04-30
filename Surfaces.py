@@ -200,7 +200,7 @@ class Potential:
         else:
             raise Exception('Something went wrong')
 
-    def save_potentials(self, fname='potentials'):
+    def save(self, fname='pot'):
         """
         Saves the potential energy surface to a NumPy formatted binary file *.npy
 
@@ -208,5 +208,98 @@ class Potential:
         @type fname: String
         """
         from time import strftime
-        fname = fname + '_' + strftime('%Y%m%d%H%M') + '.npy'
+        fname = fname + '_v' + str(self.order) + '_' + strftime('%Y%m%d%H%M') + '.npy'
+        np.save(fname, self.pot)
+
+
+class Dipole:
+    """
+    The class representing dipole moment surfaces
+    """
+
+    def __init__(self, order=1, mol=None, modes=None, grids=None):
+        """
+        The class can be initialized with a PyADF/Molecule object, VibTools/VibModes object, and vibrations/Grid object.
+        If the object are not given, an empty object is created, which can be used to read in an existing dipole
+        moment surface stored in a NumPy formatted binary file *.npy
+
+        @param order: The dimensionality of the dipole moment surface, 1 -- one-mode terms, 2 -- two-mode terms
+        @type order: Integer
+        @param mol: Object containing the molecular structure
+        @type mol: PyADF/Molecule
+        @param modes: Object containing the vibrational modes
+        @type modes: VibTools/VibModes
+        @param grids: Object containing the grids
+        @type grids: Vibrations/Grid
+        """
+        if mol is None and modes is None and grids is None:
+            self.natoms = 0
+            self.nmodes = 0
+            self.ngrid = 0
+            self.empty = True
+
+        else:
+            self.nmodes = modes.nmodes
+            self.ngrid = grids.get_number_of_grid_points()
+            self.grids = grids.grids  # TODO this should be done via some method (using .copy()) not directly
+            self.modes = modes
+            self.empty = False
+
+        self.order = order
+
+        if self.order == 1:
+            self.dm = np.zeros((self.nmodes, self.ngrid))
+
+        elif self.order == 2:
+            self.dm = np.zeros((self.nmodes, self.nmodes, self.ngrid, self.ngrid))
+
+        else:
+            raise Exception('Higher order dipole moment surfaces are not supported')
+
+    def read_np(self, fname):
+        """
+        Reads in the existing dipole moment surface from a NumPy formatted binary file *.npy
+
+        @param fname: File name, without extension
+        @type fname: String
+        """
+
+        tmparray = np.load(fname)
+
+        if len(tmparray.shape) == 2:
+            if self.order != 1:
+                print 'Warning: order of the potential and shape of the input array do not match.\
+                       Order will be corrected'
+                self.order = 1
+                print 'New order: ', self.order
+                print ''
+
+        elif len(tmparray.shape) == 4:
+            if self.order != 2:
+                print 'Warning: order of the potential and shape of the input array do not match.\
+                       Order will be corrected'
+                self.order = 2
+                print 'New order: ', self.order
+                print ''
+        else:
+            raise Exception('Input data shape mismatch, check shape of stored arrays')
+
+        self.dm = tmparray.copy()
+        self.nmodes = self.dm.shape[0]
+
+        if self.order == 1:
+            self.ngrid = self.dm.shape[1]
+
+        elif self.order == 2:
+            self.ngrid = self.dm.shape[3]
+
+    def save(self, fname='dm'):
+        """
+        Saves the dipole moment surface to a NumPy formatted binary file *.npy
+
+        @param fname: Filename, without extension. A time-stamp is added.
+        @type fname: String
+        """
+        from time import strftime
+        fname = fname + '_' + str(self.order) + '_' + strftime('%Y%m%d%H%M') + '.npy'
         np.save(fname, self.pot)

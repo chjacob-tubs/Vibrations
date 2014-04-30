@@ -1,5 +1,6 @@
 """
 Module containing all Vibrational SCF classes
+G{classtree VSCF}
 """
 import numpy as np
 import Misc
@@ -9,6 +10,7 @@ import Wavefunctions
 class VSCF:
     """
     The mother class for VSCF.
+    G{classtree}
     """
 
     def __init__(self, grids, *potentials):  # always initialized with grids and (some) potentials
@@ -17,8 +19,8 @@ class VSCF:
 
         @param grids: The grids
         @type grids: Vibrations/Grid
-        @param *potentials: The potentials
-        @type *potentials: Vibrations/Potential
+        @param potentials: The potentials
+        @type potentials: Vibrations/Potential
         """
         self.nmodes = grids.get_number_of_modes()
         self.ngrid = grids.get_number_of_grid_points()
@@ -255,8 +257,8 @@ class VSCF2D(VSCF):
         """
         Calculates VSCF intensities with dipole moment surfaces
 
-        @param *dipolemoments: dipole moment surfaces
-        @type *dipolemoments: numpy.array
+        @param dipolemoments: dipole moment surfaces
+        @type dipolemoments: numpy.array
         """
         # TODO use objects instead of numpy.array
 
