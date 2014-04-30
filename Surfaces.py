@@ -302,4 +302,4 @@ class Dipole:
         """
         from time import strftime
         fname = fname + '_' + str(self.order) + '_' + strftime('%Y%m%d%H%M') + '.npy'
-        np.save(fname, self.pot)
+        np.save(fname, self.dm)

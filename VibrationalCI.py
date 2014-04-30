@@ -270,23 +270,31 @@ class VCI:
         Calculates VCI intensities using the dipole moment surfaces
 
         @param dipolemoments: dipole moment surfaces, so far only 1- and 2-mode DMS supported
-        @type dipolemoments: numpy.array
+        @type dipolemoments: Surfaces.Dipole
         """
-        # TODO use dipole moment objects instead of pure arrays
-
-        if len(dipolemoments) == 0:
-            raise Exception('No dipole moments given')
-
-        elif len(dipolemoments) == 1:
-            raise Exception('Only one set of dipole moments given, go to VSCF_diag class')
-        elif len(dipolemoments) > 2:
-            print 'More than two sets of dipole moments given, only the two first will be used'
 
         if not self.solved:
             raise Exception('Solve the VCI first')
 
-        self.dm1 = dipolemoments[0]
-        self.dm2 = dipolemoments[1]
+        if len(dipolemoments) == 0:
+            raise Exception('No dipole moments given')
+        elif len(dipolemoments) == 1:
+            print 'Only one set of dipole moments give, the second will be taken as 0.'
+        elif len(dipolemoments) > 2:
+            print 'More than two sets of dipole moments given, only the two first will be used'
+
+        if dipolemoments[0].order == 1:
+            self.dm1 = dipolemoments[0].dm
+        else:
+            raise Exception('The 1-D DMS should be given as the first one.')
+
+        if len(dipolemoments) > 1 and dipolemoments[1].order == 2:
+            self.dm2 = dipolemoments[1].dm
+        elif len(dipolemoments) == 1:
+            self.dm2 = np.zeros((self.nmodes, self.nmodes, self.ngrid, self.ngrid))
+        else:
+            raise Exception('The order of the second dipole moment surface does not match.')
+
 
         # assuming that the first state is a ground state
 
