@@ -265,8 +265,8 @@ class Dipole:
         """
 
         tmparray = np.load(fname)
-
-        if len(tmparray.shape) == 2:
+        print tmparray.shape
+        if len(tmparray.shape) == 3:
             if self.order != 1:
                 print 'Warning: order of the potential and shape of the input array do not match.\
                        Order will be corrected'
@@ -274,7 +274,7 @@ class Dipole:
                 print 'New order: ', self.order
                 print ''
 
-        elif len(tmparray.shape) == 4:
+        elif len(tmparray.shape) == 5:
             if self.order != 2:
                 print 'Warning: order of the potential and shape of the input array do not match.\
                        Order will be corrected'

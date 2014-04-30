@@ -291,7 +291,7 @@ class VCI:
         if len(dipolemoments) > 1 and dipolemoments[1].order == 2:
             self.dm2 = dipolemoments[1].dm
         elif len(dipolemoments) == 1:
-            self.dm2 = np.zeros((self.nmodes, self.nmodes, self.ngrid, self.ngrid))
+            self.dm2 = np.zeros((self.nmodes, self.nmodes, self.ngrid, self.ngrid, 3))
         else:
             raise Exception('The order of the second dipole moment surface does not match.')
 
