@@ -86,6 +86,7 @@ class Grid:
     def get_grid_structure(self, modes, points, unit = 'Angstrom'):
         """
         Method generating a molecular structure for a given grid point
+        returns atomic numbers and coordinates
 
 
         @param modes: list of modes of a given order
@@ -111,7 +112,7 @@ class Grid:
         if unit == 'Angstrom':
             newcoords *= Misc.Bohr_in_Angstrom
 
-        return newcoords
+        return (self.mol.get_atnums(), newcoords)
 
 
     def read_np(self, fname):
