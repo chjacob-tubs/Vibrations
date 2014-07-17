@@ -83,7 +83,7 @@ class Grid:
 
         self.grids = np.copy(grids)
 
-    def get_grid_structure(self, modes, points):
+    def get_grid_structure(self, modes, points, unit = 'Angstrom'):
         """
         Method generating a molecular structure for a given grid point
 
@@ -97,7 +97,7 @@ class Grid:
             raise Exception('No molecule defined!')
         if len(modes) != len(points):
             raise Exception('The number of given modes should be equal to the number of points.')
-
+        
         order = len(modes)
         newcoords = self.mol.coordinates.copy() / Misc.Bohr_in_Angstrom
         shift = np.zeros((self.natoms,3))
@@ -107,6 +107,9 @@ class Grid:
                       * self.modes.modes_c[modes[i],:].reshape((self.natoms,3))
 
         newcoords += shift  #  New coords are in Angstrom
+
+        if unit == 'Angstrom':
+            newcoords *= Misc.Bohr_in_Angstrom
 
         return newcoords
 
