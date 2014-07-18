@@ -114,6 +114,18 @@ class Grid:
 
         return (self.mol.get_atnums(), newcoords)
 
+    def get_pyadf_molecule(self, modes, points):
+        """
+        Method returns a pyadf.molecule object for a desired point of the N-dimensional grid
+        """
+        import pyadf
+
+        mol = pyadf.molecule()
+        (atoms, coords) = get_grid_structure(modes,points)
+        mol.add_atoms(atoms, coords)
+
+        return mol
+
 
     def read_np(self, fname):
         """
