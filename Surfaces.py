@@ -40,15 +40,9 @@ class Potential:
             self.empty = False
 
         self.order = order
+        self.pot = []
+        self.indces = []
 
-        if self.order == 1:
-            self.pot = np.zeros((self.nmodes, self.ngrid))
-
-        elif self.order == 2:
-            self.pot = np.zeros((self.nmodes, self.nmodes, self.ngrid, self.ngrid))
-
-        else:
-            raise Exception('Higher order potentials are not supported')
 
     def __str__(self):
         """
@@ -68,20 +62,28 @@ class Potential:
             if cmat is None:
                 if self.order == 1:
                     for i in range(self.nmodes):
-                        self.pot[i] = (self.grids[i] ** 2 * (self.modes.freqs[i] /
+                        self.indces.append(i)
+                        potential = (self.grids[i] ** 2 * (self.modes.freqs[i] /
                                                              Misc.cm_in_au)**2) / 2.0
+                        self.pot.append(potential)
             else:
                 if self.order == 1:
                     for i in range(self.nmodes):
-                        self.pot[i] = (self.grids[i] ** 2 * cmat[i, i]) / 2.0
+                        self.indces.append(i)
+                        potential = (self.grids[i] ** 2 * cmat[i, i]) / 2.0
+                        self.pot.append(potential)
 
                 elif self.order == 2:
                     for i in range(self.nmodes):
                         for j in range(i+1, self.nmodes):
+                            self.indces.append((i,j))
+                            potential = np.zeros((self.ngrid,self.ngrid))
                             for k in range(self.ngrid):
                                 for l in range(self.ngrid):
-                                    self.pot[i, j, k, l] = self.grids[i, k] * self.grids[j, l] * cmat[i, j]
-                                    self.pot[j, i, l, k] = self.pot[i, j, k, l]
+                                    potential[k, l] = self.grids[i, k] * self.grids[j, l] * cmat[i, j]
+                                    potential[l, k] = potential[k, l]
+
+                            self.pot.append(potential)
 
     def read_np(self, fname):
         """
@@ -111,14 +113,23 @@ class Potential:
         else:
             raise Exception('Input data shape mismatch, check shape of stored arrays')
 
-        self.pot = tmparray.copy()
-        self.nmodes = self.pot.shape[0]
+        self.nmodes = tmparray.shape[0]
+
 
         if self.order == 1:
-            self.ngrid = self.pot.shape[1]
+            self.ngrid = tmparray.shape[1]
+            for i in range(self.nmodes):
+                self.indces.append(i)
+                self.pot.append(tmparray[i,:])
 
         elif self.order == 2:
-            self.ngrid = self.pot.shape[3]
+            self.ngrid = tmparray.shape[3]
+            for i in range(self.nmodes):
+                for j in range(i+1,self.nmodes):
+                    self.indces.append((i,j))
+                    self.pot.append(tmparray[i,j,:,:])
+
+
 
     def read_gamess(self, fname, order, ngrid, modeslist):
         """
