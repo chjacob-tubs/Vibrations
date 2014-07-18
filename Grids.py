@@ -121,7 +121,7 @@ class Grid:
         import pyadf
 
         mol = pyadf.molecule()
-        (atoms, coords) = get_grid_structure(modes,points)
+        (atoms, coords) = self.get_grid_structure(modes,points)
         mol.add_atoms(atoms, coords)
 
         return mol
