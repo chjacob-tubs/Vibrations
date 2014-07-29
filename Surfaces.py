@@ -24,7 +24,7 @@ class Surface:
         @type prop: Tuple of integer
         """
 
-        if grid is None:  # an empty object
+        if grids is None:  # an empty object
             self.empty = True
 
         else:
@@ -57,7 +57,7 @@ class Potential(Surface):
 # 3. method for saving?
 
     def read_np(self, fname):
-                """
+        """
         Reads in the existing potential energy surface from a NumPy formatted binary file *.npy
 
         @param fname: File name, without extension
@@ -81,7 +81,7 @@ class Potential(Surface):
 
         if self.order == 1:
             for i in range(tmparray.shape[0]):
-                self.indces.append(i)
+                self.indices.append(i)
                 self.data.append(tmparray[i,:])
 
         elif self.order == 2:
