@@ -7,7 +7,94 @@ import numpy as np
 import Misc
 
 
-class Potential:
+class Surface:
+    """
+    General class containing and manipulating some property surface
+    """
+
+    def __init__(self, grids=None, order=1, prop=(1,)):
+        """
+        An object is initialized with existing grids, the order of the surface (how many modes are involved), and
+        the shape of the property: (1,) for energy, (3,) for dipole moment, (3,3) for polarizability
+
+        @param grids: Vibrations grid object
+        @param order: Order (or dimensionality) of the surface
+        @type order: Integer
+        @param prop: Shape of the property, e.g. (1,) for energy
+        @type prop: Tuple of integer
+        """
+
+        if grid is None:  # an empty object
+            self.empty = True
+
+        else:
+            self.empty = False
+            self.ngrid = grids.ngrid
+
+        self.order = order
+        self.prop = prop
+
+        self.indices = []  # indices of the modes corresponding to the data stored in self.data
+        self.data = []  # data (potential, dipole moment, etc.)
+
+    def __str__(self):
+        s = ''
+        if self.empty:
+            s += '!Empty surface\n'
+
+        s += 'Order (how many modes involved): ' + str(self.order) + '\n'
+        s += 'Shape of the property: ' + str(self.prop) + '\n'
+        return s
+
+class Potential(Surface):
+
+    def __init__(self, grids=None, order=1):
+        Surface.__init__(self, grids, order, prop=(1,))
+
+# TODO
+# 1. method reading in from numpy - temporary
+# 2. method for generating harmonic pot.
+# 3. method for saving?
+
+    def read_np(self, fname):
+                """
+        Reads in the existing potential energy surface from a NumPy formatted binary file *.npy
+
+        @param fname: File name, without extension
+        @type fname: String
+        """
+
+        tmparray = np.load(fname)
+
+        if len(tmparray.shape) == 2:
+            if self.order != 1:
+               raise Exception('Shape mismatch')
+
+        elif len(tmparray.shape) == 4:
+            if self.order != 2:
+              raise Exception('Shape mismatch')
+        else:
+            raise Exception('Input data shape mismatch, check shape of stored arrays')
+
+
+
+
+        if self.order == 1:
+            for i in range(tmparray.shape[0]):
+                self.indces.append(i)
+                self.data.append(tmparray[i,:])
+
+        elif self.order == 2:
+            for i in range(tmparray.shape[0]):
+                for j in range(i+1,tmparray.shape[0]):
+                    self.indces.append((i,j))
+                    self.data.append(tmparray[i,j,:,:])
+
+
+
+
+
+class Potential_old:
     """
     The class for containing and manipulating potential energy surfaces
     """
