@@ -147,9 +147,8 @@ class VSCFDiag(VSCF):
     The class for the diagonal VSCF -- using only 1-mode potentials
     """
 
-    def __init__(self, grids, *potentials):
+    def __init__(self,*potentials):
 
-        VSCF.__init__(self, potentials)  # fist call the constructor of mother class
         
         if len(potentials) == 0:
             raise Exception('No potential given')
@@ -157,6 +156,7 @@ class VSCFDiag(VSCF):
         elif len(potentials) > 1:
             print 'More than one potentials given, only the first will be used'
 
+        VSCF.__init__(self, potentials[0])  # fist call the constructor of mother class
         self.v1 = potentials[0]
 
         self.solved = False
