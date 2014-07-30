@@ -30,6 +30,7 @@ class Surface:
         else:
             self.empty = False
             self.ngrid = grids.ngrid
+            self.grids = grids
 
         self.order = order
         self.prop = prop

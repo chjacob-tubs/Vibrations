@@ -13,28 +13,27 @@ class VSCF:
     G{classtree}
     """
 
-    def __init__(self, grids, *potentials):  # always initialized with grids and (some) potentials
+    def __init__(self, *potentials):  # always initialized with (some) potentials, grids are stored in the potentials
         """
         The class must be initialized with grids and potentials
 
-        @param grids: The grids
-        @type grids: Vibrations/Grid
         @param potentials: The potentials
         @type potentials: Vibrations/Potential
         """
-        self.nmodes = grids.get_number_of_modes()
-        self.ngrid = grids.get_number_of_grid_points()
-        self.nstates = self.ngrid
+        if len(potentials) > 0:
+            self.nmodes = potentials[0].grids.nmodes
+            self.ngrid = potentials[0].ngrid
+            self.nstates = self.ngrid
+            self.wavefunction = Wavefunctions.Wavefunction(potentials[0].grids)
+            self.wfns = self.wavefunction.wfns
+            self.eigv = np.zeros((self.nmodes, self.nstates))
+            self.grid_object = potentials[0].grids
+            self.grids = self.grid_object.grids
+            self.dx = [x[1]-x[0] for x in self.grids]  # integration step
+            self.solved = False  # simple switch to check, whether VSCF was already solved
+        else:
+            raise Exception("No potential given.")
 
-        #self.wavefunction = Wavefunction(grids)  # initialize an object to store wave function
-        self.wavefunction = Wavefunctions.Wavefunction(grids)
-        self.wfns = self.wavefunction.wfns
-        self.eigv = np.zeros((self.nmodes, self.nstates))
-        self.grids = grids.grids
-        self.grid_object = grids
-        self.dx = [x[1]-x[0] for x in self.grids]  # integration step
-
-        self.solved = False  # simple switch to check, whether VSCF was already solved
 
     def _collocation(self, grid, potential):
         """
@@ -150,7 +149,7 @@ class VSCFDiag(VSCF):
 
     def __init__(self, grids, *potentials):
 
-        VSCF.__init__(self, grids, potentials)  # fist call the constructor of mother class
+        VSCF.__init__(self, potentials)  # fist call the constructor of mother class
         
         if len(potentials) == 0:
             raise Exception('No potential given')
@@ -158,9 +157,7 @@ class VSCFDiag(VSCF):
         elif len(potentials) > 1:
             print 'More than one potentials given, only the first will be used'
 
-        self.v1 = potentials[0].pot
-        if self.nmodes != self.v1.shape[0] or self.ngrid != self.v1.shape[1]:
-            raise Exception('Potential and grid size mismatch')
+        self.v1 = potentials[0]
 
         self.solved = False
 
@@ -175,8 +172,8 @@ class VSCFDiag(VSCF):
 
             for i in range(self.nmodes):
                 print self.grids[i]
-                print self.v1[i]
-                (tmpeigv, tmpwfn) = self._collocation(self.grids[i], self.v1[i])
+                print self.v1.data[i]
+                (tmpeigv, tmpwfn) = self._collocation(self.grids[i], self.v1.data[i])
                 self.eigv[i] = tmpeigv
                 self.wfns[i] = tmpwfn
             
