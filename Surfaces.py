@@ -87,7 +87,7 @@ class Potential(Surface):
         elif self.order == 2:
             for i in range(tmparray.shape[0]):
                 for j in range(i+1,tmparray.shape[0]):
-                    self.indces.append((i,j))
+                    self.indices.append((i,j))
                     self.data.append(tmparray[i,j,:,:])
 
 
