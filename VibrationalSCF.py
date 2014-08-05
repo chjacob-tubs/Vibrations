@@ -25,7 +25,6 @@ class VSCF:
             self.ngrid = potentials[0].ngrid
             self.nstates = self.ngrid
             self.wavefunction = Wavefunctions.Wavefunction(potentials[0].grids)
-            self.wfns = self.wavefunction.wfns
             self.eigv = np.zeros((self.nmodes, self.nstates))
             self.grids = potentials[0].grids
             self.dx = [x[1]-x[0] for x in self.grids.grids]  # integration step
@@ -121,7 +120,7 @@ class VSCF:
         Returns the wave functions as numpy.array
         """
 
-        return self.wfns
+        return self.wavefunction.wfns
 
     def get_wave_function_object(self):
         """
@@ -138,7 +137,7 @@ class VSCF:
         """
         from time import strftime
         fname = fname + '_' + strftime('%Y%m%d%H%M') + '.npy'
-        np.save(fname, self.wfns)
+        np.save(fname, self.wavefunction.wfns)
 
 
 class VSCFDiag(VSCF):
@@ -176,7 +175,7 @@ class VSCFDiag(VSCF):
                 # TODO take into account that the mode can be not present in the potential, use try etc.
                 (tmpeigv, tmpwfn) = self._collocation(self.grids.grids[i], self.v1.data[v1ind])
                 self.eigv[i] = tmpeigv
-                self.wfns[i] = tmpwfn
+                self.wavefunction.wfns = tmpwfn
             
             self.solved = True
 
@@ -215,7 +214,7 @@ class VSCFDiag(VSCF):
         """
         from time import strftime
         fname = fname + '_' + strftime('%Y%m%d%H%M') + '.npy'
-        np.save(fname, self.wfns)
+        np.save(fname, self.wavefunction.wfns)
 
 
 class VSCF2D(VSCF):
@@ -234,12 +233,11 @@ class VSCF2D(VSCF):
         elif len(potentials) > 2:
             print 'More than two sets potentials given. Only the two first will be used'
 
-        VSCF.__init__(self, potentials)
+        VSCF.__init__(self, potentials[0])
 
         self.v1 = potentials[0]
         self.v2 = potentials[1]
-        self.wfns = None  # initial wave functions
-        self.grids = potentials[0].grids
+        self.grids = self.v1.grids
         self.dm1 = np.array([])
         self.dm2 = np.array([])
 
@@ -250,9 +248,8 @@ class VSCF2D(VSCF):
         #    raise Exception('Potential and grid size mismatch')
         
         self.states = [[0]*self.nmodes]   # list of states for which the VSCF is solved, at first only gs considered
-        self.energies = np.zeros(len(self.states))
-        self.vscf_wfns = np.zeros((len(self.states), self.nmodes, self.nstates, self.ngrid))  # all vscf_wfns
-        self.ref_wfn = None #  the reference (usually diagonal) wave function
+        self.energies = []
+        self.vscf_wavefunctions = []   # list of Wavefunction objects (for each state)
 
     def calculate_intensities(self, *dipolemoments):
         """
@@ -356,9 +353,7 @@ class VSCF2D(VSCF):
         Returns the ground state wave function, which can be used for VCI calculations
         """
         if self.states[0] == [0]*self.nmodes and self.solved:
-            tmpwfn = Wavefunctions.Wavefunction(self.grids)
-            tmpwfn.wfns = self.vscf_wfns[0]
-            return tmpwfn
+            return vscf_wavefunctions[0]
         else:
             raise Exception('Ground state not solved')
 
@@ -406,11 +401,15 @@ class VSCF2D(VSCF):
             print ''
             print Misc.fancy_box('Solving VSCF')
             self.states = list(states)  # use new states and do the VSCF
-            self.energies = np.zeros(len(self.states))
-            self.vscf_wfns = np.zeros((len(self.states), self.nmodes, self.nstates, self.ngrid))  # vscf opt wfns
+            self.energies = []
+            self.vscf_wavefunctions = []
             for i, s in enumerate(self.states):
                 print Misc.fancy_box('Solving State: '+str(s))         
-                (self.energies[i], self.vscf_wfns[i]) = self._solve_state(s)
+                (energy, wfn) = self._solve_state(s)
+                self.energies.append(energy)
+                wfn_obj = Wavefunctions.Wavefunction(self.v1.grids)
+                wfn_obj.wfns = wfn
+                self.vscf_wavefunctions.append(wfn_obj)
 
             self.solved = True
             print ''
@@ -445,12 +444,13 @@ class VSCF2D(VSCF):
         maxiter = 100
         eps = 1e-6
         etot = 0.0
-        wfn = np.zeros((self.nmodes,self.ngrid))
+        wfns = np.zeros((self.nmodes,self.ngrid,self.ngrid))
+        tmpwfns = np.zeros((self.nmodes,self.ngrid,self.ngrid))
 
         # first generate a diagonal wave function as a reference
         for i in range(self.nmodes):
-            (tmpen, tmpwfn) = self._collocation(self.grids.grids[i], self.v1.data[self.v1.indices.index[i]])
-            wfn[i] = tmpwfn
+            (tmpen, tmpwfn) = self._collocation(self.grids.grids[i], self.v1.data[self.v1.indices.index(i)])
+            wfns[i] = tmpwfn
 
         eprev = 0.0
         for niter in range(maxiter):
@@ -458,20 +458,20 @@ class VSCF2D(VSCF):
             print 'Iteration: %i ' % (niter+1)
             print 'Mode State   Eigv'
             for i in range(self.nmodes):
-                diagpot = self.v1.data[self.v1.indices.index[i]]
+                diagpot = self.v1.data[self.v1.indices.index(i)]
                 # now get effective potential
-                effpot = self._veffective(i, state, wfn)
+                effpot = self._veffective(i, state, wfns)
                 totalpot = diagpot+effpot
                 
                 # solve 1-mode problem
                 (energies, wavefunctions) = self._collocation(self.grids.grids[i], totalpot)
-                tmpwfn[i] = wavefunctions
+                tmpwfns[i] = wavefunctions
                 # add energy
                 etot += energies[state[i]]   # add optimized state-energy
                 print '%4i %5i %8.1f' % (i, state[i], energies[state[i]]/Misc.cm_in_au)
 
             #calculate correction
-            emp1 = self._scfcorr(state, tmpwfn)
+            emp1 = self._scfcorr(state, tmpwfns)
 
             print 'Sum of eigenvalues %.1f, SCF correction %.1f, total energy %.1f / cm^-1' \
                 % (etot/Misc.cm_in_au,
@@ -483,13 +483,13 @@ class VSCF2D(VSCF):
                 break
             else:
                 eprev = etot
-                wfn = np.copy(tmpwfn)
+                wfns = np.copy(tmpwfns)
 
             # get delta E
 
-        return etot / Misc.cm_in_au, wfn.copy()
+        return etot / Misc.cm_in_au, wfns.copy()
 
-    def _scfcorr(self, state, wfn):
+    def _scfcorr(self, state, wfns):
         
         scfcorr = 0.0
         for i in range(self.nmodes):
@@ -504,8 +504,7 @@ class VSCF2D(VSCF):
                     for gi in range(self.ngrid):
                         for gj in range(self.ngrid):
 
-                            scfcorr += self.dx[i] * self.dx[j] * self.v2.data[ind][gi, gj] * wfn[i, state[i], gi] ** 2 \
-                                * wfn[j, state[j], gj]**2
+                            scfcorr += self.dx[i] * self.dx[j] * self.v2.data[ind][gi, gj] * wfns[i, state[i], gi] ** 2 * wfns[j, state[j], gj]**2
 
         return scfcorr
 
@@ -521,7 +520,7 @@ class VSCF2D(VSCF):
                         try:
                             ind = self.v2.indices.index((mode,j))
                         except:
-                            ind = selv.v2.indices.index((j,mode))
+                            ind = self.v2.indices.index((j,mode))
                         veff[i] += (wfn[j, state[j]]**2 * self.dx[j] * self.v2.data[ind][i, :]).sum()
 
         return veff

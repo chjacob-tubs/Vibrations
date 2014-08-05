@@ -23,8 +23,8 @@ class Wavefunction:
             self.wfns = np.zeros((self.nmodes, self.nstates, self.ngrid))
 
         else:
-            self.nmodes = grids.get_number_of_modes()
-            self.ngrid = grids.get_number_of_grid_points()
+            self.nmodes = grids.nmodes
+            self.ngrid = grids.ngrid
             self.nstates = self.ngrid
             self.wfns = np.zeros((self.nmodes, self.nstates, self.ngrid))
 
