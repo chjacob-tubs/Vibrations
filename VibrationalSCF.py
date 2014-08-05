@@ -28,7 +28,7 @@ class VSCF:
             self.wfns = self.wavefunction.wfns
             self.eigv = np.zeros((self.nmodes, self.nstates))
             self.grids = potentials[0].grids
-            self.dx = [x[1]-x[0] for x in self.grids]  # integration step
+            self.dx = [x[1]-x[0] for x in self.grids.grids]  # integration step
             self.solved = False  # simple switch to check, whether VSCF was already solved
         else:
             raise Exception("No potential given.")
@@ -174,7 +174,7 @@ class VSCFDiag(VSCF):
                 #print self.v1.data[i]
                 v1ind = self.v1.indices.index(i)  #  find the index of the mode i in the  potential
                 # TODO take into account that the mode can be not present in the potential, use try etc.
-                (tmpeigv, tmpwfn) = self._collocation(self.grids[i], self.v1.data[v1ind])
+                (tmpeigv, tmpwfn) = self._collocation(self.grids.grids[i], self.v1.data[v1ind])
                 self.eigv[i] = tmpeigv
                 self.wfns[i] = tmpwfn
             
