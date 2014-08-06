@@ -148,9 +148,9 @@ class VCI:
         self.vectors = v
         wcm = w / Misc.cm_in_au
         self.energiesrcm = wcm  # energies in reciprocal cm
-        print 'State %15s %15s' % ('E /cm^-1', 'DE /cm^-1')
+        print 'State %15s %15s %15s' % ('Contrib','E /cm^-1', 'DE /cm^-1')
         for i in range(len(self.states)):
-            print "%s %10.4f %10.4f" % (self.states[i], wcm[i], wcm[i]-wcm[0])
+            print "%s %10.4f %10.4f %10.4f" % (self.states[(v[:,i]**2).argmax()], (v[:,i]**2).max(),wcm[i], wcm[i]-wcm[0])
 
         self.solved = True
 
