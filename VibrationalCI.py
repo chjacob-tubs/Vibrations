@@ -10,7 +10,7 @@ class VCI:
     """
     The class performing and storing VCI calculations
     """
-    def __init__(self, grids, wavefunctions, *potentials):
+    def __init__(self, wavefunctions, *potentials):
         """
         The class must be initialized with grids, some, e.g. VSCF, wave functions, and potentials
 
@@ -22,8 +22,8 @@ class VCI:
         @type potentials: Vibrations/Potential
         """
 
-        self.grids = grids.grids  # TODO this must be done with some method like grids.get_grids() or so
-        self.wfns = wavefunctions.wfns  # these are VSCF optimized wave functions TODO must be done as above
+        self.grids = grids.grids  #
+        self.wfns = wavefunctions.wfns  # these are VSCF optimized wave functions
 
         self.nmodes = grids.nmodes
         self.ngrid = grids.ngrid
@@ -34,7 +34,7 @@ class VCI:
         self.dx = [x[1]-x[0] for x in self.grids]
         self.a = [(0.7**2.0)/((x[1]-x[0])**2.0) for x in self.grids]
 
-        self.coefficients = np.zeros((self.nmodes, self.ngrid, self.ngrid))  # TODO number of VSCF states in wfn
+        self.coefficients = np.zeros((self.nmodes, self.ngrid, self.ngrid))  #
         self._calculate_coeff()
 
         self.sij = np.zeros((self.nmodes, self.ngrid, self.ngrid))  # calculate Sij only once
@@ -50,8 +50,8 @@ class VCI:
         if len(potentials) != 2:
             raise Exception('Only two potentials, V1 and V2, accepted, so far')
         else:
-            self.v1 = potentials[0].pot
-            self.v2 = potentials[1].pot
+            self.v1 = potentials[0]
+            self.v2 = potentials[1]
 
         self.dm1 = np.array([])
         self.dm2 = np.array([])
@@ -377,8 +377,8 @@ class VCI:
             print '%7.1f %7.1f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
 
     def _v1_integral(self, mode, lstate, rstate):  # calculate integral of type < mode(lstate) | V1 | mode(rstate) >
-
-        s = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate] * self.v1[mode]).sum()
+        ind = self.v1.indices.index(mode)
+        s = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate] * self.v1.data[mode]).sum()
 
         return s
 
@@ -387,13 +387,19 @@ class VCI:
 
         s = 0.0
 
-        for i in range(self.ngrid):
-            si = self.dx[mode1] * self.wfns[mode1, lstate1, i] * self.wfns[mode1, rstate1, i]
+        if (mode1,mode2) in self.v2.indices or (mode2,mode1) in self.v2.indices:
+            try:
+                ind = self.v2.indices.index((mode1,mode2))
+            except:
+                ind = self.v2.indices.index((mode2,mode1))
 
-            for j in range(self.ngrid):
+            for i in range(self.ngrid):
+                si = self.dx[mode1] * self.wfns[mode1, lstate1, i] * self.wfns[mode1, rstate1, i]
 
-                sj = self.dx[mode2] * self.wfns[mode2, lstate2, j] * self.wfns[mode2, rstate2, j]
-                s += si * sj * self.v2[mode1, mode2, i, j]
+                for j in range(self.ngrid):
+
+                    sj = self.dx[mode2] * self.wfns[mode2, lstate2, j] * self.wfns[mode2, rstate2, j]
+                    s += si * sj * self.v2.data[ind][i, j]
 
         return s
 
