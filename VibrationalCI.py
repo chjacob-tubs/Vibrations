@@ -22,11 +22,11 @@ class VCI:
         @type potentials: Vibrations/Potential
         """
 
-        self.grids = grids.grids  #
+        self.grids = potentials[0].grids.grids  #
         self.wfns = wavefunctions.wfns  # these are VSCF optimized wave functions
 
-        self.nmodes = grids.nmodes
-        self.ngrid = grids.ngrid
+        self.nmodes = potentials[0].grids.nmodes
+        self.ngrid = potentials[0].grids.ngrid
 
         self.states = []
         self.solved = False

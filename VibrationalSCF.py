@@ -353,7 +353,7 @@ class VSCF2D(VSCF):
         Returns the ground state wave function, which can be used for VCI calculations
         """
         if self.states[0] == [0]*self.nmodes and self.solved:
-            return vscf_wavefunctions[0]
+            return self.vscf_wavefunctions[0]
         else:
             raise Exception('Ground state not solved')
 
