@@ -53,8 +53,6 @@ class Potential(Surface):
         Surface.__init__(self, grids, order, prop=(1,))
 
 # TODO
-# 1. method reading in from numpy - temporary
-# 2. method for generating harmonic pot.
 # 3. method for saving?
 
     def read_np(self, fname):
@@ -92,6 +90,34 @@ class Potential(Surface):
                     self.data.append(tmparray[i,j,:,:])
 
 
+    def generate_harmonic(self, cmat=None):
+
+        if not self.empty:
+            if cmat is None:
+                if self.order == 1:
+                    for i in range(self.grids.nmodes):
+                        self.indices.append(i)
+                        potential = (self.grids.grids[i] ** 2 * (self.grids.modes.freqs[i] *
+                                                             Misc.cm_in_au)**2) / 2.0
+                        self.data.append(potential)
+            else:
+                if self.order == 1:
+                    for i in range(self.grids.nmodes):
+                        self.indices.append(i)
+                        potential = (self.grids.grids[i] ** 2 * cmat[i, i]) / 2.0
+                        self.data.append(potential)
+
+                elif self.order == 2:
+                    for i in range(self.grids.nmodes):
+                        for j in range(i+1, self.grids.nmodes):
+                            self.indices.append((i,j))
+                            potential = np.zeros((self.ngrid,self.ngrid))
+                            for k in range(self.grids.ngrid):
+                                for l in range(self.grids.ngrid):
+                                    potential[k, l] = self.grids.grids[i, k] * self.grids.grids[j, l] * cmat[i, j]
+                                    potential[l, k] = potential[k, l]
+
+                            self.data.append(potential)
 
 
 
