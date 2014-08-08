@@ -67,7 +67,7 @@ class VSCF:
 
         # solve the Hamiltonian
 
-        (eigval, eigvec) = np.linalg.eig(hamiltonian)
+        (eigval, eigvec) = np.linalg.eigh(hamiltonian,UPLO='U')
 
         # sort eigenvalues and eigenvectors with respect to the eigenvalues
 
@@ -175,7 +175,7 @@ class VSCFDiag(VSCF):
                 # TODO take into account that the mode can be not present in the potential, use try etc.
                 (tmpeigv, tmpwfn) = self._collocation(self.grids.grids[i], self.v1.data[v1ind])
                 self.eigv[i] = tmpeigv
-                self.wavefunction.wfns = tmpwfn
+                self.wavefunction.wfns[i] = tmpwfn
             
             self.solved = True
 
@@ -465,8 +465,8 @@ class VSCF2D(VSCF):
                 totalpot = diagpot+effpot
                 
                 # solve 1-mode problem
-                (energies, wavefunctions) = self._collocation(self.grids.grids[i], totalpot)
-                tmpwfns[i] = wavefunctions
+                (energies, wavefunction) = self._collocation(self.grids.grids[i], totalpot)
+                tmpwfns[i] = wavefunction
                 # add energy
                 etot += energies[state[i]]   # add optimized state-energy
                 print '%4i %5i %8.1f' % (i, state[i], energies[state[i]]/Misc.cm_in_au)
@@ -484,7 +484,7 @@ class VSCF2D(VSCF):
                 break
             else:
                 eprev = etot
-                wfns = np.copy(tmpwfns)
+                wfns = tmpwfns
 
             # get delta E
 
