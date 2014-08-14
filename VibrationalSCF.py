@@ -67,7 +67,10 @@ class VSCF:
 
         # solve the Hamiltonian
 
-        (eigval, eigvec) = np.linalg.eigh(hamiltonian,UPLO='U')
+        #(eigval, eigvec) = np.linalg.eigh(hamiltonian,UPLO='U')
+        (eigval, eigvec) = np.linalg.eig(hamiltonian)
+        eigval = np.real(eigval)
+        eigvec = np.real(eigvec)
 
         # sort eigenvalues and eigenvectors with respect to the eigenvalues
 
@@ -445,13 +448,14 @@ class VSCF2D(VSCF):
         maxiter = 100
         eps = 1e-6
         etot = 0.0
-        wfns = np.zeros((self.nmodes,self.ngrid,self.ngrid))
+        actualwfns = np.zeros((self.nmodes,self.ngrid,self.ngrid))
         tmpwfns = np.zeros((self.nmodes,self.ngrid,self.ngrid))
 
         # first generate a diagonal wave function as a reference
         for i in range(self.nmodes):
-            (tmpen, tmpwfn) = self._collocation(self.grids.grids[i], self.v1.data[self.v1.indices.index(i)])
-            wfns[i] = tmpwfn
+            (modeen, modewfn) = self._collocation(self.grids.grids[i], self.v1.data[self.v1.indices.index(i)])
+            actualwfns[i] = modewfn
+
 
         eprev = 0.0
         for niter in range(maxiter):
@@ -461,9 +465,8 @@ class VSCF2D(VSCF):
             for i in range(self.nmodes):
                 diagpot = self.v1.data[self.v1.indices.index(i)]
                 # now get effective potential
-                effpot = self._veffective(i, state, wfns)
+                effpot = self._veffective(i, state, actualwfns)
                 totalpot = diagpot+effpot
-                
                 # solve 1-mode problem
                 (energies, wavefunction) = self._collocation(self.grids.grids[i], totalpot)
                 tmpwfns[i] = wavefunction
@@ -472,8 +475,8 @@ class VSCF2D(VSCF):
                 print '%4i %5i %8.1f' % (i, state[i], energies[state[i]]/Misc.cm_in_au)
 
             #calculate correction
-            emp1 = self._scfcorr(state, tmpwfns)
-
+            actualwfns = tmpwfns
+            emp1 = self._scfcorr(state, actualwfns)
             print 'Sum of eigenvalues %.1f, SCF correction %.1f, total energy %.1f / cm^-1' \
                 % (etot/Misc.cm_in_au,
                   emp1/Misc.cm_in_au,
@@ -484,11 +487,11 @@ class VSCF2D(VSCF):
                 break
             else:
                 eprev = etot
-                wfns = tmpwfns
 
             # get delta E
 
-        return etot / Misc.cm_in_au, wfns.copy()
+
+        return etot / Misc.cm_in_au, actualwfns.copy()
 
     def _scfcorr(self, state, wfns):
         
@@ -496,33 +499,36 @@ class VSCF2D(VSCF):
         for i in range(self.nmodes):
             for j in range(i+1, self.nmodes):
                 if (i,j) in self.v2.indices or (j,i) in self.v2.indices: #first check if there's the pot for two modes
-
                     try:
                         ind = self.v2.indices.index((i,j))
                     except:
                         ind = selv.v2.indices.index((j,i))
-
                     for gi in range(self.ngrid):
                         for gj in range(self.ngrid):
 
-                            scfcorr += self.dx[i] * self.dx[j] * self.v2.data[ind][gi, gj] * wfns[i, state[i], gi] ** 2 * wfns[j, state[j], gj]**2
+                            scfcorr = scfcorr +  self.dx[i] * self.dx[j] * self.v2.data[ind][gi, gj] * wfns[i, state[i], gi] ** 2 * wfns[j, state[j], gj]**2
 
         return scfcorr
 
     def _veffective(self, mode, state, wfn):
 
         veff = np.zeros(self.ngrid)
-            
         for i in range(self.ngrid):
             for j in range(self.nmodes):
                 if j != mode:
+             
                     if (mode,j) in self.v2.indices or (j,mode) in self.v2.indices: #first check if there's the pot for two modes
-
                         try:
                             ind = self.v2.indices.index((mode,j))
                         except:
                             ind = self.v2.indices.index((j,mode))
-                        veff[i] += (wfn[j, state[j]]**2 * self.dx[j] * self.v2.data[ind][i, :]).sum()
+                        #for k in range(self.ngrid):
+                        #    tmpsum += (wfn[j, state[j],k]**2 * self.dx[j] * self.v2.data[ind][i, k])
+                        if mode < j:
+                            veff[i] += (wfn[j, state[j]]**2 * self.dx[j] * self.v2.data[ind][i,:]).sum()
+                        elif mode > j:
+                            veff[i] += (wfn[j, state[j]]**2 * self.dx[j] * self.v2.data[ind][:,i]).sum()
+                #veff[i] += tmpsum 
 
         return veff
                     
