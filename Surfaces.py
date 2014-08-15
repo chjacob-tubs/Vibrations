@@ -152,11 +152,11 @@ class Dipole(Surface):
 
         tmparray = np.load(fname)
 
-        if len(tmparray.shape) == 2:
+        if len(tmparray.shape) == 3:
             if self.order != 1:
                raise Exception('Shape mismatch')
 
-        elif len(tmparray.shape) == 4:
+        elif len(tmparray.shape) == 5:
             if self.order != 2:
               raise Exception('Shape mismatch')
         else:

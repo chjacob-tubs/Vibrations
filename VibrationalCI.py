@@ -53,11 +53,7 @@ class VCI:
             self.v1 = potentials[0]
             self.v2 = potentials[1]
 
-        self.dm1 = np.array([])
-        self.dm2 = np.array([])
 
-        # TODO
-        # 1. Check shapes of data stored in objects
 
     def solve(self):
         """
@@ -283,18 +279,12 @@ class VCI:
         elif len(dipolemoments) > 2:
             print 'More than two sets of dipole moments given, only the two first will be used'
 
-        if dipolemoments[0].order == 1:
-            self.dm1 = dipolemoments[0].dm
-        else:
-            raise Exception('The 1-D DMS should be given as the first one.')
+        # TODO
+        # 1. Check size of the data etc.
 
-        if len(dipolemoments) > 1 and dipolemoments[1].order == 2:
-            self.dm2 = dipolemoments[1].dm
-        elif len(dipolemoments) == 1:
-            self.dm2 = np.zeros((self.nmodes, self.nmodes, self.ngrid, self.ngrid, 3))
-        else:
-            raise Exception('The order of the second dipole moment surface does not match.')
-
+        self.dm1 = dipolemoments[0]
+        self.dm2 = dipolemoments[1]
+        
 
         # assuming that the first state is a ground state
 
@@ -320,12 +310,13 @@ class VCI:
 
                             if k == j:
                                 #  calculate <psi|u|psi>
+                                ind = self.dm1.indices.index(k)
                                 tmpd1[0] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
-                                             * self.dm1[j, :, 0]).sum()
+                                             * self.dm1.data[ind][:, 0]).sum()
                                 tmpd1[1] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
-                                             * self.dm1[j, :, 1]).sum()
+                                             * self.dm1.data[ind][:, 1]).sum()
                                 tmpd1[2] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
-                                             * self.dm1[j, :, 2]).sum()
+                                             * self.dm1.data[ind][:, 2]).sum()
 
                             else:
                                 if self.states[istate][k] == self.states[fstate][k]:
@@ -342,16 +333,18 @@ class VCI:
                             tmpd2 = np.array([0.0, 0.0, 0.0])
                             kistate = self.states[istate][k]
                             kfstate = self.states[fstate][k]
-
+                            
+                            ind = self.dm2.indices.index((j,k))
+        
                             for l in range(self.ngrid):
                                 for m in range(self.ngrid):
-                                    tmpd2[0] += self.dx[j] * self.dx[k] * self.dm2[j, k, l, m, 0] \
+                                    tmpd2[0] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 0] \
                                         * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
                                         * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
-                                    tmpd2[1] += self.dx[j] * self.dx[k] * self.dm2[j, k, l, m, 1] \
+                                    tmpd2[1] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 1] \
                                         * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
                                         * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
-                                    tmpd2[2] += self.dx[j] * self.dx[k] * self.dm2[j, k, l, m, 2] \
+                                    tmpd2[2] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 2] \
                                         * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
                                         * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
                             tmpovrlp = 1.0
