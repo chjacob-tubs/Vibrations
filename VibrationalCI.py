@@ -295,74 +295,74 @@ class VCI:
 
                 for fstate in range(len(self.states)):
                     cf = self.vectors[fstate, i]  # final state's coefficient
+                    if ci > 1e-6 and cf > 1e-6:
+                        tmptm = np.array([0.0, 0.0, 0.0])
 
-                    tmptm = np.array([0.0, 0.0, 0.0])
-
-                    for j in range(self.nmodes):
-                        tmpd1 = np.array([0.0, 0.0, 0.0])
-                        tmpovrlp = 1.0
-                        jistate = self.states[istate][j]
-                        jfstate = self.states[fstate][j]
-
-                        for k in range(self.nmodes):
-                            kistate = self.states[istate][k]
-                            kfstate = self.states[fstate][k]
-
-                            if k == j:
-                                #  calculate <psi|u|psi>
-                                ind = self.dm1.indices.index(k)
-                                tmpd1[0] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
-                                             * self.dm1.data[ind][:, 0]).sum()
-                                tmpd1[1] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
-                                             * self.dm1.data[ind][:, 1]).sum()
-                                tmpd1[2] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
-                                             * self.dm1.data[ind][:, 2]).sum()
-
-                            else:
-                                if self.states[istate][k] == self.states[fstate][k]:
-                                    tmpovrlp *= (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate]).sum()
-                                else:
-                                    tmpovrlp = 0.0
-
-                        tmptm += tmpd1 * tmpovrlp
-
-                    for j in range(self.nmodes):
-                        jistate = self.states[istate][j]
-                        jfstate = self.states[fstate][j]
-                        for k in range(j+1, self.nmodes):
-                            tmpd2 = np.array([0.0, 0.0, 0.0])
-                            kistate = self.states[istate][k]
-                            kfstate = self.states[fstate][k]
-                            
-                            ind = self.dm2.indices.index((j,k))
-        
-                            for l in range(self.ngrid):
-                                for m in range(self.ngrid):
-                                    tmpd2[0] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 0] \
-                                        * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
-                                        * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
-                                    tmpd2[1] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 1] \
-                                        * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
-                                        * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
-                                    tmpd2[2] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 2] \
-                                        * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
-                                        * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
+                        for j in range(self.nmodes):
+                            tmpd1 = np.array([0.0, 0.0, 0.0])
                             tmpovrlp = 1.0
+                            jistate = self.states[istate][j]
+                            jfstate = self.states[fstate][j]
 
-                            for n in range(self.nmodes):
-                                if n != j and n != k:
-                                    nistate = self.states[istate][n]
-                                    nfstate = self.states[fstate][n]
+                            for k in range(self.nmodes):
+                                kistate = self.states[istate][k]
+                                kfstate = self.states[fstate][k]
 
-                                    if nistate == nfstate:
-                                        tmpovrlp *= (self.dx[n] * self.wfns[n, nistate] * self.wfns[n, nfstate]).sum()
+                                if k == j:
+                                    #  calculate <psi|u|psi>
+                                    ind = self.dm1.indices.index(k)
+                                    tmpd1[0] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                                 * self.dm1.data[ind][:, 0]).sum()
+                                    tmpd1[1] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                                 * self.dm1.data[ind][:, 1]).sum()
+                                    tmpd1[2] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                                 * self.dm1.data[ind][:, 2]).sum()
 
+                                else:
+                                    if self.states[istate][k] == self.states[fstate][k]:
+                                        tmpovrlp *= (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate]).sum()
                                     else:
                                         tmpovrlp = 0.0
 
-                            tmptm += tmpd2 * tmpovrlp
+                            tmptm += tmpd1 * tmpovrlp
 
-                    totaltm += tmptm * ci * cf
+                        for j in range(self.nmodes):
+                            jistate = self.states[istate][j]
+                            jfstate = self.states[fstate][j]
+                            for k in range(j+1, self.nmodes):
+                                tmpd2 = np.array([0.0, 0.0, 0.0])
+                                kistate = self.states[istate][k]
+                                kfstate = self.states[fstate][k]
+
+                                ind = self.dm2.indices.index((j,k))
+
+                                for l in range(self.ngrid):
+                                    for m in range(self.ngrid):
+                                        tmpd2[0] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 0] \
+                                            * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
+                                            * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
+                                        tmpd2[1] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 1] \
+                                            * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
+                                            * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
+                                        tmpd2[2] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 2] \
+                                            * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
+                                            * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
+                                tmpovrlp = 1.0
+
+                                for n in range(self.nmodes):
+                                    if n != j and n != k:
+                                        nistate = self.states[istate][n]
+                                        nfstate = self.states[fstate][n]
+
+                                        if nistate == nfstate:
+                                            tmpovrlp *= (self.dx[n] * self.wfns[n, nistate] * self.wfns[n, nfstate]).sum()
+
+                                        else:
+                                            tmpovrlp = 0.0
+
+                                tmptm += tmpd2 * tmpovrlp
+
+                        totaltm += tmptm * ci * cf
 
             factor = 2.5048
             intens = (totaltm[0]**2 + totaltm[1]**2 + totaltm[2]**2) * factor * (self.energiesrcm[i]
