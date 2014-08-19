@@ -289,7 +289,7 @@ class VCI:
         # assuming that the first state is a ground state
 
         for i in range(1, len(self.states)):
-            totaltm = 0.0
+            totaltm = np.array([0.0, 0.0, 0.0])
             for istate in range(len(self.states)):
                 ci = self.vectors[istate, 0]  # initial state's coefficient
 
