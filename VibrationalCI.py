@@ -295,7 +295,7 @@ class VCI:
 
                 for fstate in range(len(self.states)):
                     cf = self.vectors[fstate, i]  # final state's coefficient
-                    if ci > 1e-6 and cf > 1e-6:
+                    if abs(ci) > 1e-6 and abs(cf) > 1e-6:
                         tmptm = np.array([0.0, 0.0, 0.0])
 
                         for j in range(self.nmodes):
@@ -361,9 +361,7 @@ class VCI:
                                             tmpovrlp = 0.0
 
                                 tmptm += tmpd2 * tmpovrlp
-
                         totaltm += tmptm * ci * cf
-
             factor = 2.5048
             intens = (totaltm[0]**2 + totaltm[1]**2 + totaltm[2]**2) * factor * (self.energiesrcm[i]
                                                                                  - self.energiesrcm[0])
