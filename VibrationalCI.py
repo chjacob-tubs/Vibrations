@@ -46,6 +46,7 @@ class VCI:
         self.energies = np.array([])
         self.energiesrcm = np.array([])
         self.vectors = np.array([])
+        self.intensities = None
 
         if len(potentials) != 2:
             raise Exception('Only two potentials, V1 and V2, accepted, so far')
@@ -284,27 +285,33 @@ class VCI:
 
         self.dm1 = dipolemoments[0]
         self.dm2 = dipolemoments[1]
+        self.intensities = np.zeros(len(self.states))
         
 
         # assuming that the first state is a ground state
+        totaltm = np.zeros(3)
+        tmptm = np.zeros(3)
+        tmpd1 = np.zeros(3)
+        tmpd2 = np.zeros(3)
+        nstates = len(self.states)
 
-        for i in range(1, len(self.states)):
-            totaltm = np.array([0.0, 0.0, 0.0])
-            for istate in range(len(self.states)):
+        for i in xrange(1, nstates):
+            totaltm *= 0.0
+            for istate in xrange(nstates):
                 ci = self.vectors[istate, 0]  # initial state's coefficient
 
-                for fstate in range(len(self.states)):
+                for fstate in xrange(nstates):
                     cf = self.vectors[fstate, i]  # final state's coefficient
                     if abs(ci) > 1e-6 and abs(cf) > 1e-6:
-                        tmptm = np.array([0.0, 0.0, 0.0])
+                        tmptm *= 0.0
 
-                        for j in range(self.nmodes):
-                            tmpd1 = np.array([0.0, 0.0, 0.0])
+                        for j in xrange(self.nmodes):
+                            tmpd1 *= 0.0
                             tmpovrlp = 1.0
                             jistate = self.states[istate][j]
                             jfstate = self.states[fstate][j]
 
-                            for k in range(self.nmodes):
+                            for k in xrange(self.nmodes):
                                 kistate = self.states[istate][k]
                                 kfstate = self.states[fstate][k]
 
@@ -320,24 +327,25 @@ class VCI:
 
                                 else:
                                     if self.states[istate][k] == self.states[fstate][k]:
-                                        tmpovrlp *= (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate]).sum()
+                                        #tmpovrlp *= (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate]).sum()
+                                        tmpovrlp *= 1.0
                                     else:
                                         tmpovrlp = 0.0
 
                             tmptm += tmpd1 * tmpovrlp
 
-                        for j in range(self.nmodes):
+                        for j in xrange(self.nmodes):
                             jistate = self.states[istate][j]
                             jfstate = self.states[fstate][j]
-                            for k in range(j+1, self.nmodes):
-                                tmpd2 = np.array([0.0, 0.0, 0.0])
+                            for k in xrange(j+1, self.nmodes):
+                                tmpd2 *= 0.0
                                 kistate = self.states[istate][k]
                                 kfstate = self.states[fstate][k]
 
                                 ind = self.dm2.indices.index((j,k))
 
-                                for l in range(self.ngrid):
-                                    for m in range(self.ngrid):
+                                for l in xrange(self.ngrid):
+                                    for m in xrange(self.ngrid):
                                         tmpd2[0] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 0] \
                                             * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
                                             * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
@@ -349,13 +357,14 @@ class VCI:
                                             * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
                                 tmpovrlp = 1.0
 
-                                for n in range(self.nmodes):
+                                for n in xrange(self.nmodes):
                                     if n != j and n != k:
                                         nistate = self.states[istate][n]
                                         nfstate = self.states[fstate][n]
 
                                         if nistate == nfstate:
-                                            tmpovrlp *= (self.dx[n] * self.wfns[n, nistate] * self.wfns[n, nfstate]).sum()
+                                            #tmpovrlp *= (self.dx[n] * self.wfns[n, nistate] * self.wfns[n, nfstate]).sum()
+                                            tmpovrlp *= 1.0
 
                                         else:
                                             tmpovrlp = 0.0
@@ -365,6 +374,7 @@ class VCI:
             factor = 2.5048
             intens = (totaltm[0]**2 + totaltm[1]**2 + totaltm[2]**2) * factor * (self.energiesrcm[i]
                                                                                  - self.energiesrcm[0])
+            self.intensities[i]=intens
             print '%7.1f %7.1f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
 
     def _v1_integral(self, mode, lstate, rstate):  # calculate integral of type < mode(lstate) | V1 | mode(rstate) >
