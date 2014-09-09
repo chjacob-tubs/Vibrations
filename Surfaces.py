@@ -24,8 +24,11 @@ class Surface:
         @type prop: Tuple of integer
         """
 
-        if grids is None:  # an empty object
+        self.grids = grids
+
+        if self.grids is None:  # an empty object
             self.empty = True
+            self.ngrid = 0
 
         else:
             self.empty = False

@@ -22,23 +22,22 @@ class Grid:
         @param modes: vibrational modes object
         @type modes: VibTools Modes
         """
+        
+        self.modes = modes
+        self.mol = mol
+        self.ngrid = 0
+        self.amp = 0
+        self.grids = np.zeros(0)
 
-        if mol is None and modes is None:
+        if self.mol is None and self.modes is None:
             self.natoms = 0
             self.nmodes = 0
-            self.ngrid = 0
-            self.amp = 0
-            self.grids = np.zeros(0)  # just an empty array for later
 
         else:
 
-            self.natoms = mol.get_natoms()
-            self.nmodes = modes.nmodes
-            self.modes = modes
-            self.ngrid = 0
-            self.amp = 0
-            self.grids = np.zeros(0)
-            self.mol = mol
+            self.natoms = self.mol.get_natoms()
+            self.nmodes = self.modes.nmodes
+
 
     def __str__(self):
 
@@ -68,6 +67,11 @@ class Grid:
         @param amp: grid amplitude
         @type amp: Real+
         """
+        if ngrid < 1:
+            raise Exception('Some positive number of grid points should be given')
+        if amp < 1:
+            raise Exception('Some positive grid amplitude should be given')
+
         grids = np.zeros((self.nmodes, ngrid))
         self.ngrid = ngrid
         self.amp = amp
@@ -152,6 +156,5 @@ class Grid:
         @param fname: file name, without extension
         @type fname: String
         """
-        from time import strftime
-        fname = fname + '_' + strftime('%Y%m%d%H%M') + '.npy'
+        fname = fname + '_' + str(self.nmodes) + '_' + str(self.ngrid) + '.npy'
         np.save(fname, self.grids)
