@@ -123,8 +123,7 @@ class VCI:
 
                 for k in range(j+1, self.nmodes):
                     tmpovrlp = 1.0
-                    tmpv2 = self._v2_integral(j, k, n[j], n[k], m[j], m[k])
-
+                    tmpv2 = 0.0
                     for l in range(self.nmodes):
 
                         if l != j and l != k:
@@ -135,9 +134,10 @@ class VCI:
                             else:
                                 tmpovrlp = 0.0
 
-                    tmpv2 *= tmpovrlp
-
-                    tmp += tmpv2
+                    if abs(tmpovrlp) > 1e-6:
+                        tmpv2 = self._v2_integral(j, k, n[j], n[k], m[j], m[k])
+                        tmpv2 *= tmpovrlp
+                        tmp += tmpv2
 
             # 3-mode integrals
             if self.is_3mode:
@@ -145,15 +145,17 @@ class VCI:
                     for k in range(j+1, self.nmodes):
                         for l in range(k+1, self.nmodes):
                             tmpovrlp = 1.0
-                            tmpv3 = self._v3_integral(j,k,l,n[j],n[k],n[l],m[j],m[k],m[l])
+                            tmpv3 = 0.0
                             for o in range(self.nmodes):
                                 if o != j and o != k and o != l:
                                     if n[o] == m[o]:
                                         tmpovrlp *= 1.0
                                     else:
                                         tmpovrlp = 0.0
-                            tmpv3 *= tmpovrlp
-                            tmp += tmpv3
+                            if abs(tmpovrlp) > 1e-6:
+                                tmpv3 = self._v3_integral(j,k,l,n[j],n[k],n[l],m[j],m[k],m[l])
+                                tmpv3 *= tmpovrlp
+                                tmp += tmpv3
 
 
 
