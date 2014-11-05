@@ -70,11 +70,16 @@ class Potential(Surface):
 
         if len(tmparray.shape) == 2:
             if self.order != 1:
-               raise Exception('Shape mismatch')
+                raise Exception('Shape mismatch')
 
         elif len(tmparray.shape) == 4:
             if self.order != 2:
-              raise Exception('Shape mismatch')
+                raise Exception('Shape mismatch')
+
+        elif len(tmparray.shape) == 6:
+            if self.order != 3:
+                raise Exception('Shape mismatch')
+                
         else:
             raise Exception('Input data shape mismatch, check shape of stored arrays')
 
@@ -91,7 +96,14 @@ class Potential(Surface):
                 for j in range(i+1,tmparray.shape[0]):
                     self.indices.append((i,j))
                     self.data.append(tmparray[i,j,:,:])
-
+        
+        elif self.order == 3:
+            for i in range(tmparray.shape[0]):
+                for j in range(i+1, tmparray.shape[0]):
+                    for k in range(j+1, tmparray.shape[0]):
+                        if tmparray[i,j,k,:,:,:].sum() > 1e-6:
+                            self.indices.append((i,j,k))
+                            self.data.append(tmparray[i,j,k,:,:,:])
 
     def generate_harmonic(self, cmat=None):
 

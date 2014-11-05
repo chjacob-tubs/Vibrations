@@ -47,10 +47,16 @@ class VCI:
         self.energiesrcm = np.array([])
         self.vectors = np.array([])
         self.intensities = None
+        self.is_3mode = False
 
-        if len(potentials) != 2:
-            raise Exception('Only two potentials, V1 and V2, accepted, so far')
-        else:
+        if len(potentials) != 2 and len(potentials) != 3:
+            raise Exception('Only two potentials or three, accepted, so far')
+        elif len(potentials) == 3:
+            self.v1 = potentials[0]
+            self.v2 = potentials[1]
+            self.v3 = potentials[2]
+            self.is_3mode = True
+        elif len(potentials) == 2:
             self.v1 = potentials[0]
             self.v2 = potentials[1]
 
@@ -132,6 +138,25 @@ class VCI:
                     tmpv2 *= tmpovrlp
 
                     tmp += tmpv2
+
+            # 3-mode integrals
+            if self.is_3mode:
+                for j in range(self.nmodes):
+                    for k in range(j+1, self.nmodes):
+                        for l in range(k+1, self.nmodes):
+                            tmpovrlp = 1.0
+                            tmpv3 = self._v3_integral(j,k,l,n[j],n[k],n[l],m[j],m[k],m[l])
+                            for o in range(self.nmodes):
+                                if o != j and o != k and o != l:
+                                    if n[o] == m[o]:
+                                        tmpovrlp *= 1.0
+                                    else:
+                                        tmpovrlp = 0.0
+                            tmpv3 *= tmpovrlp
+                            tmp += tmpv3
+
+
+
             nind = self.states.index(n)  # find the left state in the states vector
             mind = self.states.index(m)  # fin the right state
             hamiltonian[nind, mind] = tmp
@@ -425,6 +450,26 @@ class VCI:
     def _v2_integral(self, mode1, mode2, lstate1, lstate2, rstate1, rstate2):
         return self._v2_integral_new(mode1, mode2, lstate1, lstate2, rstate1, rstate2)
         #return self._v2_integral_old(mode1, mode2, lstate1, lstate2, rstate1, rstate2)
+
+    def _v3_integral(self, mode1, mode2, mode3, lstate1, lstate2, lstate3,
+                     rstate1, rstate2, rstate3):
+        s = 0.0
+
+        if (mode1, mode2, mode3) in self.v3.indices:
+            ind = self.v3.indices.index((mode1, mode2, mode3))
+
+            for i in range(self.ngrid):
+                si = self.dx[mode1] * self.wfns[mode1, lstate1, i] * self.wfns[mode1, rstate1, i]
+
+                for j in range(self.ngrid):
+                    sj = self.dx[mode2] * self.wfns[mode2, lstate2, j] * self.wfns[mode2, rstate2, j]
+
+                    for k in range(self.ngrid):
+                        sk = self.dx[mode3] * self.wfns[mode3, lstate3, k] * self.wfns[mode3, rstate3, k]
+                        s += si * sj * sk * self.v3.data[ind][i, j, k]
+
+        return s
+
 
     def _ovrlp_integral(self, mode, lstate, rstate):    # overlap integral < mode(lstates) | mode(rstate) >
 
