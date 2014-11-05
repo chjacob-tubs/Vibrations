@@ -383,7 +383,7 @@ class VCI:
 
         return s
 
-    def _v2_integral(self, mode1, mode2, lstate1, lstate2, rstate1, rstate2):
+    def _v2_integral_old(self, mode1, mode2, lstate1, lstate2, rstate1, rstate2):
      # < mode1(lstate1) mode2(lstate2) | V2 | mode1(rstate1),mode2(rstate2)>
 
         s = 0.0
@@ -402,7 +402,29 @@ class VCI:
                     sj = self.dx[mode2] * self.wfns[mode2, lstate2, j] * self.wfns[mode2, rstate2, j]
                     s += si * sj * self.v2.data[ind][i, j]
 
+            if s > 1e-6: print s
+
         return s
+
+    def _v2_integral_new(self, mode1, mode2, lstate1, lstate2, rstate1, rstate2):
+        s = 0.0
+
+        if (mode1,mode2) in self.v2.indices or (mode2,mode1) in self.v2.indices:
+            try:
+                ind = self.v2.indices.index((mode1,mode2))
+            except:
+                ind = self.v2.indices.index((mode2,mode1))
+            
+            s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1,rstate1]).transpose()
+            s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2,rstate2])
+            s = (s1.dot(self.v2.data[ind]).dot(s2)).sum()
+
+        return s
+
+    
+    def _v2_integral(self, mode1, mode2, lstate1, lstate2, rstate1, rstate2):
+        return self._v2_integral_new(mode1, mode2, lstate1, lstate2, rstate1, rstate2)
+        #return self._v2_integral_old(mode1, mode2, lstate1, lstate2, rstate1, rstate2)
 
     def _ovrlp_integral(self, mode, lstate, rstate):    # overlap integral < mode(lstates) | mode(rstate) >
 
