@@ -101,7 +101,7 @@ class Potential(Surface):
             for i in range(tmparray.shape[0]):
                 for j in range(i+1, tmparray.shape[0]):
                     for k in range(j+1, tmparray.shape[0]):
-                        if tmparray[i,j,k,:,:,:].sum() > 1e-6:
+                        if not np.all(tmparray[i,j,k,:,:,:]==0.0):
                             self.indices.append((i,j,k))
                             self.data.append(tmparray[i,j,k,:,:,:])
 

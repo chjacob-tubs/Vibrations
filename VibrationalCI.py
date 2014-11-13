@@ -149,7 +149,7 @@ class VCI:
                             for o in range(self.nmodes):
                                 if o != j and o != k and o != l:
                                     if n[o] == m[o]:
-                                        tmpovrlp *= 1.0
+                                        tmpovrlp *= self._ovrlp_integral(o, n[o], n[o])
                                     else:
                                         tmpovrlp = 0.0
                             if abs(tmpovrlp) > 1e-6:
@@ -185,6 +185,39 @@ class VCI:
         print ''
         print Misc.fancy_box('CI Space')
         print self.states
+
+    def multichoose(n,k):
+        """
+        General algorithm for placing k balls in n buckets. Here will be used
+        for generating VCI states
+
+        @param n: Number of buckets, here number of modes
+        @type n: Integer
+        @param k: Number of balls, here excitation quanta
+        @type k: Integer
+        """
+        if not n: return []
+        if n == 1: return [[k]]
+        return [[0]+val for val in multichoose(n-1,k)] + \
+                [[val[0]+1]+val[1:] for val in multichoose(n,k-1)]
+
+
+    def generate_states_nmax(self, nmax):
+        """
+        Generates the states for VCI calculations in a way that
+        VCI[1] means that at most 1 state is excited at a time to the
+        excitation state nmax. For combination states VCI[2] etc. 
+        all the states where sum of exc. quanta is smaller than nmax 
+        are included.
+
+        @param nmax: Maximal sum of excitation quanta
+        @type nmax: Integer
+        """
+        res = []
+        for i in range(1,nmax):
+            res.append(self.multichoose(self.nmodes, i))
+
+        return res
 
     def generate_states(self, maxexc=1):
         """
