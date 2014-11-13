@@ -5,6 +5,22 @@ The module related to the VCI class for Vibrational Configuration Interaction ca
 import numpy as np
 import Misc
 
+def multichoose(n, k):
+    """
+    General algorithm for placing k balls in n buckets. Here will be used
+    for generating VCI states
+
+    @param n: Number of buckets, here number of modes
+    @type n: Integer
+    @param k: Number of balls, here excitation quanta
+    @type k: Integer
+    """
+    if not k: return [[0]*n]
+    if not n: return []
+    if n == 1: return [[k]]
+    return [[0]+val for val in multichoose(n-1, k)] + \
+            [[val[0]+1]+val[1:] for val in multichoose(n, k-1)]
+
 
 class VCI:
     """
@@ -186,38 +202,32 @@ class VCI:
         print Misc.fancy_box('CI Space')
         print self.states
 
-    def multichoose(n,k):
-        """
-        General algorithm for placing k balls in n buckets. Here will be used
-        for generating VCI states
 
-        @param n: Number of buckets, here number of modes
-        @type n: Integer
-        @param k: Number of balls, here excitation quanta
-        @type k: Integer
-        """
-        if not n: return []
-        if n == 1: return [[k]]
-        return [[0]+val for val in multichoose(n-1,k)] + \
-                [[val[0]+1]+val[1:] for val in multichoose(n,k-1)]
-
-
-    def generate_states_nmax(self, nmax):
+    def generate_states_nmax(self, nexc = None, smax = None):
         """
         Generates the states for VCI calculations in a way that
         VCI[1] means that at most 1 state is excited at a time to the
         excitation state nmax. For combination states VCI[2] etc. 
         all the states where sum of exc. quanta is smaller than nmax 
         are included.
-
-        @param nmax: Maximal sum of excitation quanta
-        @type nmax: Integer
+        
+        @param nexc: Maximal number of modes excited simultaneously
+        @type nexc: Integer
+        @param smax: Maximal sum of excitation quanta
+        @type smax: Integer
         """
-        res = []
-        for i in range(1,nmax):
-            res.append(self.multichoose(self.nmodes, i))
+        if not nexc:
+            nexc = 1  # singles by default
+        if not smax:
+            smax = 4 #  up to the fourth excited state
 
-        return res
+        res = [ [0] * self.nmodes ]
+
+        for i in range(1,smax+1):
+            res += multichoose(self.nmodes, i)
+
+        res = filter(lambda x: len(filter(None, x)) < nexc + 1, res)
+        self.states = res
 
     def generate_states(self, maxexc=1):
         """
