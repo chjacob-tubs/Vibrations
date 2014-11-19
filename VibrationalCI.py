@@ -5,6 +5,7 @@ The module related to the VCI class for Vibrational Configuration Interaction ca
 import numpy as np
 import Misc
 
+
 def multichoose(n, k):
     """
     General algorithm for placing k balls in n buckets. Here will be used
@@ -45,6 +46,7 @@ class VCI:
         self.ngrid = potentials[0].grids.ngrid
 
         self.states = []
+        self.combinations = None
         self.solved = False
 
         self.dx = [x[1]-x[0] for x in self.grids]
@@ -61,24 +63,183 @@ class VCI:
 
         self.energies = np.array([])
         self.energiesrcm = np.array([])
+        self.H = np.array([])
         self.vectors = np.array([])
         self.intensities = None
-        self.is_3mode = False
 
-        if len(potentials) != 2 and len(potentials) != 3:
-            raise Exception('Only two potentials or three, accepted, so far')
-        elif len(potentials) == 3:
+        self.maxpot = None
+
+        if len(potentials) == 3:
             self.v1 = potentials[0]
             self.v2 = potentials[1]
             self.v3 = potentials[2]
-            self.is_3mode = True
+            self.maxpot = 3
         elif len(potentials) == 2:
             self.v1 = potentials[0]
             self.v2 = potentials[1]
-
+            self.maxpot = 2
+        else:
+            raise Exception('Only two- or three-mode potentials accepted')
 
 
     def solve(self):
+        """
+        General solver for the VCI
+        """
+
+        if len(self.states) == 0:
+            print Misc.fancy_box('No VCI states defined, by default singles will be used')
+            self.generate_states()
+
+        nstates = len(self.states)
+        ncomb = len(self.combinations)
+
+        print Misc.fancy_box('There are %i states and %i effective combinations (transitions)' %(nstates, ncomb))
+
+        self.H = np.zeros((nstates,nstates))
+
+        for c in self.combinations:
+            order = self.order_of_transition(c)
+            tmp = 0.0
+            if order == 0:
+                tmp = calculate_diagonal(c)
+            elif order == 1:
+                tmp = calculat_single(c)
+            elif order == 2:
+                tmp = calculate_double(c)
+            elif order == 3 and self.maxpot > 2:
+                tmp = calculate_triple(c)
+            else:
+                raise Exception('The order of the transition is too high.')
+
+            nind = self.states.index(c[0]) # find the indices of the vectors
+            mind = self.states.index(c[1])
+            self.H[nind, mind] = tmp
+            self.H[mind, nind] = tmp
+
+        print Misc.fancy_box('Hamiltonian matrix constructed. Diagonalization...')
+        w, v = np.linalg.eigh(self.H, UPLO='U')
+
+        self.energies = w
+        self.vectors = v
+        wcm = w / Misc.cm_in_au
+        self.energiesrcm = wcm  # energies in reciprocal cm
+        print 'State %15s %15s %15s' % ('Contrib','E /cm^-1', 'DE /cm^-1')
+        for i in range(len(self.states)):
+            print "%s %10.4f %10.4f %10.4f" % (self.states[(v[:,i]**2).argmax()],
+                                               (v[:,i]**2).max(),wcm[i], wcm[i]-wcm[0])
+
+        self.solved = True
+
+    def calculate_diagonal(self, c):
+        """
+        Calculates a diagonal element of the VCI matrix
+        :param c: Configuration
+        :return: Value of the diagonal element, in a.u.
+        """
+        tmp = 0.0
+        n = c[0]
+        m = c[1]
+
+        for i in xrange(self.nmodes):
+            tmpv1 = self._v1_integral(i, n[i], m[i])
+            tmpt = self._kinetic_integral(i, n[i], m[i])
+            tmp += tmpv1 + tmpt
+
+            for j in xrange(i+1, self.nmodes):
+                tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
+                tmp += tmpv2
+                if self.maxpot == 3:
+                    for k in xrange(j+1, self.nmodes):
+                        tmpv3 = self._v3_integral(i,j,k,n[i],n[j],n[k],m[i],m[j],m[k])
+                        tmp += tmpv3
+
+        return tmp
+
+    def calculate_single(self, c):
+        """
+        Calculates an element corresponding to a single transition
+        :param c: Configuration
+        :return: Value of the element, a.u.
+        """
+        tmp = 0.0
+        n = c[0]
+        m = c[1]
+        i = [x != y for x,y in zip(n,m)].index(True)  # give me the index of the element that differs two vectors
+
+        tmpv1 = self._v1_integral(i, n[i], m[i])
+        tmp += tmpv1
+
+        for j in xrange(self.nmodes):
+            if j != i:
+                tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
+                tmp += tmpv2
+                if self.maxpot == 3:
+                    for k in xrange(j+1, self.nmodes):
+                        tmpv3 = self._v3_integral(i,j,k,n[i],n[j],n[k],m[i],m[j],m[k])
+                        tmp += tmpv3
+
+        return tmp
+
+    def calculate_double(self, c):
+        """
+        Calculates an element corresponding to a double transition
+        :param c: Configuration
+        :return: Value of the element, a.u.
+        """
+        tmp = 0.0
+        n = c[0]
+        m = c[1]
+
+        indices = [ind for ind,e in enumerate([x != y for x,y in zip(n,m)]) if e == True]
+        i = indices[0]
+        j = indices[1]
+
+        tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
+        tmp += tmpv2
+
+        if self.maxpot == 3:
+            for k in xrange(self.nmodes):
+                if k != i and k != j:
+                    tmpv3 = self._v3_integral(i,j,k,n[i],n[j],n[k],m[i],m[j],m[k])
+                    tmp += tmpv3
+
+        return tmp
+
+    def calculate_triple(self, c):
+        """
+        Calculates an element corresponding to a triple transition
+        :param c: Configuration
+        :return: Value of the element, a.u.
+        """
+        tmp = 0.0
+        n = c[0]
+        m = c[1]
+
+        indices = [ind for ind,e in enumerate([x != y for x,y in zip(n,m)]) if e == True]
+        i = indices[0]
+        j = indices[1]
+        k = indices[2]
+
+
+        tmpv3 = self._v3_integral(i,j,k,n[i],n[j],n[k],m[i],m[j],m[k])
+        tmp + tmpv3
+
+        return tmp
+
+
+    @staticmethod
+    def order_of_transition(c):
+        """
+        Gives the order of the transition (how many modes are changed upon the transition)
+        :param c: combination, a tuple of two vectors, left and right, representing the transition
+        :return: order of the transition, 1 for singles, 2 for doubles etc.
+        """
+        return sum ([x!=y for (x,y) in zip(c[0],c[1])])
+
+
+
+    def solve_old(self):
         """
         Runs the VCI calculations
         """
@@ -216,6 +377,8 @@ class VCI:
         @param smax: Maximal sum of excitation quanta
         @type smax: Integer
         """
+        import itertools
+
         if not nexc:
             nexc = 1  # singles by default
         if not smax:
@@ -229,13 +392,23 @@ class VCI:
         res = filter(lambda x: len(filter(None, x)) < nexc + 1, res)
         self.states = res
 
+        # generate combination of states
+        self.combinations = [x for x in itertools.combinations_with_replacement(self.states, 2)]
+
+        # filter the combinations to take into account the maximal dimensionality of the potentials
+        self.filter_combinations()
+
     def generate_states(self, maxexc=1):
+        self.generate_states_nmax(self, maxexc, maxexc)
+
+    def generate_states_old(self, maxexc=1):
         """
         Generates the states for the VCI calcualtions
 
         @param maxexc: Maximal excitation quanta, 1 -- Singles, 2 -- Doubles, etc.
         @type maxexc: Integer
         """
+        import itertools
 
         if maxexc > 4:
             raise Exception('At most quadruple excitations supported')
@@ -331,6 +504,22 @@ class VCI:
                             states.append(vec)
 
         self.states = states
+        self.combinations = [x for x in itertools.combinations_with_replacement(self.states, 2)]
+        self.filter_combinations()
+
+    def filter_combinations(self):
+        """
+        Filters out the combinations (transitions) that do not contribute due to the max potential dimensionality
+
+        """
+        #res = []
+        #for c in combinations:
+            #print c, sum([x!=y for (x,y) in zip(c[0], c[1])])
+            #if sum ([x!=y for (x,y) in zip(c[0],c[1])]) < maxp+1:
+                #res.append(c)
+        if self.combinations:
+            res = [c for c in self.combinations if sum ([x!=y for (x,y) in zip(c[0],c[1])]) < self.maxpot+1]
+            self.combinations = res
 
     def calculate_intensities(self, *dipolemoments):
         """
@@ -449,7 +638,7 @@ class VCI:
 
     def _v1_integral(self, mode, lstate, rstate):  # calculate integral of type < mode(lstate) | V1 | mode(rstate) >
         ind = self.v1.indices.index(mode)
-        s = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate] * self.v1.data[mode]).sum()
+        s = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate] * self.v1.data[ind]).sum()
 
         return s
 
