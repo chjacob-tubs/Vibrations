@@ -54,9 +54,53 @@ class Potential(Surface):
 
     def __init__(self, grids=None, order=1):
         Surface.__init__(self, grids, order, prop=(1,))
+        self.index = 0  # will be used for the iterator
 
 # TODO
 # 3. method for saving?
+
+    def __getitem__(self, item):
+        """
+        Gets a potential for given indices, if more Nindices == 2*Nmodes -> for a given grid point
+        :param item: Indices of the modes
+        :return: Potential for given indices
+        """
+        if len(item) == self.order:
+            ind = list(item)
+            newind = ind[:]
+            newind.sort() #  the data in the object is sorted according to the indices
+
+            try:
+                return np.transpose(self.data[self.indices(newind)],ind)
+            except:
+                return np.zeros(tuple([self.ngrid] * self.order))
+
+        elif len(item) == 2 * self.order:
+            ind = list(item)
+            newind = zip(ind[:self.order],ind[self.order:])
+            newind.sort()
+            newind = [x[0] for x in newind] + [x[1] for x in newind]
+
+            try:
+                return self.data[self.indices(newind[:self.order])][newind[self.order:]]
+            except:
+                return 0.0
+        else:
+            pass
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            self.index < len(self.indices)
+        except IndexError:
+            raise StopIteration
+        self.index += 1
+        res = self.indices[self.index][:]
+        res.append(self.data[self.index])
+        return tuple(res)
+
 
     def read_np(self, fname):
         """

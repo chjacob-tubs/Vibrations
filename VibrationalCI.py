@@ -16,9 +16,12 @@ def multichoose(n, k):
     @param k: Number of balls, here excitation quanta
     @type k: Integer
     """
-    if not k: return [[0]*n]
-    if not n: return []
-    if n == 1: return [[k]]
+    if not k:
+        return [[0]*n]
+    if not n:
+        return []
+    if n == 1:
+        return [[k]]
     return [[0]+val for val in multichoose(n-1, k)] + \
             [[val[0]+1]+val[1:] for val in multichoose(n, k-1)]
 
@@ -81,7 +84,6 @@ class VCI:
         else:
             raise Exception('Only two- or three-mode potentials accepted')
 
-
     def solve(self):
         """
         General solver for the VCI
@@ -94,25 +96,24 @@ class VCI:
         nstates = len(self.states)
         ncomb = len(self.combinations)
 
-        print Misc.fancy_box('There are %i states and %i effective combinations (transitions)' %(nstates, ncomb))
+        print Misc.fancy_box('There are %i states and %i effective combinations (transitions)' % (nstates, ncomb))
 
-        self.H = np.zeros((nstates,nstates))
+        self.H = np.zeros((nstates, nstates))
 
         for c in self.combinations:
             order = self.order_of_transition(c)
-            tmp = 0.0
             if order == 0:
-                tmp = calculate_diagonal(c)
+                tmp = self.calculate_diagonal(c)
             elif order == 1:
-                tmp = calculat_single(c)
+                tmp = self.calculate_single(c)
             elif order == 2:
-                tmp = calculate_double(c)
+                tmp = self.calculate_double(c)
             elif order == 3 and self.maxpot > 2:
-                tmp = calculate_triple(c)
+                tmp = self.calculate_triple(c)
             else:
-                raise Exception('The order of the transition is too high.')
+                tmp = 0.0
 
-            nind = self.states.index(c[0]) # find the indices of the vectors
+            nind = self.states.index(c[0])  # find the indices of the vectors
             mind = self.states.index(c[1])
             self.H[nind, mind] = tmp
             self.H[mind, nind] = tmp
@@ -122,14 +123,9 @@ class VCI:
 
         self.energies = w
         self.vectors = v
-        wcm = w / Misc.cm_in_au
-        self.energiesrcm = wcm  # energies in reciprocal cm
-        print 'State %15s %15s %15s' % ('Contrib','E /cm^-1', 'DE /cm^-1')
-        for i in range(len(self.states)):
-            print "%s %10.4f %10.4f %10.4f" % (self.states[(v[:,i]**2).argmax()],
-                                               (v[:,i]**2).max(),wcm[i], wcm[i]-wcm[0])
-
+        self.energiesrcm = self.energies / Misc.cm_in_au
         self.solved = True
+        self.print_results()
 
     def calculate_diagonal(self, c):
         """
@@ -151,7 +147,7 @@ class VCI:
                 tmp += tmpv2
                 if self.maxpot == 3:
                     for k in xrange(j+1, self.nmodes):
-                        tmpv3 = self._v3_integral(i,j,k,n[i],n[j],n[k],m[i],m[j],m[k])
+                        tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                         tmp += tmpv3
 
         return tmp
@@ -165,7 +161,7 @@ class VCI:
         tmp = 0.0
         n = c[0]
         m = c[1]
-        i = [x != y for x,y in zip(n,m)].index(True)  # give me the index of the element that differs two vectors
+        i = [x != y for x, y in zip(n, m)].index(True)  # give me the index of the element that differs two vectors
 
         tmpv1 = self._v1_integral(i, n[i], m[i])
         tmp += tmpv1
@@ -176,7 +172,7 @@ class VCI:
                 tmp += tmpv2
                 if self.maxpot == 3:
                     for k in xrange(j+1, self.nmodes):
-                        tmpv3 = self._v3_integral(i,j,k,n[i],n[j],n[k],m[i],m[j],m[k])
+                        tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                         tmp += tmpv3
 
         return tmp
@@ -191,7 +187,7 @@ class VCI:
         n = c[0]
         m = c[1]
 
-        indices = [ind for ind,e in enumerate([x != y for x,y in zip(n,m)]) if e == True]
+        indices = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e is True]
         i = indices[0]
         j = indices[1]
 
@@ -201,7 +197,7 @@ class VCI:
         if self.maxpot == 3:
             for k in xrange(self.nmodes):
                 if k != i and k != j:
-                    tmpv3 = self._v3_integral(i,j,k,n[i],n[j],n[k],m[i],m[j],m[k])
+                    tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                     tmp += tmpv3
 
         return tmp
@@ -216,17 +212,15 @@ class VCI:
         n = c[0]
         m = c[1]
 
-        indices = [ind for ind,e in enumerate([x != y for x,y in zip(n,m)]) if e == True]
+        indices = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e is True]
         i = indices[0]
         j = indices[1]
         k = indices[2]
 
-
-        tmpv3 = self._v3_integral(i,j,k,n[i],n[j],n[k],m[i],m[j],m[k])
-        tmp + tmpv3
+        tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
+        tmp += tmpv3
 
         return tmp
-
 
     @staticmethod
     def order_of_transition(c):
@@ -235,9 +229,7 @@ class VCI:
         :param c: combination, a tuple of two vectors, left and right, representing the transition
         :return: order of the transition, 1 for singles, 2 for doubles etc.
         """
-        return sum ([x!=y for (x,y) in zip(c[0],c[1])])
-
-
+        return sum([x != y for (x, y) in zip(c[0], c[1])])
 
     def solve_old(self):
         """
@@ -300,7 +292,6 @@ class VCI:
 
                 for k in range(j+1, self.nmodes):
                     tmpovrlp = 1.0
-                    tmpv2 = 0.0
                     for l in range(self.nmodes):
 
                         if l != j and l != k:
@@ -317,12 +308,11 @@ class VCI:
                         tmp += tmpv2
 
             # 3-mode integrals
-            if self.is_3mode:
+            if self.maxpot > 2:
                 for j in range(self.nmodes):
                     for k in range(j+1, self.nmodes):
                         for l in range(k+1, self.nmodes):
                             tmpovrlp = 1.0
-                            tmpv3 = 0.0
                             for o in range(self.nmodes):
                                 if o != j and o != k and o != l:
                                     if n[o] == m[o]:
@@ -330,11 +320,9 @@ class VCI:
                                     else:
                                         tmpovrlp = 0.0
                             if abs(tmpovrlp) > 1e-6:
-                                tmpv3 = self._v3_integral(j,k,l,n[j],n[k],n[l],m[j],m[k],m[l])
+                                tmpv3 = self._v3_integral(j, k, l, n[j], n[k], n[l], m[j], m[k], m[l])
                                 tmpv3 *= tmpovrlp
                                 tmp += tmpv3
-
-
 
             nind = self.states.index(n)  # find the left state in the states vector
             mind = self.states.index(m)  # fin the right state
@@ -349,11 +337,34 @@ class VCI:
         self.vectors = v
         wcm = w / Misc.cm_in_au
         self.energiesrcm = wcm  # energies in reciprocal cm
-        print 'State %15s %15s %15s' % ('Contrib','E /cm^-1', 'DE /cm^-1')
+        print 'State %15s %15s %15s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
         for i in range(len(self.states)):
-            print "%s %10.4f %10.4f %10.4f" % (self.states[(v[:,i]**2).argmax()], (v[:,i]**2).max(),wcm[i], wcm[i]-wcm[0])
+            print "%s %10.4f %10.4f %10.4f" % (self.states[(v[:, i]**2).argmax()],
+                                               (v[:, i]**2).max(), wcm[i], wcm[i]-wcm[0])
 
         self.solved = True
+
+    def print_results(self, which=1, maxfreq=4000):
+        """
+        Prints VCI results, can be limited to the states mostly contributed from given type of transitions (1 - singles,
+        etc.), and to the maximal energy (usually 4000cm^-1 is the range of interest)
+        :param which: transitions to which states should be included, 1 for singles, 2 for SD, etc.
+        :param maxfreq: frequency threshold
+        :return: void
+        """
+        if self.solved:
+            print Misc.fancy_box('Results of the VCI')
+            print 'State %15s %15s %15s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
+            for i in range(1,len(self.states)):
+                state = self.states[(self.vectors[:, i]**2).argmax()]
+                if sum([x > 0 for x in state]) <= which:
+                    en = self.energiesrcm[i] - self.energies[0]
+                    if en < maxfreq:
+                        print "%s %10.4f %10.4f %10.4f" % (state, (self.vectors[:, i]**2).max(), self.energiesrcm[i],
+                                                           en)
+
+        else:
+            print Misc.fancy_box('Solve the VCI first')
 
     def print_states(self):
         """
@@ -363,8 +374,7 @@ class VCI:
         print Misc.fancy_box('CI Space')
         print self.states
 
-
-    def generate_states_nmax(self, nexc = None, smax = None):
+    def generate_states_nmax(self, nexc=None, smax=None):
         """
         Generates the states for VCI calculations in a way that
         VCI[1] means that at most 1 state is excited at a time to the
@@ -382,11 +392,11 @@ class VCI:
         if not nexc:
             nexc = 1  # singles by default
         if not smax:
-            smax = 4 #  up to the fourth excited state
+            smax = 4  # up to the fourth excited state
 
-        res = [ [0] * self.nmodes ]
+        res = [[0] * self.nmodes]
 
-        for i in range(1,smax+1):
+        for i in range(1, smax+1):
             res += multichoose(self.nmodes, i)
 
         res = filter(lambda x: len(filter(None, x)) < nexc + 1, res)
@@ -399,7 +409,7 @@ class VCI:
         self.filter_combinations()
 
     def generate_states(self, maxexc=1):
-        self.generate_states_nmax(self, maxexc, maxexc)
+        self.generate_states_nmax(maxexc, maxexc)
 
     def generate_states_old(self, maxexc=1):
         """
@@ -518,7 +528,7 @@ class VCI:
             #if sum ([x!=y for (x,y) in zip(c[0],c[1])]) < maxp+1:
                 #res.append(c)
         if self.combinations:
-            res = [c for c in self.combinations if sum ([x!=y for (x,y) in zip(c[0],c[1])]) < self.maxpot+1]
+            res = [c for c in self.combinations if sum([x != y for (x, y) in zip(c[0], c[1])]) < self.maxpot+1]
             self.combinations = res
 
     def calculate_intensities(self, *dipolemoments):
@@ -545,7 +555,6 @@ class VCI:
         self.dm1 = dipolemoments[0]
         self.dm2 = dipolemoments[1]
         self.intensities = np.zeros(len(self.states))
-        
 
         # assuming that the first state is a ground state
         totaltm = np.zeros(3)
@@ -571,8 +580,6 @@ class VCI:
                             jfstate = self.states[fstate][j]
 
                             for k in xrange(self.nmodes):
-                                kistate = self.states[istate][k]
-                                kfstate = self.states[fstate][k]
 
                                 if k == j:
                                     #  calculate <psi|u|psi>
@@ -601,7 +608,7 @@ class VCI:
                                 kistate = self.states[istate][k]
                                 kfstate = self.states[fstate][k]
 
-                                ind = self.dm2.indices.index((j,k))
+                                ind = self.dm2.indices.index((j, k))
 
                                 for l in xrange(self.ngrid):
                                     for m in xrange(self.ngrid):
@@ -622,7 +629,8 @@ class VCI:
                                         nfstate = self.states[fstate][n]
 
                                         if nistate == nfstate:
-                                            #tmpovrlp *= (self.dx[n] * self.wfns[n, nistate] * self.wfns[n, nfstate]).sum()
+                                            #tmpovrlp *= (self.dx[n] * self.wfns[n,
+                                                        # nistate] * self.wfns[n, nfstate]).sum()
                                             tmpovrlp *= 1.0
 
                                         else:
@@ -633,7 +641,7 @@ class VCI:
             factor = 2.5048
             intens = (totaltm[0]**2 + totaltm[1]**2 + totaltm[2]**2) * factor * (self.energiesrcm[i]
                                                                                  - self.energiesrcm[0])
-            self.intensities[i]=intens
+            self.intensities[i] = intens
             print '%7.1f %7.1f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
 
     def _v1_integral(self, mode, lstate, rstate):  # calculate integral of type < mode(lstate) | V1 | mode(rstate) >
@@ -647,11 +655,11 @@ class VCI:
 
         s = 0.0
 
-        if (mode1,mode2) in self.v2.indices or (mode2,mode1) in self.v2.indices:
+        if (mode1, mode2) in self.v2.indices or (mode2, mode1) in self.v2.indices:
             try:
-                ind = self.v2.indices.index((mode1,mode2))
+                ind = self.v2.indices.index((mode1, mode2))
             except:
-                ind = self.v2.indices.index((mode2,mode1))
+                ind = self.v2.indices.index((mode2, mode1))
 
             for i in range(self.ngrid):
                 si = self.dx[mode1] * self.wfns[mode1, lstate1, i] * self.wfns[mode1, rstate1, i]
@@ -661,26 +669,26 @@ class VCI:
                     sj = self.dx[mode2] * self.wfns[mode2, lstate2, j] * self.wfns[mode2, rstate2, j]
                     s += si * sj * self.v2.data[ind][i, j]
 
-            if s > 1e-6: print s
+            if s > 1e-6:
+                print s
 
         return s
 
     def _v2_integral_new(self, mode1, mode2, lstate1, lstate2, rstate1, rstate2):
         s = 0.0
 
-        if (mode1,mode2) in self.v2.indices or (mode2,mode1) in self.v2.indices:
+        if (mode1, mode2) in self.v2.indices or (mode2, mode1) in self.v2.indices:
             try:
-                ind = self.v2.indices.index((mode1,mode2))
+                ind = self.v2.indices.index((mode1, mode2))
             except:
-                ind = self.v2.indices.index((mode2,mode1))
+                ind = self.v2.indices.index((mode2, mode1))
             
-            s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1,rstate1]).transpose()
-            s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2,rstate2])
+            s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1]).transpose()
+            s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
             s = (s1.dot(self.v2.data[ind]).dot(s2)).sum()
 
         return s
 
-    
     def _v2_integral(self, mode1, mode2, lstate1, lstate2, rstate1, rstate2):
         return self._v2_integral_new(mode1, mode2, lstate1, lstate2, rstate1, rstate2)
         #return self._v2_integral_old(mode1, mode2, lstate1, lstate2, rstate1, rstate2)
@@ -703,7 +711,6 @@ class VCI:
                         s += si * sj * sk * self.v3.data[ind][i, j, k]
 
         return s
-
 
     def _ovrlp_integral(self, mode, lstate, rstate):    # overlap integral < mode(lstates) | mode(rstate) >
 
