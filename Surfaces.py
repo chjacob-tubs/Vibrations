@@ -69,9 +69,10 @@ class Potential(Surface):
             ind = list(item)
             newind = ind[:]
             newind.sort() #  the data in the object is sorted according to the indices
-
+            #whichelement = self.indices.index(tuple(newind))
+            #print whichelement
             try:
-                return np.transpose(self.data[self.indices(newind)],ind)
+                return np.transpose(self.data[self.indices.index(tuple(newind))],sorted(range(len(ind)), key=lambda k: ind[k]))
             except:
                 return np.zeros(tuple([self.ngrid] * self.order))
 
@@ -80,9 +81,9 @@ class Potential(Surface):
             newind = zip(ind[:self.order],ind[self.order:])
             newind.sort()
             newind = [x[0] for x in newind] + [x[1] for x in newind]
-
+            
             try:
-                return self.data[self.indices(newind[:self.order])][newind[self.order:]]
+                return  self.data[self.indices.index(tuple(newind[:self.order]))][tuple(newind[self.order:])]
             except:
                 return 0.0
         else:
