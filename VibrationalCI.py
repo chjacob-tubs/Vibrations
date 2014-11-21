@@ -99,9 +99,12 @@ class VCI:
         print Misc.fancy_box('There are %i states and %i effective combinations (transitions)' % (nstates, ncomb))
 
         self.H = np.zeros((nstates, nstates))
-
+        counter = 1
         for c in self.combinations:
             order = self.order_of_transition(c)
+            print 'Point %i/%i, of order %i' %(counter,ncomb,order)
+            print 'Solving the transition: ',c
+            print ''
             if order == 0:
                 tmp = self.calculate_diagonal(c)
             elif order == 1:
@@ -117,7 +120,7 @@ class VCI:
             mind = self.states.index(c[1])
             self.H[nind, mind] = tmp
             self.H[mind, nind] = tmp
-
+            counter += 1
         print Misc.fancy_box('Hamiltonian matrix constructed. Diagonalization...')
         w, v = np.linalg.eigh(self.H, UPLO='U')
 
@@ -357,7 +360,7 @@ class VCI:
             print 'State %15s %15s %15s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
             for i in range(1,len(self.states)):
                 state = self.states[(self.vectors[:, i]**2).argmax()]
-                if sum([x > 0 for x in state]) <= which:
+                if sum([x > 0 for x in state]) < which+1:
                     en = self.energiesrcm[i] - self.energies[0]
                     if en < maxfreq:
                         print "%s %10.4f %10.4f %10.4f" % (state, (self.vectors[:, i]**2).max(), self.energiesrcm[i],
