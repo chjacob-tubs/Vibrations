@@ -104,7 +104,6 @@ class VCI:
             order = self.order_of_transition(c)
             print 'Point %i/%i, of order %i' %(counter,ncomb,order)
             print 'Solving the transition: ',c
-            print ''
             if order == 0:
                 tmp = self.calculate_diagonal(c)
             elif order == 1:
@@ -116,10 +115,14 @@ class VCI:
             else:
                 tmp = 0.0
 
+            if abs(tmp) < 1e-8: 
+                tmp = 0.0
+            print 'Value %f stored' %tmp 
             nind = self.states.index(c[0])  # find the indices of the vectors
             mind = self.states.index(c[1])
+            print 'At incides ',nind,mind
             self.H[nind, mind] = tmp
-            self.H[mind, nind] = tmp
+            #self.H[mind, nind] = tmp
             counter += 1
         print Misc.fancy_box('Hamiltonian matrix constructed. Diagonalization...')
         w, v = np.linalg.eigh(self.H, UPLO='U')
@@ -149,7 +152,7 @@ class VCI:
                 tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
                 tmp += tmpv2
                 if self.maxpot == 3:
-                    for k in xrange(j+1, self.nmodes):
+                    for k in xrange(j+1,self.nmodes):
                         tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                         tmp += tmpv3
 
@@ -167,16 +170,20 @@ class VCI:
         i = [x != y for x, y in zip(n, m)].index(True)  # give me the index of the element that differs two vectors
 
         tmpv1 = self._v1_integral(i, n[i], m[i])
-        tmp += tmpv1
+        tmpt = self._kinetic_integral(i, n[i], m[i])
+        tmp += tmpv1 + tmpt
 
         for j in xrange(self.nmodes):
             if j != i:
                 tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
+                #print i,j,tmpv2
                 tmp += tmpv2
                 if self.maxpot == 3:
-                    for k in xrange(j+1, self.nmodes):
-                        tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
-                        tmp += tmpv3
+                    for k in xrange(j+1,self.nmodes):
+                        if k != j and k != i:
+                            tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
+                            #print i,j,k,tmpv3
+                            tmp += tmpv3
 
         return tmp
 
@@ -281,7 +288,7 @@ class VCI:
                     else:
                         if n[k] == m[k]:
                             s = self._ovrlp_integral(k, n[k], n[k])
-                            tmpovrlp *= s
+                            tmpovrlp *= 1.0
 
                         else:
                             tmpovrlp = 0.0
@@ -300,7 +307,8 @@ class VCI:
                         if l != j and l != k:
                             if n[l] == m[l]:
 
-                                tmpovrlp *= self._ovrlp_integral(l, n[l], n[l])
+                                #tmpovrlp *= self._ovrlp_integral(l, n[l], n[l])
+                                tmpovrlp *= 1.0
 
                             else:
                                 tmpovrlp = 0.0
@@ -308,6 +316,7 @@ class VCI:
                     if abs(tmpovrlp) > 1e-6:
                         tmpv2 = self._v2_integral(j, k, n[j], n[k], m[j], m[k])
                         tmpv2 *= tmpovrlp
+                        #print j,k,tmpv2
                         tmp += tmpv2
 
             # 3-mode integrals
@@ -319,12 +328,14 @@ class VCI:
                             for o in range(self.nmodes):
                                 if o != j and o != k and o != l:
                                     if n[o] == m[o]:
-                                        tmpovrlp *= self._ovrlp_integral(o, n[o], n[o])
+                                        #tmpovrlp *= self._ovrlp_integral(o, n[o], n[o])
+                                        tmpovrlp *= 1.0
                                     else:
                                         tmpovrlp = 0.0
                             if abs(tmpovrlp) > 1e-6:
                                 tmpv3 = self._v3_integral(j, k, l, n[j], n[k], n[l], m[j], m[k], m[l])
                                 tmpv3 *= tmpovrlp
+                                #print j,k,l,tmpv3
                                 tmp += tmpv3
 
             nind = self.states.index(n)  # find the left state in the states vector
@@ -346,6 +357,7 @@ class VCI:
                                                (v[:, i]**2).max(), wcm[i], wcm[i]-wcm[0])
 
         self.solved = True
+        self.H = hamiltonian.copy()
 
     def print_results(self, which=1, maxfreq=4000):
         """
@@ -360,11 +372,11 @@ class VCI:
             print 'State %15s %15s %15s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
             for i in range(1,len(self.states)):
                 state = self.states[(self.vectors[:, i]**2).argmax()]
+                en = self.energiesrcm[i] - self.energiesrcm[0]
                 if sum([x > 0 for x in state]) < which+1:
-                    en = self.energiesrcm[i] - self.energies[0]
                     if en < maxfreq:
                         print "%s %10.4f %10.4f %10.4f" % (state, (self.vectors[:, i]**2).max(), self.energiesrcm[i],
-                                                           en)
+                                                   en)
 
         else:
             print Misc.fancy_box('Solve the VCI first')
@@ -650,6 +662,7 @@ class VCI:
     def _v1_integral(self, mode, lstate, rstate):  # calculate integral of type < mode(lstate) | V1 | mode(rstate) >
         ind = self.v1.indices.index(mode)
         s = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate] * self.v1.data[ind]).sum()
+        #s = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate] * self.v1[[mode]]).sum()
 
         return s
 
@@ -685,10 +698,17 @@ class VCI:
                 ind = self.v2.indices.index((mode1, mode2))
             except:
                 ind = self.v2.indices.index((mode2, mode1))
-            
-            s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1]).transpose()
-            s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
-            s = (s1.dot(self.v2.data[ind]).dot(s2)).sum()
+            if mode1 < mode2: 
+                s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1]).transpose()
+                s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
+                #s = (s1.dot(self.v2.data[ind]).dot(s2)).sum()
+                s = (s1.dot(self.v2[mode1,mode2]).dot(s2)).sum()
+            else:
+                s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1]).transpose()
+                s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
+                #s = (s1.dot(self.v2.data[ind].transpose()).dot(s2)).sum()
+                s = (s1.dot(self.v2[mode1, mode2]).dot(s2)).sum()
+
 
         return s
 
@@ -700,18 +720,20 @@ class VCI:
                      rstate1, rstate2, rstate3):
         s = 0.0
 
-        if (mode1, mode2, mode3) in self.v3.indices:
-            ind = self.v3.indices.index((mode1, mode2, mode3))
+        #if (mode1, mode2, mode3) in self.v3.indices:
+            #ind = self.v3.indices.index((mode1, mode2, mode3))
 
-            for i in range(self.ngrid):
-                si = self.dx[mode1] * self.wfns[mode1, lstate1, i] * self.wfns[mode1, rstate1, i]
+        for i in range(self.ngrid):
+            si = self.dx[mode1] * self.wfns[mode1, lstate1, i] * self.wfns[mode1, rstate1, i]
 
-                for j in range(self.ngrid):
-                    sj = self.dx[mode2] * self.wfns[mode2, lstate2, j] * self.wfns[mode2, rstate2, j]
+            for j in range(self.ngrid):
+                sj = self.dx[mode2] * self.wfns[mode2, lstate2, j] * self.wfns[mode2, rstate2, j]
 
-                    for k in range(self.ngrid):
-                        sk = self.dx[mode3] * self.wfns[mode3, lstate3, k] * self.wfns[mode3, rstate3, k]
-                        s += si * sj * sk * self.v3.data[ind][i, j, k]
+                for k in range(self.ngrid):
+                    sk = self.dx[mode3] * self.wfns[mode3, lstate3, k] * self.wfns[mode3, rstate3, k]
+                    #s += si * sj * sk * self.v3.data[ind][i, j, k]
+                    s += si * sj * sk * self.v3[mode1,mode2,mode3,i,j,k]
+
 
         return s
 

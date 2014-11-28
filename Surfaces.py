@@ -80,10 +80,13 @@ class Potential(Surface):
             ind = list(item)
             newind = zip(ind[:self.order],ind[self.order:])
             newind.sort()
-            newind = [x[0] for x in newind] + [x[1] for x in newind]
+            newind2 = [x[0] for x in newind] + [x[1] for x in newind]
+            modes = newind2[:self.order]
+            points = newind2[self.order:]
             
             try:
-                return  self.data[self.indices.index(tuple(newind[:self.order]))][tuple(newind[self.order:])]
+                #return  self.data[self.indices.index(tuple(newind[:self.order]))][tuple(newind[self.order:])]
+                return  self.data[self.indices.index(tuple(modes))][tuple(points)]
             except:
                 return 0.0
         else:
