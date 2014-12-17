@@ -4,7 +4,26 @@ The module related to the VCI class for Vibrational Configuration Interaction ca
 
 import numpy as np
 import Misc
+import copy_reg
+import types
 
+def _pickle_method(method):
+    func_name = method.im_func.__name__
+    obj = method.im_self
+    cls = method.im_class
+    return _unpickle_method, (func_name, obj, cls)
+
+def _unpickle_method(func_name, obj, cls):
+    for cls in cls.mro():
+        try:
+            func = cls.__dict__[func_name]
+        except KeyError:
+            pass
+        else:
+            break
+    return func.__get__(obj, cls)
+
+copy_reg.pickle(types.MethodType, _pickle_method, _unpickle_method)
 
 def multichoose(n, k):
     """
@@ -26,7 +45,7 @@ def multichoose(n, k):
             [[val[0]+1]+val[1:] for val in multichoose(n, k-1)]
 
 
-class VCI:
+class VCI(object):
     """
     The class performing and storing VCI calculations
     """
@@ -83,8 +102,30 @@ class VCI:
             self.maxpot = 2
         else:
             raise Exception('Only two- or three-mode potentials accepted')
+    
+    def __call__(self, c):
+        return self.calculate_transition(c)
 
-    def solve(self):
+    def calculate_transition(self, c):
+        order = self.order_of_transition(c)
+        print 'Solving the transition: ',c
+        if order == 0:
+            tmp = self.calculate_diagonal(c)
+        elif order == 1:
+            tmp = self.calculate_single(c)
+        elif order == 2:
+            tmp = self.calculate_double(c)
+        elif order == 3 and self.maxpot > 2:
+            tmp = self.calculate_triple(c)
+        else:
+            tmp = 0.0
+
+        if abs(tmp) < 1e-8: 
+            tmp = 0.0
+
+        return tmp
+
+    def solve(self, parallel=False):
         """
         General solver for the VCI
         """
@@ -99,31 +140,49 @@ class VCI:
         print Misc.fancy_box('There are %i states and %i effective combinations (transitions)' % (nstates, ncomb))
 
         self.H = np.zeros((nstates, nstates))
-        counter = 1
-        for c in self.combinations:
-            order = self.order_of_transition(c)
-            print 'Point %i/%i, of order %i' %(counter,ncomb,order)
-            print 'Solving the transition: ',c
-            if order == 0:
-                tmp = self.calculate_diagonal(c)
-            elif order == 1:
-                tmp = self.calculate_single(c)
-            elif order == 2:
-                tmp = self.calculate_double(c)
-            elif order == 3 and self.maxpot > 2:
-                tmp = self.calculate_triple(c)
-            else:
-                tmp = 0.0
+        if not parallel:
+            counter = 1
+            for c in self.combinations:
+                order = self.order_of_transition(c)
+                print 'Point %i/%i, of order %i' %(counter,ncomb,order)
+                print 'Solving the transition: ',c
+                if order == 0:
+                    tmp = self.calculate_diagonal(c)
+                elif order == 1:
+                    tmp = self.calculate_single(c)
+                elif order == 2:
+                    tmp = self.calculate_double(c)
+                elif order == 3 and self.maxpot > 2:
+                    tmp = self.calculate_triple(c)
+                else:
+                    tmp = 0.0
 
-            if abs(tmp) < 1e-8: 
-                tmp = 0.0
-            print 'Value %f stored' %tmp 
-            nind = self.states.index(c[0])  # find the indices of the vectors
-            mind = self.states.index(c[1])
-            print 'At incides ',nind,mind
-            self.H[nind, mind] = tmp
-            #self.H[mind, nind] = tmp
-            counter += 1
+                if abs(tmp) < 1e-8: 
+                    tmp = 0.0
+                print 'Value %f stored' %tmp 
+                nind = self.states.index(c[0])  # find the indices of the vectors
+                mind = self.states.index(c[1])
+                print 'At incides ',nind,mind
+                self.H[nind, mind] = tmp
+                #self.H[mind, nind] = tmp
+                counter += 1
+
+        else:
+            from multiprocessing import Pool
+            #pool = Pool(maxtasksperchild=10)
+            pool = Pool()
+            #results = pool.map(self,self.combinations)
+            #results = pool.imap(self,self.combinations,chunksize=ncomb/12)
+            results = pool.imap(self.calculate_transition,self.combinations,chunksize=ncomb/12)
+            pool.close()
+            pool.join()
+            #results = list(results)
+            for i,r in enumerate(results):
+                nind = self.states.index(self.combinations[i][0])  # find the indices of the vectors
+                mind = self.states.index(self.combinations[i][1])
+                self.H[nind,mind] = r
+
+
         print Misc.fancy_box('Hamiltonian matrix constructed. Diagonalization...')
         w, v = np.linalg.eigh(self.H, UPLO='U')
 
