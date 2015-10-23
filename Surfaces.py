@@ -31,9 +31,10 @@ class Surface:
             self.ngrid = 0
 
         else:
+            import copy
             self.empty = False
             self.ngrid = grids.ngrid
-            self.grids = grids
+            self.grids = copy.copy(grids)
 
         self.order = order
         self.prop = prop

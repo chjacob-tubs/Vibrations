@@ -22,9 +22,9 @@ class Grid:
         @param modes: vibrational modes object
         @type modes: VibTools Modes
         """
-        
-        self.modes = modes
-        self.mol = mol
+        import copy 
+        self.modes = copy.copy(modes)
+        self.mol = copy.copy(mol)
         self.ngrid = 0
         self.amp = 0
         self.grids = np.zeros(0)
@@ -35,8 +35,8 @@ class Grid:
 
         else:
 
-            self.natoms = self.mol.get_natoms()
-            self.nmodes = self.modes.nmodes
+            self.natoms = int(self.mol.get_natoms())
+            self.nmodes = int(self.modes.nmodes)
 
 
     def __str__(self):

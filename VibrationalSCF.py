@@ -237,9 +237,9 @@ class VSCF2D(VSCF):
             print 'More than two sets potentials given. Only the two first will be used'
 
         VSCF.__init__(self, potentials[0])
-
-        self.v1 = potentials[0]
-        self.v2 = potentials[1]
+        import copy
+        self.v1 = copy.copy(potentials[0])
+        self.v2 = copy.copy(potentials[1])
         self.grids = self.v1.grids
         self.dm1 = np.array([])
         self.dm2 = np.array([])
