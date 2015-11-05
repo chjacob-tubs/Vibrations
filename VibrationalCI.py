@@ -596,19 +596,25 @@ class VCI(object):
 
         if not self.solved:
             raise Exception('Solve the VCI first')
-
+        self.dm1 = None
+        self.dm2 = None
         if len(dipolemoments) == 0:
             raise Exception('No dipole moments given')
         elif len(dipolemoments) == 1:
-            print 'Only one set of dipole moments give, the second will be taken as 0.'
+            print 'Only one set of dipole moments given, the second will be taken as 0.'
+            self.dm1 = dipolemoments[0]
+        elif len(dipolemoments) == 2:
+            print 'Two sets of dipole moments given.'
+            self.dm1 = dipolemoments[0]
+            self.dm2 = dipolemoments[1]
         elif len(dipolemoments) > 2:
             print 'More than two sets of dipole moments given, only the two first will be used'
+            self.dm1 = dipolemoments[0]
+            self.dm2 = dipolemoments[1]
 
         # TODO
         # 1. Check size of the data etc.
 
-        self.dm1 = dipolemoments[0]
-        self.dm2 = dipolemoments[1]
         self.intensities = np.zeros(len(self.states))
 
         # assuming that the first state is a ground state
@@ -654,44 +660,44 @@ class VCI(object):
                                         tmpovrlp = 0.0
 
                             tmptm += tmpd1 * tmpovrlp
+                        if self.dm2:
+                            for j in xrange(self.nmodes):
+                                jistate = self.states[istate][j]
+                                jfstate = self.states[fstate][j]
+                                for k in xrange(j+1, self.nmodes):
+                                    tmpd2 *= 0.0
+                                    kistate = self.states[istate][k]
+                                    kfstate = self.states[fstate][k]
 
-                        for j in xrange(self.nmodes):
-                            jistate = self.states[istate][j]
-                            jfstate = self.states[fstate][j]
-                            for k in xrange(j+1, self.nmodes):
-                                tmpd2 *= 0.0
-                                kistate = self.states[istate][k]
-                                kfstate = self.states[fstate][k]
+                                    ind = self.dm2.indices.index((j, k))
 
-                                ind = self.dm2.indices.index((j, k))
+                                    for l in xrange(self.ngrid):
+                                        for m in xrange(self.ngrid):
+                                            tmpd2[0] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 0] \
+                                                * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
+                                                * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
+                                            tmpd2[1] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 1] \
+                                                * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
+                                                * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
+                                            tmpd2[2] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 2] \
+                                                * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
+                                                * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
+                                    tmpovrlp = 1.0
 
-                                for l in xrange(self.ngrid):
-                                    for m in xrange(self.ngrid):
-                                        tmpd2[0] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 0] \
-                                            * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
-                                            * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
-                                        tmpd2[1] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 1] \
-                                            * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
-                                            * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
-                                        tmpd2[2] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 2] \
-                                            * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
-                                            * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
-                                tmpovrlp = 1.0
+                                    for n in xrange(self.nmodes):
+                                        if n != j and n != k:
+                                            nistate = self.states[istate][n]
+                                            nfstate = self.states[fstate][n]
 
-                                for n in xrange(self.nmodes):
-                                    if n != j and n != k:
-                                        nistate = self.states[istate][n]
-                                        nfstate = self.states[fstate][n]
+                                            if nistate == nfstate:
+                                                #tmpovrlp *= (self.dx[n] * self.wfns[n,
+                                                            # nistate] * self.wfns[n, nfstate]).sum()
+                                                tmpovrlp *= 1.0
 
-                                        if nistate == nfstate:
-                                            #tmpovrlp *= (self.dx[n] * self.wfns[n,
-                                                        # nistate] * self.wfns[n, nfstate]).sum()
-                                            tmpovrlp *= 1.0
+                                            else:
+                                                tmpovrlp = 0.0
 
-                                        else:
-                                            tmpovrlp = 0.0
-
-                                tmptm += tmpd2 * tmpovrlp
+                                    tmptm += tmpd2 * tmpovrlp
                         totaltm += tmptm * ci * cf
             factor = 2.5048
             intens = (totaltm[0]**2 + totaltm[1]**2 + totaltm[2]**2) * factor * (self.energiesrcm[i]
@@ -812,6 +818,25 @@ class VCI(object):
 
 
         return s
+
+    def _v4_integral(self, mode1, mode2, mode3, mode4, lstate1, lstate2, lstate3,
+                     lstate4, rstate1, rstate2, rstate3, rstate4):
+
+        modes = list((mode1,mode2,mode3,mode4))
+        lstates = list((lstate1,lstate2,lstate3,lstate4))
+        rstates = list((rstate1,rstate2,rstate3,rstate4))
+        ind = zip(modes,lstates,rstates)
+        ind.sort()
+        (modes,lstates,rstates)=zip(*ind)
+        if (modes[0],modes[1],modes[2],modes[3]) in self.v4_indices:
+            potind = self.v4_indices.index((modes[0],modes[1],modes[2],modes[3]))
+        else:
+            return 0.0
+
+        s = []
+        for m,l,r in ind:
+            s.append(self.dx[m] * self.wfns[m,l] * self.wfns[m,r])
+        return np.einsum('i,j,k,l,ijkl',s[0],s[1],s[2],s[3],self.v4_data[potind])
 
     def _ovrlp_integral(self, mode, lstate, rstate):    # overlap integral < mode(lstates) | mode(rstate) >
 

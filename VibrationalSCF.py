@@ -266,12 +266,20 @@ class VSCF2D(VSCF):
         if not self.solved:
             raise Exception('Solve the VSCF first')
 
+        self.dm1 = None
+        self.dm2 = None
         if len(dipolemoments) == 0:
             raise Exception('No dipole moments given.')
         elif len(dipolemoments) == 1:
             print 'Only one dipole moment surface given, the 2D counterpart will be set to 0.'
+            self.dm1 = dipolemoments[0]
+        elif len(dipolemoments) == 2:
+            self.dm1 = dipolemoments[0]
+            self.dm2 = dipolemoments[1]
         elif len(dipolemoments) > 2:
             print 'More than two sets of dipole moments given, only the two first will be used.'
+            self.dm1 = dipolemoments[0]
+            self.dm2 = dipolemoments[1]
 
 #       if dipolemoments[0].order == 1:
 #           self.dm1 = dipolemoments[0].dm
@@ -284,8 +292,6 @@ class VSCF2D(VSCF):
 #       else:
 #           raise Exception('The order of the second dipole moment surface does not match.')
 
-        self.dm1 = dipolemoments[0]
-        self.dm2 = dipolemoments[1]
 
         # assuming that the first state is a ground state
         gs = self.states[0]
@@ -318,40 +324,41 @@ class VSCF2D(VSCF):
 
                 tmptm += tmpd1 * tmpovrlp
                 #tmptm = tmptm + tmpd1
-            for i in range(self.nmodes):
-                for j in range(i+1, self.nmodes):
-                    tmpd2 = np.array([0.0, 0.0, 0.0])
+            if self.dm2:
+                for i in range(self.nmodes):
+                    for j in range(i+1, self.nmodes):
+                        tmpd2 = np.array([0.0, 0.0, 0.0])
 
-                    for k in range(self.ngrid):
-                        ind = self.dm2.indices.index((i,j))
-                        for l in range(self.ngrid):
-                            tmpd2[0] += self.dx[i] * self.dx[j] * self.dm2.data[ind][k, l, 0] \
-                                * self.vscf_wavefunctions[0].wfns[i, gs[i], k] \
-                                * self.vscf_wavefunctions[0].wfns[j, gs[j], l] \
-                                * self.vscf_wavefunctions[stateindex].wfns[i, s[i], k] \
-                                * self.vscf_wavefunctions[stateindex].wfns[j, s[j], l]
-                            tmpd2[1] += self.dx[i] * self.dx[j] * self.dm2.data[ind][k, l, 1] \
-                                * self.vscf_wavefunctions[0].wfns[i, gs[i], k] \
-                                * self.vscf_wavefunctions[0].wfns[j, gs[j], l] \
-                                * self.vscf_wavefunctions[stateindex].wfns[i, s[i], k] \
-                                * self.vscf_wavefunctions[stateindex].wfns[j, s[j], l]
-                            tmpd2[2] += self.dx[i] * self.dx[j] * self.dm2.data[ind][k, l, 2] \
-                                * self.vscf_wavefunctions[0].wfns[i, gs[i], k] \
-                                * self.vscf_wavefunctions[0].wfns[j, gs[j], l] \
-                                * self.vscf_wavefunctions[stateindex].wfns[i, s[i], k] \
-                                * self.vscf_wavefunctions[stateindex].wfns[j, s[j], l]
-                    tmpovrlp = 1.0
-                    for m in range(self.nmodes):
-                        if m != i and m != j:
-                            if s[m] == gs[m]:
-                                tmpovrlp *= (self.dx[m]*self.vscf_wavefunctions[0].wfns[m, gs[m]]
-                                             * self.vscf_wavefunctions[stateindex].wfns[ m, s[m]]).sum()
+                        for k in range(self.ngrid):
+                            ind = self.dm2.indices.index((i,j))
+                            for l in range(self.ngrid):
+                                tmpd2[0] += self.dx[i] * self.dx[j] * self.dm2.data[ind][k, l, 0] \
+                                    * self.vscf_wavefunctions[0].wfns[i, gs[i], k] \
+                                    * self.vscf_wavefunctions[0].wfns[j, gs[j], l] \
+                                    * self.vscf_wavefunctions[stateindex].wfns[i, s[i], k] \
+                                    * self.vscf_wavefunctions[stateindex].wfns[j, s[j], l]
+                                tmpd2[1] += self.dx[i] * self.dx[j] * self.dm2.data[ind][k, l, 1] \
+                                    * self.vscf_wavefunctions[0].wfns[i, gs[i], k] \
+                                    * self.vscf_wavefunctions[0].wfns[j, gs[j], l] \
+                                    * self.vscf_wavefunctions[stateindex].wfns[i, s[i], k] \
+                                    * self.vscf_wavefunctions[stateindex].wfns[j, s[j], l]
+                                tmpd2[2] += self.dx[i] * self.dx[j] * self.dm2.data[ind][k, l, 2] \
+                                    * self.vscf_wavefunctions[0].wfns[i, gs[i], k] \
+                                    * self.vscf_wavefunctions[0].wfns[j, gs[j], l] \
+                                    * self.vscf_wavefunctions[stateindex].wfns[i, s[i], k] \
+                                    * self.vscf_wavefunctions[stateindex].wfns[j, s[j], l]
+                        tmpovrlp = 1.0
+                        for m in range(self.nmodes):
+                            if m != i and m != j:
+                                if s[m] == gs[m]:
+                                    tmpovrlp *= (self.dx[m]*self.vscf_wavefunctions[0].wfns[m, gs[m]]
+                                                 * self.vscf_wavefunctions[stateindex].wfns[ m, s[m]]).sum()
 
-                            else:
-                                tmpovrlp = 0.0
+                                else:
+                                    tmpovrlp = 0.0
 
-                    tmptm += tmpd2 * tmpovrlp
-                    #tmptm = tmptm + tmpd2
+                        tmptm += tmpd2 * tmpovrlp
+                        #tmptm = tmptm + tmpd2
             factor = 2.5048
             intens = (tmptm[0]**2 + tmptm[1]**2 + tmptm[2]**2)*factor*(self.energies[stateindex]-self.energies[0])
             print '%s %7.1f %7.1f' % (s, self.energies[stateindex]-self.energies[0], intens)
