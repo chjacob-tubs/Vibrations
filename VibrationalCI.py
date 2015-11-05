@@ -143,6 +143,8 @@ class VCI(object):
             tmp = self.calculate_double(c)
         elif order == 3 and self.maxpot > 2:
             tmp = self.calculate_triple(c)
+        elif order == 4 and self.maxpot > 3:
+            tmp = self.calculate_quadriple(c)
         else:
             tmp = 0.0
 
@@ -176,11 +178,15 @@ class VCI(object):
 
             for j in xrange(i+1, self.nmodes):
                 tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
-                tmp += tmpv2
+                tmp += tmpv2 
                 if self.maxpot == 3:
                     for k in xrange(j+1,self.nmodes):
                         tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                         tmp += tmpv3
+                        if self.maxpot == 4:
+                            for l in xrange(k+1,self.nmodes):
+                                tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
+                                tmp += tmpv4
 
         return tmp
 
@@ -211,6 +217,11 @@ class VCI(object):
                             tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                             #print i,j,k,tmpv3
                             tmp += tmpv3
+                        if self.maxpot == 4:
+                            for l in xrange(k+1, self.nmodes):
+                                if l != j and l!= i and l != k:
+                                    tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
+                                    tmp += tmpv4
 
         return tmp
 
@@ -237,6 +248,12 @@ class VCI(object):
                 if k != i and k != j:
                     tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                     tmp += tmpv3
+                if self.maxpot == 4:
+                    for l in xrange(k+1,self.nmodes):
+                        if l != i and l != j and l != k:
+                            tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
+                            tmp += tmpv4
+
 
         return tmp
     
@@ -258,8 +275,37 @@ class VCI(object):
 
         tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
         tmp += tmpv3
+        
+        if self.maxpot == 4:
+            for l in xrange(self.nmodes):
+                if l != i and l!= j and l!=k:
+                    tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
+                    tmp += tmpv4
+
 
         return tmp
+
+    def calculate_quadriple(self, c):
+        """
+        Calculates an element corresponding to a quadriple transition
+        :param c: Configuration
+        :return: Value of the element, a.u.
+        """
+        tmp = 0.0
+        n = c[0]
+        m = c[1]
+        
+        indices = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e is True]
+        i = indices[0]
+        j = indices[1]
+        k = indices[2]
+        l = indices[3]
+
+        tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
+        tmp += tmpv4
+
+        return tmp
+        
 
     @staticmethod
     def order_of_transition(c):
