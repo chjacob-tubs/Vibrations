@@ -122,6 +122,16 @@ class VCI(object):
             self.v3_indices = (potentials[2].indices)
             self.v3_data = (potentials[2].data)
             self.maxpot = 3
+        elif len(potentials) == 4:
+            self.v1_indices = (potentials[0].indices)
+            self.v1_data = (potentials[0].data)
+            self.v2_indices = (potentials[1].indices)
+            self.v2_data = (potentials[1].data)
+            self.v3_indices = (potentials[2].indices)
+            self.v3_data = (potentials[2].data)
+            self.v4_indices = (potentials[3].indices)
+            self.v4_data = (potentials[3].data)
+            self.maxpot = 4
         elif len(potentials) == 2:
             self.v1_indices = (potentials[0].indices)
             self.v1_data = (potentials[0].data)
@@ -170,23 +180,45 @@ class VCI(object):
         tmp = 0.0
         n = c[0]
         m = c[1]
+        
+        if self.maxpot == 2:
+            for i in xrange(self.nmodes):
+                tmpv1 = self._v1_integral(i, n[i], m[i])
+                tmpt = self._kinetic_integral(i, n[i], m[i])
+                tmp += tmpv1 + tmpt
 
-        for i in xrange(self.nmodes):
-            tmpv1 = self._v1_integral(i, n[i], m[i])
-            tmpt = self._kinetic_integral(i, n[i], m[i])
-            tmp += tmpv1 + tmpt
+                for j in xrange(i+1, self.nmodes):
+                    tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
+                    tmp += tmpv2 
 
-            for j in xrange(i+1, self.nmodes):
-                tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
-                tmp += tmpv2 
-                if self.maxpot == 3:
+        elif self.maxpot == 3:
+            for i in xrange(self.nmodes):
+                tmpv1 = self._v1_integral(i, n[i], m[i])
+                tmpt = self._kinetic_integral(i, n[i], m[i])
+                tmp += tmpv1 + tmpt
+
+                for j in xrange(i+1, self.nmodes):
+                    tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
+                    tmp += tmpv2 
                     for k in xrange(j+1,self.nmodes):
                         tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                         tmp += tmpv3
-                        if self.maxpot == 4:
-                            for l in xrange(k+1,self.nmodes):
-                                tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
-                                tmp += tmpv4
+        elif self.maxpot == 4:
+            for i in xrange(self.nmodes):
+                tmpv1 = self._v1_integral(i, n[i], m[i])
+                tmpt = self._kinetic_integral(i, n[i], m[i])
+                tmp += tmpv1 + tmpt
+
+                for j in xrange(i+1, self.nmodes):
+                    tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
+                    tmp += tmpv2 
+                    for k in xrange(j+1,self.nmodes):
+                        tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
+                        tmp += tmpv3
+                        for l in xrange(k+1,self.nmodes):
+                            tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
+                            tmp += tmpv4
+                                #pass
 
         return tmp
 
@@ -206,18 +238,34 @@ class VCI(object):
         tmpt = self._kinetic_integral(i, n[i], m[i])
         tmp += tmpv1 + tmpt
 
-        for j in xrange(self.nmodes):
-            if j != i:
-                tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
-                #print i,j,tmpv2
-                tmp += tmpv2
-                if self.maxpot == 3:
+        if self.maxpot == 2:
+            for j in xrange(self.nmodes):
+                if j != i:
+                    tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
+                    #print i,j,tmpv2
+                    tmp += tmpv2
+        elif self.maxpot == 3:
+            for j in xrange(self.nmodes):
+                if j != i:
+                    tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
+                    #print i,j,tmpv2
+                    tmp += tmpv2
                     for k in xrange(j+1,self.nmodes):
                         if k != j and k != i:
                             tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                             #print i,j,k,tmpv3
                             tmp += tmpv3
-                        if self.maxpot == 4:
+        elif self.maxpot == 4:
+            for j in xrange(self.nmodes):
+                if j != i:
+                    tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
+                    #print i,j,tmpv2
+                    tmp += tmpv2
+                    for k in xrange(j+1,self.nmodes):
+                        if k != j and k != i:
+                            tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
+                            #print i,j,k,tmpv3
+                            tmp += tmpv3
                             for l in xrange(k+1, self.nmodes):
                                 if l != j and l!= i and l != k:
                                     tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
@@ -243,12 +291,16 @@ class VCI(object):
         tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
         tmp += tmpv2
 
-        if self.maxpot == 3:
+        if self.maxpot == 3 :
             for k in xrange(self.nmodes):
                 if k != i and k != j:
                     tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                     tmp += tmpv3
-                if self.maxpot == 4:
+        elif self.maxpot == 4:
+            for k in xrange(self.nmodes):
+                if k != i and k != j:
+                    tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
+                    tmp += tmpv3
                     for l in xrange(k+1,self.nmodes):
                         if l != i and l != j and l != k:
                             tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
@@ -276,7 +328,7 @@ class VCI(object):
         tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
         tmp += tmpv3
         
-        if self.maxpot == 4:
+        if self.maxpot == 4 :
             for l in xrange(self.nmodes):
                 if l != i and l!= j and l!=k:
                     tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
@@ -300,7 +352,6 @@ class VCI(object):
         j = indices[1]
         k = indices[2]
         l = indices[3]
-
         tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
         tmp += tmpv4
 
@@ -456,6 +507,35 @@ class VCI(object):
         else:
             print Misc.fancy_box('Solve the VCI first')
 
+    def print_contributions(self, mincon=0.1,which=1, maxfreq=4000):
+        """
+        Prints VCI results, can be limited to the states mostly contributed from given type of transitions (1 - singles,
+        etc.), and to the maximal energy (usually 4000cm^-1 is the range of interest)
+        :param mincon: contribution threshold, 0.1 by default
+        :param which: transitions to which states should be included, 1 for singles, 2 for SD, etc.
+        :param maxfreq: frequency threshold
+        :return: void
+        """
+        if self.solved:
+            print Misc.fancy_box('Results of the VCI')
+            print 'State %15s %15s %15s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
+            for i in range(len(self.states)):
+                state = self.states[(self.vectors[:, i]**2).argmax()]
+                #state = self.states[i]
+                en = self.energiesrcm[i] - self.energiesrcm[0]
+                if sum([x > 0 for x in state]) < which+1:
+                    if en < maxfreq:
+                        contrsum = 0.0
+                        print "%i %s %10.4f %10.4f %10.4f" % (i, state, (self.vectors[:, i]**2).max(), self.energiesrcm[i],
+                                                   en)
+                        for j,contr in enumerate(self.vectors[:, i]**2):
+                            
+                            if contr >= mincon:
+                                print "   %s %10.4f" %(self.states[j],contr)
+                                contrsum += contr
+                        print 15*' '+"%10.4f" %contrsum
+
+                                
     def print_states(self):
         """
         Prints the vibrational states used in the VCI calculations
@@ -630,7 +710,15 @@ class VCI(object):
             for j in range(i, nstates):
                 if sum([x != y for (x, y) in zip(self.states[i], self.states[j])]) < self.maxpot+1:
                     yield (self.states[i], self.states[j])
-        
+    
+    def combgenerator_nofilter(self):
+        """
+        Generates combinations of states without prescreening
+        """
+        nstates = len(self.states)
+        for i in xrange(nstates):
+            for j in range(i, nstates):
+                yield (self.states[i], self.states[j])
 
     def calculate_intensities(self, *dipolemoments):
         """
@@ -874,15 +962,39 @@ class VCI(object):
         ind = zip(modes,lstates,rstates)
         ind.sort()
         (modes,lstates,rstates)=zip(*ind)
+        #print modes,lstates,rstates
         if (modes[0],modes[1],modes[2],modes[3]) in self.v4_indices:
             potind = self.v4_indices.index((modes[0],modes[1],modes[2],modes[3]))
         else:
             return 0.0
 
+
+        mode1 = modes[0]
+        mode2 = modes[1]
+        mode3 = modes[2]
+        mode4 = modes[3]
+        lstate1 = lstates[0]
+        lstate2 = lstates[1]
+        lstate3 = lstates[2]
+        lstate4 = lstates[3]
+        rstate1 = rstates[0]
+        rstate2 = rstates[1]
+        rstate3 = rstates[2]
+        rstate4 = rstates[3]
         s = []
+        si = self.dx[mode1] * self.wfns[mode1,lstate1] * self.wfns[mode1,rstate1]
+        sj = self.dx[mode2] * self.wfns[mode2,lstate2] * self.wfns[mode2,rstate2]
+        sk = self.dx[mode3] * self.wfns[mode3,lstate3] * self.wfns[mode3,rstate3]
+        sl = self.dx[mode4] * self.wfns[mode4,lstate4] * self.wfns[mode4,rstate4]
         for m,l,r in ind:
             s.append(self.dx[m] * self.wfns[m,l] * self.wfns[m,r])
-        return np.einsum('i,j,k,l,ijkl',s[0],s[1],s[2],s[3],self.v4_data[potind])
+        
+        #return np.einsum('i,j,k,l,ijkl',s[0],s[1],s[2],s[3],self.v4_data[potind])
+        tmp = np.einsum('i,j,k,l,ijkl',si,sj,sk,sl,self.v4_data[potind])
+        #print tmp
+        return tmp
+        #return 0.0
+
 
     def _ovrlp_integral(self, mode, lstate, rstate):    # overlap integral < mode(lstates) | mode(rstate) >
 
@@ -991,6 +1103,8 @@ class VCI(object):
                     tmp = self.calculate_double(c)
                 elif order == 3 and self.maxpot > 2:
                     tmp = self.calculate_triple(c)
+                elif order == 4 and self.maxpot > 3:
+                    tmp = self.calculate_quadriple(c)
                 else:
                     tmp = 0.0
 
@@ -1036,10 +1150,76 @@ class VCI(object):
         np.save('Hessian.npy',self.H)
         print Misc.fancy_box('Hamiltonian matrix constructed. Diagonalization...')
         w, v = np.linalg.eigh(self.H, UPLO='U')
-
+        #w, v = np.linalg.eig(self.H)
         self.energies = w
         self.vectors = v
         self.energiesrcm = self.energies / Misc.cm_in_au
         self.solved = True
         self.print_results()
 
+    @do_cprofile
+    def solve_loop(self, parallel=False):
+        """
+        General solver for the VCI, without transitions prescreening
+        """
+
+        if len(self.states) == 0:
+            print Misc.fancy_box('No VCI states defined, by default singles will be used')
+            self.generate_states()
+
+        nstates = len(self.states)
+
+        print Misc.fancy_box('There are %i states') % (nstates)
+
+        self.H = np.zeros((nstates, nstates))
+
+        if not parallel:
+
+            for i in range(nstates):
+                for j in range(i,nstates):
+                    c = (self.states[i],self.states[j])
+                    order = self.order_of_transition(c)
+
+                    if order == 0:
+                        tmp = self.calculate_diagonal(c)
+                        self.H[i,j] = tmp
+                    elif order == 1:
+                        tmp = self.calculate_single(c)
+                        self.H[i,j] = tmp
+                    elif order == 2:
+                        tmp = self.calculate_double(c)
+                        self.H[i,j] = tmp
+                    elif order == 3 and self.maxpot > 2:
+                        tmp = self.calculate_triple(c)
+                        self.H[i,j] = tmp
+                    elif order == 4 and self.maxpot > 3:
+                        tmp = self.calculate_quadriple(c)
+                        self.H[i,j] = tmp
+
+        else:
+            import dill
+            import time
+            import pathos.multiprocessing as mp
+            ncores = 12
+            pool = mp.ProcessingPool(nodes=ncores)
+            ntrans = nstates * (nstates-1) / 2
+            ch,e = divmod(ntrans,ncores*4)
+            if e:
+                ch += 1
+            #ch = 85
+            print 'Ncores:' ,ncores
+            print 'Chunksize: ',ch
+            print 'Transitions: ',ntrans
+            results =  pool.map(self.calculate_transition, self.combgenerator_nofilter(),chunksize=ch)
+            for r in results:
+                self.H[r[0],r[1]] = r[2]
+
+        np.save('Hessian.npy',self.H)
+        print Misc.fancy_box('Hamiltonian matrix constructed. Diagonalization...')
+        w, v = np.linalg.eigh(self.H, UPLO='U')
+
+        self.energies = w
+        self.vectors = v
+        self.energiesrcm = self.energies / Misc.cm_in_au
+        self.solved = True
+        self.print_results()

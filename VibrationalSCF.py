@@ -29,6 +29,7 @@ class VSCF:
             self.grids = potentials[0].grids
             self.dx = [x[1]-x[0] for x in self.grids.grids]  # integration step
             self.solved = False  # simple switch to check, whether VSCF was already solved
+            self.maxpot = len(potentials)
         else:
             raise Exception("No potential given.")
 
@@ -227,7 +228,6 @@ class VSCF2D(VSCF):
     def __init__(self, *potentials):
 
 
-        
         if len(potentials) == 0:
             raise Exception('No potentials given')
 
@@ -252,6 +252,7 @@ class VSCF2D(VSCF):
         
         self.states = [[0]*self.nmodes]   # list of states for which the VSCF is solved, at first only gs considered
         self.energies = []
+        self.eigenvalues = []
         self.vscf_wavefunctions = []   # list of Wavefunction objects (for each state)
 
     def calculate_intensities(self, *dipolemoments):
@@ -420,11 +421,12 @@ class VSCF2D(VSCF):
             self.vscf_wavefunctions = []
             for i, s in enumerate(self.states):
                 print Misc.fancy_box('Solving State: '+str(s))         
-                (energy, wfn) = self._solve_state(s)
+                (energy, wfn, eigenvalues) = self._solve_state(s)
                 self.energies.append(energy)
                 wfn_obj = Wavefunctions.Wavefunction(self.v1.grids)
                 wfn_obj.wfns = wfn
                 self.vscf_wavefunctions.append(wfn_obj)
+                self.eigenvalues.append(eigenvalues)
 
             self.solved = True
             print ''
@@ -471,6 +473,7 @@ class VSCF2D(VSCF):
         eprev = 0.0
         for niter in range(maxiter):
             etot = 0.0
+            eigenvalues = []
             print 'Iteration: %i ' % (niter+1)
             print 'Mode State   Eigv'
             for i in range(self.nmodes):
@@ -480,6 +483,7 @@ class VSCF2D(VSCF):
                 totalpot = diagpot+effpot
                 # solve 1-mode problem
                 (energies, wavefunction) = self._collocation(self.grids.grids[i], totalpot)
+                eigenvalues.append(energies)
                 tmpwfns[i] = wavefunction
                 # add energy
                 etot += energies[state[i]]   # add optimized state-energy
@@ -502,7 +506,7 @@ class VSCF2D(VSCF):
             # get delta E
 
 
-        return etot / Misc.cm_in_au, actualwfns.copy()
+        return etot / Misc.cm_in_au, actualwfns.copy(), eigenvalues
 
     def _scfcorr(self, state, wfns):
         
@@ -543,5 +547,56 @@ class VSCF2D(VSCF):
 
         return veff
                     
+
+class VSCF3D(VSCF2D):
+
+    def __init__(self, *potentials):
+        VSCF2D.__init__(self,*potentials)
+        import copy
+        self.v3 = copy.copy(potentials[2])
+
+    def _scfcorr(self,state,wfns):
+
+        scfcorr = 0.0
+        for i in range(self.nmodes):
+            for j in range(i+1, self.nmodes):
+                if (i,j) in self.v2.indices or (j,i) in self.v2.indices: #first check if there's the pot for two modes
+                    ind = self.v2.indices.index((i,j))
+                    s1 = (self.dx[i]*wfns[i,state[i]]**2)
+                    s2 = (self.dx[j]*wfns[j,state[j]]**2)
+                    s = np.einsum('i,j,ij',s1,s2,self.v2.data[ind])
+                    scfcorr += s
+                for k in range(j+1, self.nmodes):
+                    if (i,j,k) in self.v3.indices:
+                        ind = self.v3.indices.index((i,j,k))
+                        s1 = (self.dx[i]*wfns[i,state[i]]**2)
+                        s2 = (self.dx[j]*wfns[j,state[j]]**2)
+                        s3 = (self.dx[k]*wfns[k,state[k]]**2)
+                        s = np.einsum('i,j,k,ijk',s1,s2,s3,self.v3.data[ind])
+                        scfcorr += 2.0*s
+
+        return scfcorr
+
+    def _veffective(self, mode, state, wfn):
+
+        veff = np.zeros(self.ngrid)
+        for i in range(self.ngrid):
+            for j in range(self.nmodes):
+                if j != mode:
+             
+                    if (mode,j) in self.v2.indices or (j,mode) in self.v2.indices: #first check if there's the pot for two modes
+                        try:
+                            ind = self.v2.indices.index((mode,j))
+                        except:
+                            ind = self.v2.indices.index((j,mode))
+                        #for k in range(self.ngrid):
+                        #    tmpsum += (wfn[j, state[j],k]**2 * self.dx[j] * self.v2.data[ind][i, k])
+                        if mode < j:
+                            veff[i] += (wfn[j, state[j]]**2 * self.dx[j] * self.v2.data[ind][i,:]).sum()
+                        elif mode > j:
+                            veff[i] += (wfn[j, state[j]]**2 * self.dx[j] * self.v2.data[ind][:,i]).sum()
+                #veff[i] += tmpsum 
+
+        return veff
 
 

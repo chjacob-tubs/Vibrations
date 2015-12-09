@@ -51,6 +51,30 @@ class Surface:
         s += 'Shape of the property: ' + str(self.prop) + '\n'
         return s
 
+    def delete(self, *lind):
+        """
+        Deleting a surface of given index (ind)
+        
+        @param ind: List of tuples of modes
+        """
+        for ind in lind:
+            type(ind)
+            ind = list(ind)
+            ind.sort()
+            try:
+                i = self.indices.index(tuple(ind))
+                self.indices.pop(i)
+                self.data.pop(i)
+            except:
+                print 'Surface of index ',ind,' not found'
+
+    def zero(self):
+        """
+        Zeroing all surfaces
+        """
+        for i,e in enumerate(self.data):
+            self.data[i] *=0.0
+
 class Potential(Surface):
 
     def __init__(self, grids=None, order=1):
@@ -129,6 +153,9 @@ class Potential(Surface):
             if self.order != 3:
                 raise Exception('Shape mismatch')
                 
+        elif len(tmparray.shape) == 8:
+            if self.order != 4:
+                raise Exception('Shape mismatch')
         else:
             raise Exception('Input data shape mismatch, check shape of stored arrays')
 
@@ -153,6 +180,17 @@ class Potential(Surface):
                         if not np.all(tmparray[i,j,k,:,:,:]==0.0):
                             self.indices.append((i,j,k))
                             self.data.append(tmparray[i,j,k,:,:,:])
+
+        elif self.order == 4:
+            nmodes = tmparray.shape[0]
+            for i in range(nmodes):
+                for j in range(i+1, nmodes):
+                    for k in range(j+1, nmodes):
+                        for l in range(k+1, nmodes):
+                            if not np.all(tmparray[i,j,k,l,:,:,:,:] == 0.0):
+                                self.indices.append((i,j,k,l))
+                                self.data.append(tmparray[i,j,k,l,:,:,:,:])
+
 
     def generate_harmonic(self, cmat=None):
 
