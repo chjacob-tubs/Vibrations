@@ -459,7 +459,7 @@ class VSCF2D(VSCF):
 
         # solving 2D VSCF for a given state
         maxiter = 100
-        eps = 1e-6
+        eps = 1e-8
         etot = 0.0
         actualwfns = np.zeros((self.nmodes,self.ngrid,self.ngrid))
         tmpwfns = np.zeros((self.nmodes,self.ngrid,self.ngrid))
@@ -487,7 +487,7 @@ class VSCF2D(VSCF):
                 tmpwfns[i] = wavefunction
                 # add energy
                 etot += energies[state[i]]   # add optimized state-energy
-                print '%4i %5i %8.1f' % (i, state[i], energies[state[i]]/Misc.cm_in_au)
+                print '%4i %5i %8.1f' % (i+1, state[i], energies[state[i]]/Misc.cm_in_au)
 
             #calculate correction
             actualwfns = tmpwfns
@@ -508,43 +508,41 @@ class VSCF2D(VSCF):
 
         return etot / Misc.cm_in_au, actualwfns.copy(), eigenvalues
 
-    def _scfcorr(self, state, wfns):
-        
+    def _scfcorr(self,state,wfns):
+
         scfcorr = 0.0
         for i in range(self.nmodes):
+            s1 = (self.dx[i]*wfns[i,state[i]]**2)
             for j in range(i+1, self.nmodes):
-                if (i,j) in self.v2.indices or (j,i) in self.v2.indices: #first check if there's the pot for two modes
-                    try:
-                        ind = self.v2.indices.index((i,j))
-                    except:
-                        ind = selv.v2.indices.index((j,i))
-                    for gi in range(self.ngrid):
-                        for gj in range(self.ngrid):
+                s2 = (self.dx[j]*wfns[j,state[j]]**2)
+                try:
+                    v2 = self.v2[i,j]
+                except:
+                    pass
+                else:
+                    s = np.einsum('i,j,ij',s1,s2,v2)
+                    scfcorr += s
 
-                            scfcorr = scfcorr +  self.dx[i] * self.dx[j] * self.v2.data[ind][gi, gj] * wfns[i, state[i], gi] ** 2 * wfns[j, state[j], gj]**2
+
 
         return scfcorr
 
-    def _veffective(self, mode, state, wfn):
+    def _veffective(self, mode, state, wfns):
 
         veff = np.zeros(self.ngrid)
+        
+
         for i in range(self.ngrid):
             for j in range(self.nmodes):
-                if j != mode:
-             
-                    if (mode,j) in self.v2.indices or (j,mode) in self.v2.indices: #first check if there's the pot for two modes
-                        try:
-                            ind = self.v2.indices.index((mode,j))
-                        except:
-                            ind = self.v2.indices.index((j,mode))
-                        #for k in range(self.ngrid):
-                        #    tmpsum += (wfn[j, state[j],k]**2 * self.dx[j] * self.v2.data[ind][i, k])
-                        if mode < j:
-                            veff[i] += (wfn[j, state[j]]**2 * self.dx[j] * self.v2.data[ind][i,:]).sum()
-                        elif mode > j:
-                            veff[i] += (wfn[j, state[j]]**2 * self.dx[j] * self.v2.data[ind][:,i]).sum()
-                #veff[i] += tmpsum 
 
+                sj = (self.dx[j]*wfns[j,state[j]]**2)
+                try:
+                    v2 = self.v2[mode,j]
+                except:
+                    pass
+                else:
+                    veff[i] += np.einsum('l,l',sj,v2[i,:])
+                    
         return veff
                     
 
@@ -559,44 +557,133 @@ class VSCF3D(VSCF2D):
 
         scfcorr = 0.0
         for i in range(self.nmodes):
+            s1 = (self.dx[i]*wfns[i,state[i]]**2)
             for j in range(i+1, self.nmodes):
-                if (i,j) in self.v2.indices or (j,i) in self.v2.indices: #first check if there's the pot for two modes
-                    ind = self.v2.indices.index((i,j))
-                    s1 = (self.dx[i]*wfns[i,state[i]]**2)
-                    s2 = (self.dx[j]*wfns[j,state[j]]**2)
-                    s = np.einsum('i,j,ij',s1,s2,self.v2.data[ind])
+                s2 = (self.dx[j]*wfns[j,state[j]]**2)
+                try:
+                    v2 = self.v2[i,j]
+                except:
+                    pass
+                else:
+                    s = np.einsum('i,j,ij',s1,s2,v2)
                     scfcorr += s
                 for k in range(j+1, self.nmodes):
-                    if (i,j,k) in self.v3.indices:
-                        ind = self.v3.indices.index((i,j,k))
-                        s1 = (self.dx[i]*wfns[i,state[i]]**2)
-                        s2 = (self.dx[j]*wfns[j,state[j]]**2)
-                        s3 = (self.dx[k]*wfns[k,state[k]]**2)
-                        s = np.einsum('i,j,k,ijk',s1,s2,s3,self.v3.data[ind])
-                        scfcorr += 2.0*s
+                    s3 = (self.dx[k]*wfns[k,state[k]]**2)
+                    try:
+                        v3 = self.v3[i,j,k]
+                    except:
+                        pass
+                    else:
+                        s = np.einsum('i,j,k,ijk',s1,s2,s3,v3)
+                        scfcorr += 2.0 * s
 
         return scfcorr
 
-    def _veffective(self, mode, state, wfn):
+    def _veffective(self, mode, state, wfns):
 
         veff = np.zeros(self.ngrid)
+
         for i in range(self.ngrid):
             for j in range(self.nmodes):
-                if j != mode:
-             
-                    if (mode,j) in self.v2.indices or (j,mode) in self.v2.indices: #first check if there's the pot for two modes
-                        try:
-                            ind = self.v2.indices.index((mode,j))
-                        except:
-                            ind = self.v2.indices.index((j,mode))
-                        #for k in range(self.ngrid):
-                        #    tmpsum += (wfn[j, state[j],k]**2 * self.dx[j] * self.v2.data[ind][i, k])
-                        if mode < j:
-                            veff[i] += (wfn[j, state[j]]**2 * self.dx[j] * self.v2.data[ind][i,:]).sum()
-                        elif mode > j:
-                            veff[i] += (wfn[j, state[j]]**2 * self.dx[j] * self.v2.data[ind][:,i]).sum()
-                #veff[i] += tmpsum 
-
+                sj = (self.dx[j]*wfns[j,state[j]]**2)
+                try:
+                    v2 = self.v2[mode,j]
+                except:
+                    pass
+                else:
+                    veff[i] += np.einsum('l,l',sj,v2[i,:])
+                                 
+                for k in range(j+1, self.nmodes):
+                    sk = (self.dx[k]*wfns[k,state[k]]**2)
+                    try:
+                        v3 = self.v3[mode,j,k]
+                    except:
+                        pass
+                    else:
+                        s = np.einsum('l,m,lm',sj,sk,v3[i,:,:])
+                        veff[i] += s
+    
         return veff
 
 
+class VSCF4D(VSCF3D):
+    
+    def __init__(self, *potentials):
+        VSCF3D.__init__(self, *potentials)
+        import copy
+        self.v4 = copy.copy(potentials[3])
+
+    def _scfcorr(self,state,wfns):
+
+        scfcorr = 0.0
+        for i in range(self.nmodes):
+            s1 = (self.dx[i]*wfns[i,state[i]]**2)
+            for j in range(i+1, self.nmodes):
+                s2 = (self.dx[j]*wfns[j,state[j]]**2)
+                try:
+                    v2 = self.v2[i,j]
+                except:
+                    pass
+                else:
+                    s = np.einsum('i,j,ij',s1,s2,v2)
+                    scfcorr += s
+
+
+                for k in range(j+1, self.nmodes):
+                    s3 = (self.dx[k]*wfns[k,state[k]]**2)
+                    try:
+                        v3 = self.v3[i,j,k]
+                    except:
+                        pass
+                    else:
+                        s = np.einsum('i,j,k,ijk',s1,s2,s3,v3)
+                        scfcorr += 2.0 * s
+
+                    for l in range(k+1, self.nmodes):
+                        s4 = (self.dx[l]*wfns[l,state[l]]**2)
+                        try:
+                            v4 = self.v4[i,j,k,l]
+                        except:
+                            pass
+                        else:
+                            s = np.einsum('i,j,k,l,ijkl',s1,s2,s3,s4,v4)
+                            scfcorr += 3.0 * s
+                            
+        return scfcorr
+
+    def _veffective(self, mode, state, wfns):
+
+        veff = np.zeros(self.ngrid)
+        
+
+        for i in range(self.ngrid):
+            for j in range(self.nmodes):
+                sj = (self.dx[j]*wfns[j,state[j]]**2)
+                try:
+                    v2 = self.v2[mode,j]
+                except:
+                    pass
+                else:
+                    veff[i] += np.einsum('l,l',sj,v2[i,:])
+                                 
+                for k in range(j+1, self.nmodes):
+                    sk = (self.dx[k]*wfns[k,state[k]]**2)
+                    try:
+                        v3 = self.v3[mode,j,k]
+                    except:
+                        pass
+                    else:
+                        s = np.einsum('l,m,lm',sj,sk,v3[i,:,:])
+                        veff[i] += s
+                    
+                    for l in range(k+1, self.nmodes):
+                        sl = (self.dx[l]*wfns[l,state[l]]**2)
+                        try:
+                            v4 = self.v4[mode,j,k,l]
+                        except:
+                            pass
+                        else:
+                            s = np.einsum('l,m,n,lmn',sj,sk,sl,v4[i,:,:,:])
+                            veff[i] += s
+
+        return veff

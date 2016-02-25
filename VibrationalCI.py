@@ -389,7 +389,7 @@ class VCI(object):
         hamiltonian = np.zeros((len(self.states), len(self.states)))
         counter = 0
 
-        for i in range(ncomb):
+        for i in xrange(ncomb):
             counter += 1
 
             tmp = 0.0  # matrix element
@@ -400,12 +400,12 @@ class VCI(object):
             print ' < %s | H | %s >' % (str(n), str(m))
 
             # 1-mode integrals
-            for j in range(self.nmodes):
+            for j in xrange(self.nmodes):
                 tmpovrlp = 1.0
                 tmpv1 = 0.0
                 tmpt = 0.0
 
-                for k in range(self.nmodes):
+                for k in xrange(self.nmodes):
 
                     if k == j:
                         tmpv1 = self._v1_integral(j, n[j], m[j])
@@ -424,11 +424,11 @@ class VCI(object):
 
                 tmp += tmpv1 + tmpt
             # 2-mode integrals
-            for j in range(self.nmodes):
+            for j in xrange(self.nmodes):
 
-                for k in range(j+1, self.nmodes):
+                for k in xrange(j+1, self.nmodes):
                     tmpovrlp = 1.0
-                    for l in range(self.nmodes):
+                    for l in xrange(self.nmodes):
 
                         if l != j and l != k:
                             if n[l] == m[l]:
@@ -447,11 +447,11 @@ class VCI(object):
 
             # 3-mode integrals
             if self.maxpot > 2:
-                for j in range(self.nmodes):
-                    for k in range(j+1, self.nmodes):
-                        for l in range(k+1, self.nmodes):
+                for j in xrange(self.nmodes):
+                    for k in xrange(j+1, self.nmodes):
+                        for l in xrange(k+1, self.nmodes):
                             tmpovrlp = 1.0
-                            for o in range(self.nmodes):
+                            for o in xrange(self.nmodes):
                                 if o != j and o != k and o != l:
                                     if n[o] == m[o]:
                                         #tmpovrlp *= self._ovrlp_integral(o, n[o], n[o])
@@ -478,7 +478,7 @@ class VCI(object):
         wcm = w / Misc.cm_in_au
         self.energiesrcm = wcm  # energies in reciprocal cm
         print 'State %15s %15s %15s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
-        for i in range(len(self.states)):
+        for i in xrange(len(self.states)):
             print "%s %10.4f %10.4f %10.4f" % (self.states[(v[:, i]**2).argmax()],
                                                (v[:, i]**2).max(), wcm[i], wcm[i]-wcm[0])
 
@@ -496,7 +496,7 @@ class VCI(object):
         if self.solved:
             print Misc.fancy_box('Results of the VCI')
             print 'State %15s %15s %15s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
-            for i in range(len(self.states)):
+            for i in xrange(len(self.energies)):  # was self.states, is self.energies
                 state = self.states[(self.vectors[:, i]**2).argmax()]
                 en = self.energiesrcm[i] - self.energiesrcm[0]
                 if sum([x > 0 for x in state]) < which+1:
@@ -519,7 +519,7 @@ class VCI(object):
         if self.solved:
             print Misc.fancy_box('Results of the VCI')
             print 'State %15s %15s %15s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
-            for i in range(len(self.states)):
+            for i in xrange(len(self.energies)): #was self.states is self.energies
                 state = self.states[(self.vectors[:, i]**2).argmax()]
                 #state = self.states[i]
                 en = self.energiesrcm[i] - self.energiesrcm[0]
@@ -566,11 +566,14 @@ class VCI(object):
 
         res = [[0] * self.nmodes]
 
-        for i in range(1, smax+1):
+        for i in xrange(1, smax+1):
             res += multichoose(self.nmodes, i)
 
         res = filter(lambda x: len(filter(None, x)) < nexc + 1, res)
         self.states = res
+
+        self.nmax = nexc
+        self.smax = smax
 
         # generate combination of states
         #self.combinations = [x for x in itertools.combinations_with_replacement(self.states, 2)]
@@ -580,6 +583,8 @@ class VCI(object):
 
     def generate_states(self, maxexc=1):
         self.generate_states_nmax(maxexc, maxexc)
+        self.nmax = maxexc
+        self.smax = maxexc
 
     def generate_states_old(self, maxexc=1):
         """
@@ -597,7 +602,7 @@ class VCI(object):
         gs = [0] * self.nmodes
         states.append(gs)
 
-        for i in range(self.nmodes):
+        for i in xrange(self.nmodes):
 
             vec = [0] * self.nmodes
             vec[i] = 1
@@ -608,7 +613,7 @@ class VCI(object):
                 vec[i] = 2
                 states.append(vec)
 
-                for j in range(i+1, self.nmodes):
+                for j in xrange(i+1, self.nmodes):
                     vec = [0] * self.nmodes
                     vec[i] = 1
                     vec[j] = 1
@@ -616,12 +621,12 @@ class VCI(object):
 
         if maxexc > 2:
 
-            for i in range(self.nmodes):
+            for i in xrange(self.nmodes):
                 vec = [0]*self.nmodes
                 vec[i] = 3
                 states.append(vec)
 
-                for j in range(i+1, self.nmodes):
+                for j in xrange(i+1, self.nmodes):
                     vec = [0]*self.nmodes
                     vec[i] = 2
                     vec[j] = 1
@@ -631,7 +636,7 @@ class VCI(object):
                     vec[j] = 2
                     states.append(vec)
 
-                    for k in range(j+1, self.nmodes):
+                    for k in xrange(j+1, self.nmodes):
                         vec = [0]*self.nmodes
                         vec[i] = 1
                         vec[j] = 1
@@ -639,12 +644,12 @@ class VCI(object):
                         states.append(vec)
         if maxexc > 3:
 
-            for i in range(self.nmodes):
+            for i in xrange(self.nmodes):
                 vec = [0] * self.nmodes
                 vec[i] = 4
                 states.append(vec)
 
-                for j in range(i+1, self.nmodes):
+                for j in xrange(i+1, self.nmodes):
                     vec = [0]*self.nmodes
                     vec[i] = 3
                     vec[j] = 1
@@ -658,7 +663,7 @@ class VCI(object):
                     vec[j] = 2
                     states.append(vec)
 
-                    for k in range(j+1, self.nmodes):
+                    for k in xrange(j+1, self.nmodes):
                         vec = [0]*self.nmodes
                         vec[i] = 1
                         vec[j] = 1
@@ -675,7 +680,7 @@ class VCI(object):
                         vec[k] = 1
                         states.append(vec)
 
-                        for l in range(k+1, self.nmodes):
+                        for l in xrange(k+1, self.nmodes):
                             vec = [0]*self.nmodes
                             vec[i] = 1
                             vec[j] = 1
@@ -707,7 +712,7 @@ class VCI(object):
         """
         nstates = len(self.states)
         for i in xrange(nstates):
-            for j in range(i, nstates):
+            for j in xrange(i, nstates):
                 if sum([x != y for (x, y) in zip(self.states[i], self.states[j])]) < self.maxpot+1:
                     yield (self.states[i], self.states[j])
     
@@ -717,7 +722,7 @@ class VCI(object):
         """
         nstates = len(self.states)
         for i in xrange(nstates):
-            for j in range(i, nstates):
+            for j in xrange(i, nstates):
                 yield (self.states[i], self.states[j])
 
     def calculate_intensities(self, *dipolemoments):
@@ -845,6 +850,9 @@ class VCI(object):
         #s = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate] * self.v1[[mode]]).sum()
 
         return s
+   
+    def v1_integral(self,mode,lstate,rstate):
+        return self._v1_integral(mode,lstate,rstate)
 
     def _v2_integral_old(self, mode1, mode2, lstate1, lstate2, rstate1, rstate2):
      # < mode1(lstate1) mode2(lstate2) | V2 | mode1(rstate1),mode2(rstate2)>
@@ -857,10 +865,10 @@ class VCI(object):
             except:
                 ind = self.v2_indices.index((mode2, mode1))
 
-            for i in range(self.ngrid):
+            for i in xrange(self.ngrid):
                 si = self.dx[mode1] * self.wfns[mode1, lstate1, i] * self.wfns[mode1, rstate1, i]
 
-                for j in range(self.ngrid):
+                for j in xrange(self.ngrid):
 
                     sj = self.dx[mode2] * self.wfns[mode2, lstate2, j] * self.wfns[mode2, rstate2, j]
                     s += si * sj * self.v2_data[ind][i, j]
@@ -897,6 +905,9 @@ class VCI(object):
     def _v2_integral(self, mode1, mode2, lstate1, lstate2, rstate1, rstate2):
         return self._v2_integral_new(mode1, mode2, lstate1, lstate2, rstate1, rstate2)
         #return self._v2_integral_old(mode1, mode2, lstate1, lstate2, rstate1, rstate2)
+
+    def v2_integral(self, mode1, mode2, lstate1, lstate2, rstate1, rstate2):
+        return self._v2_integral_new(mode1, mode2, lstate1, lstate2, rstate1, rstate2)
     
     #@do_cprofile
     def _v3_integral(self, mode1, mode2, mode3, lstate1, lstate2, lstate3,
@@ -939,13 +950,13 @@ class VCI(object):
         return np.einsum('i,j,k,ijk',si,sj,sk,self.v3_data[ind])  # einstein summation rules!
 
 
-        for i in range(self.ngrid):
+        for i in xrange(self.ngrid):
             si = self.dx[mode1] * self.wfns[mode1, lstate1, i] * self.wfns[mode1, rstate1, i]
 
-            for j in range(self.ngrid):
+            for j in xrange(self.ngrid):
                 sj = self.dx[mode2] * self.wfns[mode2, lstate2, j] * self.wfns[mode2, rstate2, j]
 
-                for k in range(self.ngrid):
+                for k in xrange(self.ngrid):
                     sk = self.dx[mode3] * self.wfns[mode3, lstate3, k] * self.wfns[mode3, rstate3, k]
                     s += si * sj * sk * self.v3_data[ind][i, j, k]
                     #s += si * sj * sk * self.v3[mode1,mode2,mode3,i,j,k]
@@ -1007,8 +1018,8 @@ class VCI(object):
         t = 0.0
         return np.einsum('i,j,ij', self.coefficients[mode, lstate],
                          self.coefficients[mode, rstate],self.tij[mode])
-        for i in range(self.ngrid):
-            for j in range(self.ngrid):
+        for i in xrange(self.ngrid):
+            for j in xrange(self.ngrid):
                 t += self.coefficients[mode, lstate, i] * self.coefficients[mode, rstate, j] * self.tij[mode, i, j]
 
         return t
@@ -1040,14 +1051,14 @@ class VCI(object):
         return ((2.0*a)/np.pi)**0.25*np.exp(-a*(q-qi)**2.0)
 
     def _calculate_coeff(self):  # calculates basis set coefficients, using grid and wave function values
-        for i in range(self.nmodes):  # for each mode
+        for i in xrange(self.nmodes):  # for each mode
 
-            for j in range(self.ngrid):  # for each state
+            for j in xrange(self.ngrid):  # for each state
 
                 #now calculate coefficients
                 chi = np.zeros((self.ngrid, self.ngrid))
-                for k in range(self.ngrid):
-                    for l in range(self.ngrid):
+                for k in xrange(self.ngrid):
+                    for l in xrange(self.ngrid):
                         chi[k, l] = self._chi(self.grids[i, l], self.a[i], self.grids[i, k])
 
                 c = np.linalg.solve(chi, self.wfns[i, j])
@@ -1055,24 +1066,24 @@ class VCI(object):
 
     def _calculate_kinetic_integrals(self):
 
-        for i in range(self.nmodes):  # for each mode
+        for i in xrange(self.nmodes):  # for each mode
 
-            for j in range(self.ngrid):
-                for k in range(self.ngrid):
+            for j in xrange(self.ngrid):
+                for k in xrange(self.ngrid):
 
                     self.tij[i, j, k] = self._dgs_kinetic_integral(i, j, k)
 
     def _calculate_ovrlp_integrals(self):
 
-        for i in range(self.nmodes):  # for each mode
+        for i in xrange(self.nmodes):  # for each mode
 
-            for j in range(self.ngrid):
-                for k in range(self.ngrid):
+            for j in xrange(self.ngrid):
+                for k in xrange(self.ngrid):
 
                     self.sij[i, j, k] = self._dgs_ovrlp_integral(i, j, k)
     
     @do_cprofile
-    def solve(self, parallel=False):
+    def solve(self, parallel=False, diag='Direct'):
         """
         General solver for the VCI
         """
@@ -1115,7 +1126,7 @@ class VCI(object):
                 mind = self.states.index(c[1])
                 #print 'At incides ',nind,mind
                 self.H[nind, mind] = tmp
-                #self.H[mind, nind] = tmp
+                self.H[mind, nind] = tmp
                 counter += 1
 
         else:
@@ -1146,16 +1157,34 @@ class VCI(object):
             results =  pool.map(self.calculate_transition, self.combgenerator(),chunksize=ch)
             for r in results:
                 self.H[r[0],r[1]] = r[2]
+                self.H[r[1],r[0]] = r[2]
 
-        np.save('Hessian.npy',self.H)
-        print Misc.fancy_box('Hamiltonian matrix constructed. Diagonalization...')
-        w, v = np.linalg.eigh(self.H, UPLO='U')
-        #w, v = np.linalg.eig(self.H)
-        self.energies = w
-        self.vectors = v
-        self.energiesrcm = self.energies / Misc.cm_in_au
-        self.solved = True
-        self.print_results()
+        if diag=='Direct':
+            print Misc.fancy_box('Hamiltonian matrix constructed. Diagonalization...')
+            w, v = np.linalg.eigh(self.H, UPLO='U')
+            #w, v = np.linalg.eig(self.H)
+            self.energies = w
+            self.vectors = v
+            self.energiesrcm = self.energies / Misc.cm_in_au
+            self.solved = True
+            self.print_results()
+        elif diag=='Iterative':
+            print Misc.fancy_box('Hamiltonian matrix constructed. Iterative diagonalization.')
+            k = (np.sort(self.H.diagonal()-self.H.diagonal()[0])/Misc.cm_in_au < 4000).nonzero()[0][-1]
+            k += 50
+            if k > self.H.shape[0]:
+                k = self.H.shape[0]-1
+            from scipy.sparse.linalg import eigsh
+            w, v = eigsh(self.H, k=k, which='SA')
+            self.energies = w
+            self.vectors = v
+            self.energiesrcm = self.energies / Misc.cm_in_au
+            self.solved = True
+            self.print_results()
+
+        else:
+            print Misc.fancy_box('Hamiltonian contstructed and saved to file. No diag.')
+            np.save('Hessian.npy',self.H)
 
     @do_cprofile
     def solve_loop(self, parallel=False):
@@ -1175,8 +1204,8 @@ class VCI(object):
 
         if not parallel:
 
-            for i in range(nstates):
-                for j in range(i,nstates):
+            for i in xrange(nstates):
+                for j in xrange(i,nstates):
                     c = (self.states[i],self.states[j])
                     order = self.order_of_transition(c)
 
@@ -1223,3 +1252,28 @@ class VCI(object):
         self.energiesrcm = self.energies / Misc.cm_in_au
         self.solved = True
         self.print_results()
+
+    def save_vectors(self, fname=None):
+        """
+        Save results, eigenvectors and eigenvalues, of VCI to .npz file
+        """
+        if self.solved:
+            if not fname:
+                fname = 'VCI_%i_%i_results.npz' %(self.nmax,self.smax)
+            np.savez_compressed(fname, vec=self.vectors, enrcm=self.energiesrcm, states=self.states)
+        else:
+            print 'Solve VCI first'
+
+    def read_vectors(self,fname=None):
+        if fname:
+            npzfile = np.load(fname)
+            if np.all(self.states==npzfile['states']):
+                self.vectors = npzfile['vec']
+                self.energiesrcm = npzfile['enrcm']
+                self.energies = self.energiesrcm * Misc.cm_in_au
+                self.states = npzfile['states']
+                self.solved = True
+            else:
+                print 'The results do not fit the defined CI space'
+
+

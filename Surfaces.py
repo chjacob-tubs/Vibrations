@@ -75,6 +75,9 @@ class Surface:
         for i,e in enumerate(self.data):
             self.data[i] *=0.0
 
+
+
+
 class Potential(Surface):
 
     def __init__(self, grids=None, order=1):
@@ -99,7 +102,7 @@ class Potential(Surface):
             try:
                 return np.transpose(self.data[self.indices.index(tuple(newind))],sorted(range(len(ind)), key=lambda k: ind[k]))
             except:
-                return np.zeros(tuple([self.ngrid] * self.order))
+                raise Exception('Potential not found')
 
         elif len(item) == 2 * self.order:
             ind = list(item)
@@ -108,12 +111,11 @@ class Potential(Surface):
             newind2 = [x[0] for x in newind] + [x[1] for x in newind]
             modes = newind2[:self.order]
             points = newind2[self.order:]
-            
             try:
                 #return  self.data[self.indices.index(tuple(newind[:self.order]))][tuple(newind[self.order:])]
                 return  self.data[self.indices.index(tuple(modes))][tuple(points)]
             except:
-                return 0.0
+                raise Exception('Potential not found')
         else:
             pass
 
@@ -191,6 +193,20 @@ class Potential(Surface):
                                 self.indices.append((i,j,k,l))
                                 self.data.append(tmparray[i,j,k,l,:,:,:,:])
 
+    def save(self, fname='pot.npy'):
+        """
+        Saving the surface to npy file
+        """
+
+        shape = [self.grids.nmodes] * self.order + [self.ngrid] * self.order
+        shape = tuple(shape)
+        print shape
+        tmparray = np.zeros(shape)
+
+        for i,ind in enumerate(self.indices):
+            tmparray[ind] = self.data[i]
+
+        np.save(fname,tmparray)
 
     def generate_harmonic(self, cmat=None):
 
@@ -232,7 +248,7 @@ class Dipole(Surface):
         Method generating harmonic dipole moment surface, using its first derivative from harmonic calculations
         res -- the VibTools results instance
         """
-            
+        from VibTools import LocModeAnalysis 
         dm_deriv_nm =  res.get_tensor_deriv_nm('dipole',modes=self.grids.modes)
 
         if not self.empty:
@@ -243,6 +259,23 @@ class Dipole(Surface):
                     for j in range(3):
                         dm[:,j] = self.grids.grids[i] * dm_deriv_nm[i,j] * Misc.au_in_Debye * np.sqrt(Misc.me_in_amu)
                     self.data.append(dm)
+            elif self.order == 2:
+                lma = LocModeAnalysis(res,'IR',self.grids.modes)
+                icm = lma.get_intensity_coupling_matrix()
+                icm += np.triu(icm,1).T
+                print icm
+                for i in range(self.grids.nmodes):
+                    for j in range(i+1, self.grids.nmodes):
+                        dm = np.zeros((self.grids.ngrid, self.grids.ngrid, 3))
+                        self.indices.append((i,j))
+                        for k in range(self.grids.ngrid):
+                            for l in range(self.grids.ngrid):
+                                for m in range(3):
+                                    dm[k,l,m] = ( self.grids.grids[i,k] * self.grids.grids[j,l] * icm[i,j] 
+                                                * Misc.au_in_Debye * Misc.me_in_amu)
+
+                        self.data.append(dm)
+                                                
 
     def read_np(self, fname):
         """
