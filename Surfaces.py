@@ -100,7 +100,8 @@ class Potential(Surface):
             #whichelement = self.indices.index(tuple(newind))
             #print whichelement
             try:
-                return np.transpose(self.data[self.indices.index(tuple(newind))],sorted(range(len(ind)), key=lambda k: ind[k]))
+                #return np.transpose(self.data[self.indices.index(tuple(newind))],sorted(range(len(ind)), key=lambda k: ind[k]))
+                return np.transpose(self.data[self.indices.index(tuple(newind))],axes=(tuple([newind.index(i) for i in ind])))
             except:
                 raise Exception('Potential not found')
 

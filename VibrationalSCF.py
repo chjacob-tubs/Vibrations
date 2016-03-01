@@ -530,18 +530,27 @@ class VSCF2D(VSCF):
     def _veffective(self, mode, state, wfns):
 
         veff = np.zeros(self.ngrid)
-        
-
-        for i in range(self.ngrid):
-            for j in range(self.nmodes):
-
-                sj = (self.dx[j]*wfns[j,state[j]]**2)
-                try:
-                    v2 = self.v2[mode,j]
-                except:
-                    pass
-                else:
+       
+        for j in range(self.nmodes):
+            sj = (self.dx[j]*wfns[j,state[j]]**2)
+            try:
+                v2 = self.v2[mode,j]
+            except:
+                pass
+            else:
+                for i in range(self.ngrid):
                     veff[i] += np.einsum('l,l',sj,v2[i,:])
+
+#       for i in range(self.ngrid):
+#           for j in range(self.nmodes):
+
+#               sj = (self.dx[j]*wfns[j,state[j]]**2)
+#               try:
+#                   v2 = self.v2[mode,j][i,:]
+#               except:
+#                   pass
+#               else:
+#                   veff[i] += np.einsum('l,l',sj,v2)
                     
         return veff
                     
@@ -582,24 +591,23 @@ class VSCF3D(VSCF2D):
     def _veffective(self, mode, state, wfns):
 
         veff = np.zeros(self.ngrid)
-
-        for i in range(self.ngrid):
-            for j in range(self.nmodes):
-                sj = (self.dx[j]*wfns[j,state[j]]**2)
+        for j in range(self.nmodes):
+            sj = (self.dx[j]*wfns[j,state[j]]**2)
+            try:
+                v2 = self.v2[mode,j]
+            except:
+                pass
+            else:
+                for i in range(self.ngrid):
+                    veff[i] += np.einsum('l,l',sj,v2[i,:])
+            for k in range(j+1, self.nmodes):
+                sk = (self.dx[k]*wfns[k,state[k]]**2)
                 try:
-                    v2 = self.v2[mode,j]
+                    v3 = self.v3[mode,j,k]
                 except:
                     pass
                 else:
-                    veff[i] += np.einsum('l,l',sj,v2[i,:])
-                                 
-                for k in range(j+1, self.nmodes):
-                    sk = (self.dx[k]*wfns[k,state[k]]**2)
-                    try:
-                        v3 = self.v3[mode,j,k]
-                    except:
-                        pass
-                    else:
+                    for i in range(self.ngrid):
                         s = np.einsum('l,m,lm',sj,sk,v3[i,:,:])
                         veff[i] += s
     
@@ -656,33 +664,35 @@ class VSCF4D(VSCF3D):
         veff = np.zeros(self.ngrid)
         
 
-        for i in range(self.ngrid):
-            for j in range(self.nmodes):
-                sj = (self.dx[j]*wfns[j,state[j]]**2)
+        for j in range(self.nmodes):
+            sj = (self.dx[j]*wfns[j,state[j]]**2)
+            try:
+                v2 = self.v2[mode,j]
+            except:
+                pass
+            else:
+                for i in range(self.ngrid):
+                    veff[i] += np.einsum('l,l',sj,v2[i,:])
+                             
+            for k in range(j+1, self.nmodes):
+                sk = (self.dx[k]*wfns[k,state[k]]**2)
                 try:
-                    v2 = self.v2[mode,j]
+                    v3 = self.v3[mode,j,k]
                 except:
                     pass
                 else:
-                    veff[i] += np.einsum('l,l',sj,v2[i,:])
-                                 
-                for k in range(j+1, self.nmodes):
-                    sk = (self.dx[k]*wfns[k,state[k]]**2)
+                    for i in range(self.ngrid):
+                        s = np.einsum('l,m,lm',sj,sk,v3[i,:,:])
+                        veff[i] += s
+                
+                for l in range(k+1, self.nmodes):
+                    sl = (self.dx[l]*wfns[l,state[l]]**2)
                     try:
-                        v3 = self.v3[mode,j,k]
+                        v4 = self.v4[mode,j,k,l]
                     except:
                         pass
                     else:
-                        s = np.einsum('l,m,lm',sj,sk,v3[i,:,:])
-                        veff[i] += s
-                    
-                    for l in range(k+1, self.nmodes):
-                        sl = (self.dx[l]*wfns[l,state[l]]**2)
-                        try:
-                            v4 = self.v4[mode,j,k,l]
-                        except:
-                            pass
-                        else:
+                        for i in range(self.ngrid):
                             s = np.einsum('l,m,n,lmn',sj,sk,sl,v4[i,:,:,:])
                             veff[i] += s
 
