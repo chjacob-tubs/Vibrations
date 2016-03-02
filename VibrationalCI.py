@@ -106,6 +106,8 @@ class VCI(object):
         self.tij = np.zeros((self.nmodes, self.ngrid, self.ngrid))  # calculate Tij only once as well
         self._calculate_kinetic_integrals()
 
+        self.integrals = {}  # dictionary storing the precomputed 1-mode integrals, {(mode,lstate,rstate):val}
+
         self.energies = np.array([])
         self.energiesrcm = np.array([])
         self.H = np.array([])
@@ -846,7 +848,15 @@ class VCI(object):
 
     def _v1_integral(self, mode, lstate, rstate):  # calculate integral of type < mode(lstate) | V1 | mode(rstate) >
         ind = self.v1_indices.index(mode)
-        s = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate] * self.v1_data[ind]).sum()
+
+        try:
+            s1 = self.integrals[(mode,lstate,rstate)]
+        except:
+            s1 = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate])
+            self.integrals[(mode,lstate,rstate)] = s1
+
+        #s = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate] * self.v1_data[ind]).sum()
+        s = (s1 * self.v1_data[ind]).sum()
         #s = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate] * self.v1[[mode]]).sum()
 
         return s
@@ -887,15 +897,39 @@ class VCI(object):
             except:
                 ind = self.v2_indices.index((mode2, mode1))
             if mode1 < mode2: 
-                s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1]).transpose()
-                s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
+                try:
+                    s1 = self.integrals[(mode1,lstate1,rstate1)]
+                except:
+                    s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1])
+                    self.integrals[(mode1,lstate1,rstate1)] = s1
+                try:
+                    s2 = self.integrals[(mode2,lstate2,rstate2)]
+                except:
+                    s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
+                    self.integrals[(mode2,lstate2,rstate2)] = s2
+                
+            
+                #s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1]).transpose()
+                #s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
                 #return np.einsum('i,j,ij',s1,s2,self.v2_data[ind])
+                s1 = s1.transpose()
                 s = (s1.dot(self.v2_data[ind]).dot(s2)).sum()
                 #s = (s1.dot(self.v2[mode1,mode2]).dot(s2)).sum()
             else:
-                s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1]).transpose()
-                s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
+                try:
+                    s1 = self.integrals[(mode1,lstate1,rstate1)]
+                except:
+                    s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1])
+                    self.integrals[(mode1,lstate1,rstate1)] = s1
+                try:
+                    s2 = self.integrals[(mode2,lstate2,rstate2)]
+                except:
+                    s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
+                    self.integrals[(mode2,lstate2,rstate2)] = s2
+                #s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1]).transpose()
+                #s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
                 #return np.einsum('i,j,ji',s1,s2,self.v2_data[ind])
+                s1 = s1.transpose()
                 s = (s1.dot(self.v2_data[ind].transpose()).dot(s2)).sum()
                 #s = (s1.dot(self.v2[mode1, mode2]).dot(s2)).sum()
 
@@ -943,9 +977,25 @@ class VCI(object):
         else:
             return 0.0
         
-        si = self.dx[mode1] * self.wfns[mode1,lstate1] * self.wfns[mode1,rstate1]
-        sj = self.dx[mode2] * self.wfns[mode2,lstate2] * self.wfns[mode2,rstate2]
-        sk = self.dx[mode3] * self.wfns[mode3,lstate3] * self.wfns[mode3,rstate3]
+        try:
+            si = self.integrals[(mode1,lstate1,rstate1)]
+        except:
+            si = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1])
+            self.integrals[(mode1,lstate1,rstate1)] = si
+        try:
+            sj = self.integrals[(mode2,lstate2,rstate2)]
+        except:
+            sj = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
+            self.integrals[(mode2,lstate2,rstate2)] = sj
+        try:
+            sk = self.integrals[(mode3,lstate3,rstate3)]
+        except:
+            sk = (self.dx[mode3] * self.wfns[mode3, lstate3] * self.wfns[mode3, rstate3])
+            self.integrals[(mode3,lstate3,rstate3)] = sk
+
+        #si = self.dx[mode1] * self.wfns[mode1,lstate1] * self.wfns[mode1,rstate1]
+        #sj = self.dx[mode2] * self.wfns[mode2,lstate2] * self.wfns[mode2,rstate2]
+        #sk = self.dx[mode3] * self.wfns[mode3,lstate3] * self.wfns[mode3,rstate3]
 
         return np.einsum('i,j,k,ijk',si,sj,sk,self.v3_data[ind])  # einstein summation rules!
 
@@ -992,13 +1042,35 @@ class VCI(object):
         rstate2 = rstates[1]
         rstate3 = rstates[2]
         rstate4 = rstates[3]
-        s = []
-        si = self.dx[mode1] * self.wfns[mode1,lstate1] * self.wfns[mode1,rstate1]
-        sj = self.dx[mode2] * self.wfns[mode2,lstate2] * self.wfns[mode2,rstate2]
-        sk = self.dx[mode3] * self.wfns[mode3,lstate3] * self.wfns[mode3,rstate3]
-        sl = self.dx[mode4] * self.wfns[mode4,lstate4] * self.wfns[mode4,rstate4]
-        for m,l,r in ind:
-            s.append(self.dx[m] * self.wfns[m,l] * self.wfns[m,r])
+        #s = []
+
+        try:
+            si = self.integrals[(mode1,lstate1,rstate1)]
+        except:
+            si = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1])
+            self.integrals[(mode1,lstate1,rstate1)] = si
+        try:
+            sj = self.integrals[(mode2,lstate2,rstate2)]
+        except:
+            sj = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
+            self.integrals[(mode2,lstate2,rstate2)] = sj
+        try:
+            sk = self.integrals[(mode3,lstate3,rstate3)]
+        except:
+            sk = (self.dx[mode3] * self.wfns[mode3, lstate3] * self.wfns[mode3, rstate3])
+            self.integrals[(mode3,lstate3,rstate3)] = sk
+        try:
+            sl = self.integrals[(mode4,lstate4,rstate4)]
+        except:
+            sl = (self.dx[mode4] * self.wfns[mode4, lstate4] * self.wfns[mode4, rstate4])
+            self.integrals[(mode4,lstate4,rstate4)] = sl
+
+        #si = self.dx[mode1] * self.wfns[mode1,lstate1] * self.wfns[mode1,rstate1]
+        #sj = self.dx[mode2] * self.wfns[mode2,lstate2] * self.wfns[mode2,rstate2]
+        #sk = self.dx[mode3] * self.wfns[mode3,lstate3] * self.wfns[mode3,rstate3]
+        #sl = self.dx[mode4] * self.wfns[mode4,lstate4] * self.wfns[mode4,rstate4]
+        #for m,l,r in ind:
+        #    s.append(self.dx[m] * self.wfns[m,l] * self.wfns[m,r])
         
         #return np.einsum('i,j,k,l,ijkl',s[0],s[1],s[2],s[3],self.v4_data[potind])
         tmp = np.einsum('i,j,k,l,ijkl',si,sj,sk,sl,self.v4_data[potind])
@@ -1104,18 +1176,23 @@ class VCI(object):
             counter = 1
             for c in self.combgenerator():
                 order = self.order_of_transition(c)
-                #print 'Point %i, of order %i' %(counter,order)
-                #print 'Solving the transition: ',c
+                print 'Point %i, of order %i' %(counter,order)
+                print ' ',c 
                 if order == 0:
                     tmp = self.calculate_diagonal(c)
+                    print '  Diagonal element'
                 elif order == 1:
                     tmp = self.calculate_single(c)
+                    print '  Single transition'
                 elif order == 2:
                     tmp = self.calculate_double(c)
+                    print '  Double transition'
                 elif order == 3 and self.maxpot > 2:
                     tmp = self.calculate_triple(c)
+                    print '  Triple transition'
                 elif order == 4 and self.maxpot > 3:
                     tmp = self.calculate_quadriple(c)
+                    print '  Quadruple transition'
                 else:
                     tmp = 0.0
 
