@@ -229,14 +229,43 @@ class Potential(Surface):
                 elif self.order == 2:
                     for i in range(self.grids.nmodes):
                         for j in range(i+1, self.grids.nmodes):
-                            self.indices.append((i,j))
-                            potential = np.zeros((self.ngrid,self.ngrid))
-                            for k in range(self.grids.ngrid):
-                                for l in range(self.grids.ngrid):
-                                    potential[k, l] = self.grids.grids[i, k] * self.grids.grids[j, l] * cmat[i, j]
-                                    potential[l, k] = potential[k, l]
+                            if cmat[i,j] != 0.0:
+                                self.indices.append((i,j))
+                                potential = np.zeros((self.ngrid,self.ngrid))
+                                for k in range(self.grids.ngrid):
+                                    for l in range(self.grids.ngrid):
+                                        potential[k, l] = self.grids.grids[i, k] * self.grids.grids[j, l] * cmat[i, j]
+                                        potential[l, k] = potential[k, l]
 
-                            self.data.append(potential)
+                                self.data.append(potential)
+
+
+class Polarizability(Surface):
+    """ 
+    Class for polarizability tensors. 
+    """
+    def __init__(self, grids=None, order=1):
+        Surface.__init__(self, grids, order, prop=(6,))
+
+    def generate_harmonic(self, res):
+        """
+        Method generating harmonic polarizability surface, using its first derivative from
+        harmonic calculations.
+        res -- VibTools results instance
+        """
+        pol_deriv_nm = res.get_tensor_deriv_nm('pollen', ncomp=6, modes=self.grids.modes)
+        print pol_deriv_nm.shape
+
+        if not self.empty:
+            if self.order == 1:
+                for i in range(self.grids.nmodes):
+                    pol = np.zeros((self.grids.ngrid, 6))
+                    self.indices.append(i)
+                    for j in range(6):
+                        pol[:,j] = self.grids.grids[i] * pol_deriv_nm[i,j]
+                    self.data.append(pol)
+            else:
+                raise Exception('In the harmonic approximation only 1-mode polarizability tensors are available')
 
 
 class Dipole(Surface):
@@ -249,7 +278,6 @@ class Dipole(Surface):
         Method generating harmonic dipole moment surface, using its first derivative from harmonic calculations
         res -- the VibTools results instance
         """
-        from VibTools import LocModeAnalysis 
         dm_deriv_nm =  res.get_tensor_deriv_nm('dipole',modes=self.grids.modes)
 
         if not self.empty:
@@ -260,22 +288,9 @@ class Dipole(Surface):
                     for j in range(3):
                         dm[:,j] = self.grids.grids[i] * dm_deriv_nm[i,j] * Misc.au_in_Debye * np.sqrt(Misc.me_in_amu)
                     self.data.append(dm)
-            elif self.order == 2:
-                lma = LocModeAnalysis(res,'IR',self.grids.modes)
-                icm = lma.get_intensity_coupling_matrix()
-                icm += np.triu(icm,1).T
-                print icm
-                for i in range(self.grids.nmodes):
-                    for j in range(i+1, self.grids.nmodes):
-                        dm = np.zeros((self.grids.ngrid, self.grids.ngrid, 3))
-                        self.indices.append((i,j))
-                        for k in range(self.grids.ngrid):
-                            for l in range(self.grids.ngrid):
-                                for m in range(3):
-                                    dm[k,l,m] = ( self.grids.grids[i,k] * self.grids.grids[j,l] * icm[i,j] 
-                                                * Misc.au_in_Debye * Misc.me_in_amu)
+            else:
+                raise Exception('In the harmonic approximation only 1-mode dipole moments are available')
 
-                        self.data.append(dm)
                                                 
 
     def read_np(self, fname):

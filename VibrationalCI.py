@@ -501,7 +501,7 @@ class VCI(object):
             for i in xrange(len(self.energies)):  # was self.states, is self.energies
                 state = self.states[(self.vectors[:, i]**2).argmax()]
                 en = self.energiesrcm[i] - self.energiesrcm[0]
-                if sum([x > 0 for x in state]) < which+1:
+                if sum([x > 0 for x in state]) < which+1 and sum(state) < which+1:
                     if en < maxfreq:
                         print "%s %10.4f %10.4f %10.4f" % (state, (self.vectors[:, i]**2).max(), self.energiesrcm[i],
                                                    en)
@@ -772,7 +772,7 @@ class VCI(object):
 
                 for fstate in xrange(nstates):
                     cf = self.vectors[fstate, i]  # final state's coefficient
-                    if abs(ci) > 1e-6 and abs(cf) > 1e-6:
+                    if abs(ci) > 1e-8 and abs(cf) > 1e-8:
                         tmptm *= 0.0
 
                         for j in xrange(self.nmodes):
@@ -843,6 +843,106 @@ class VCI(object):
             factor = 2.5048
             intens = (totaltm[0]**2 + totaltm[1]**2 + totaltm[2]**2) * factor * (self.energiesrcm[i]
                                                                                  - self.energiesrcm[0])
+            self.intensities[i] = intens
+            print '%7.1f %7.1f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
+
+
+    def calculate_raman(self, *pols):
+        """
+        Calculates VCI Raman activities using the polarizability surfaces
+        """
+
+        if not self.solved:
+            raise Exception('Solve the VCI first')
+        self.pol1 = None
+        self.pol2 = None
+        if len(pols) == 0:
+            raise Exception('No dipole moments given')
+        elif len(pols) == 1:
+            print 'Only one set of dipole moments given, the second will be taken as 0.'
+            self.pol1 = pols[0]
+            self.maxpol = 1
+        elif len(pols) == 2:
+            print 'Two sets of dipole moments given.'
+            self.pol1 = pols[0]
+            self.pol2 = pols[1]
+            self.maxpol = 2
+        elif len(pols) > 2:
+            print 'More than two sets of dipole moments given, only the two first will be used'
+            self.pol1 = pols[0]
+            self.pol2 = pols[1]
+            self.maxpol = 2
+
+        # TODO
+        # 1. Check size of the data etc.
+
+        self.intensities = np.zeros(len(self.states))
+
+        # assuming that the first state is a ground state
+        totalpol = np.zeros(6)
+        tmptm = np.zeros(6)
+        tmpp1 = np.zeros(6)
+        tmpp2 = np.zeros(6)
+        nstates = len(self.states)
+
+        for i in xrange(1, nstates):
+            totalpol *= 0.0
+            for istate in xrange(nstates):
+                ci = self.vectors[istate, 0]  # initial state's coefficient
+
+                for fstate in xrange(nstates):
+                    cf = self.vectors[fstate, i]  # final state's coefficient
+
+                    order = self.order_of_transition((self.states[istate], self.states[fstate]))
+                    tmpp1 *= 0.0
+                    if order == 0:
+                        for j in xrange(self.nmodes):
+                            jistate = self.states[istate][j]
+                            jfstate = self.states[fstate][j]
+                            ind = self.pol1.indices.index(j)
+                            tmpp1[0] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                         * self.pol1.data[ind][:, 0]).sum()
+                            tmpp1[1] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                         * self.pol1.data[ind][:, 1]).sum()
+                            tmpp1[2] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                         * self.pol1.data[ind][:, 2]).sum()
+                            tmpp1[3] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                         * self.pol1.data[ind][:, 3]).sum()
+                            tmpp1[4] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                         * self.pol1.data[ind][:, 4]).sum()
+                            tmpp1[5] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                         * self.pol1.data[ind][:, 5]).sum()
+                    elif order == 1:
+                        n = self.states[istate]
+                        m = self.states[fstate]
+                        j = [x != y for x, y in zip(n, m)].index(True)  # give me the index of the element that differs two vectors
+                        jistate = self.states[istate][j]
+                        jfstate = self.states[fstate][j]
+                        ind = self.pol1.indices.index(j)
+                        tmpp1[0] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                     * self.pol1.data[ind][:, 0]).sum()
+                        tmpp1[1] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                     * self.pol1.data[ind][:, 1]).sum()
+                        tmpp1[2] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                     * self.pol1.data[ind][:, 2]).sum()
+                        tmpp1[3] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                     * self.pol1.data[ind][:, 3]).sum()
+                        tmpp1[4] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                     * self.pol1.data[ind][:, 4]).sum()
+                        tmpp1[5] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                     * self.pol1.data[ind][:, 5]).sum()
+                    
+                    totalpol += tmpp1 * ci * cf
+    
+            a2 = 1.0/3.0 * (totalpol[0] + totalpol[3] + totalpol[5])
+            a2 = a2**2  * Misc.Bohr_in_Angstrom**4
+            g2 = 1.0/2.0 * ((totalpol[0]-totalpol[3])**2 + (totalpol[3]-totalpol[5])**2
+                           +(totalpol[5]-totalpol[0])**2 + 6.0 * totalpol[1]**2
+                           + 6.0 * totalpol[2]**2 + 6.0 * totalpol[4]**2)
+            g2 *= Misc.Bohr_in_Angstrom**4
+            #print a2,g2
+            f = self.energies[i] - self.energies[0]
+            intens = 2 * f *  (45.0 * a2 + 7.0 * g2)
             self.intensities[i] = intens
             print '%7.1f %7.1f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
 

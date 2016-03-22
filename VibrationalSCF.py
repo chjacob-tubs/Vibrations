@@ -298,6 +298,7 @@ class VSCF2D(VSCF):
         gs = self.states[0]
         print Misc.fancy_box('VSCF Intensities')
         print 'State        Energy /cm^-1    Intensity /km*mol^-1'
+        self.intensities = []
         for s in self.states[1:]:
             tmptm = np.array([0.0, 0.0, 0.0])
             stateindex = self.states.index(s)
@@ -362,7 +363,9 @@ class VSCF2D(VSCF):
                         #tmptm = tmptm + tmpd2
             factor = 2.5048
             intens = (tmptm[0]**2 + tmptm[1]**2 + tmptm[2]**2)*factor*(self.energies[stateindex]-self.energies[0])
+            self.intensities.append(intens)
             print '%s %7.1f %7.1f' % (s, self.energies[stateindex]-self.energies[0], intens)
+        self.intensities = np.array(self.intensities)
 
     def get_groundstate_wfn(self):
         """
