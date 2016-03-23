@@ -244,8 +244,9 @@ class Polarizability(Surface):
     """ 
     Class for polarizability tensors. 
     """
-    def __init__(self, grids=None, order=1):
+    def __init__(self, grids=None, gauge='len', order=1):
         Surface.__init__(self, grids, order, prop=(6,))
+        self.gauge = gauge
 
     def generate_harmonic(self, res):
         """
@@ -253,7 +254,7 @@ class Polarizability(Surface):
         harmonic calculations.
         res -- VibTools results instance
         """
-        pol_deriv_nm = res.get_tensor_deriv_nm('pollen', ncomp=6, modes=self.grids.modes)
+        pol_deriv_nm = res.get_tensor_deriv_nm('pol'+self.gauge, ncomp=6, modes=self.grids.modes)
         print pol_deriv_nm.shape
 
         if not self.empty:
@@ -267,6 +268,44 @@ class Polarizability(Surface):
             else:
                 raise Exception('In the harmonic approximation only 1-mode polarizability tensors are available')
 
+class Gtensor(Surface):
+    
+    def __init__(self,grids=None, gauge='vel', order=1):
+        Surface.__init__(self, grids, order, prop=(9,))
+        self.gauge = gauge
+
+    def generate_harmonic(self, res):
+
+        gten_deriv_nm = res.get_tensor_deriv_nm('gten'+self.gauge, modes=self.grids.modes)
+        if not self.empty:
+            if self.order == 1:
+                for i in range(self.grids.nmodes):
+                    gten = np.zeros((self.grids.ngrid, 9))
+                    self.indices.append(i)
+                    for j in range(9):
+                        gten[:,j] = self.grids.grids[i] * gten_deriv_nm[i,j]
+                    self.data.append(gten)
+            else:
+                raise Exception('In the harmonic approximation only 1-mode polarizability tensors are available')
+
+class Atensor(Surface):
+    
+    def __init__(self,grids=None, order=1):
+        Surface.__init__(self, grids, order, prop=(27,))
+
+    def generate_harmonic(self, res):
+
+        aten_deriv_nm = res.get_tensor_deriv_nm('aten', modes=self.grids.modes)
+        if not self.empty:
+            if self.order == 1:
+                for i in range(self.grids.nmodes):
+                    aten = np.zeros((self.grids.ngrid, 27))
+                    self.indices.append(i)
+                    for j in range(27):
+                        aten[:,j] = self.grids.grids[i] * aten_deriv_nm[i,j]
+                    self.data.append(aten)
+            else:
+                raise Exception('In the harmonic approximation only 1-mode polarizability tensors are available')
 
 class Dipole(Surface):
 
@@ -286,7 +325,7 @@ class Dipole(Surface):
                     dm = np.zeros((self.grids.ngrid, 3))
                     self.indices.append(i)
                     for j in range(3):
-                        dm[:,j] = self.grids.grids[i] * dm_deriv_nm[i,j] * Misc.au_in_Debye * np.sqrt(Misc.me_in_amu)
+                        dm[:,j] = self.grids.grids[i] * dm_deriv_nm[i,j]  * Misc.au_in_Debye * np.sqrt(Misc.me_in_amu)
                     self.data.append(dm)
             else:
                 raise Exception('In the harmonic approximation only 1-mode dipole moments are available')

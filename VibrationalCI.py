@@ -4,6 +4,7 @@ The module reeated to the VCI class for Vibrational Confinuration Interaction ca
 
 import numpy as np
 import Misc
+import Surfaces
 import time
 
 import cProfile
@@ -840,8 +841,7 @@ class VCI(object):
 
                                     tmptm += tmpd2 * tmpovrlp
                         totaltm += tmptm * ci * cf
-            factor = 2.5048
-            intens = (totaltm[0]**2 + totaltm[1]**2 + totaltm[2]**2) * factor * (self.energiesrcm[i]
+            intens = (totaltm[0]**2 + totaltm[1]**2 + totaltm[2]**2) * Misc.intfactor * (self.energiesrcm[i]
                                                                                  - self.energiesrcm[0])
             self.intensities[i] = intens
             print '%7.1f %7.1f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
@@ -862,27 +862,17 @@ class VCI(object):
             print 'Only one set of dipole moments given, the second will be taken as 0.'
             self.pol1 = pols[0]
             self.maxpol = 1
-        elif len(pols) == 2:
-            print 'Two sets of dipole moments given.'
+        elif len(pols) > 1:
+            print 'More than one sets of properties given, only the first will be used'
             self.pol1 = pols[0]
-            self.pol2 = pols[1]
-            self.maxpol = 2
-        elif len(pols) > 2:
-            print 'More than two sets of dipole moments given, only the two first will be used'
-            self.pol1 = pols[0]
-            self.pol2 = pols[1]
-            self.maxpol = 2
+            self.maxpol = 1
 
-        # TODO
-        # 1. Check size of the data etc.
 
         self.intensities = np.zeros(len(self.states))
 
-        # assuming that the first state is a ground state
         totalpol = np.zeros(6)
         tmptm = np.zeros(6)
         tmpp1 = np.zeros(6)
-        tmpp2 = np.zeros(6)
         nstates = len(self.states)
 
         for i in xrange(1, nstates):
@@ -940,11 +930,106 @@ class VCI(object):
                            +(totalpol[5]-totalpol[0])**2 + 6.0 * totalpol[1]**2
                            + 6.0 * totalpol[2]**2 + 6.0 * totalpol[4]**2)
             g2 *= Misc.Bohr_in_Angstrom**4
-            #print a2,g2
             f = self.energies[i] - self.energies[0]
             intens = 2 * f *  (45.0 * a2 + 7.0 * g2)
             self.intensities[i] = intens
             print '%7.1f %7.1f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
+
+    def calculate_roa(self, pollen,polvel,gtenvel, aten, lwl):
+        """
+        Calculate ROA backscattering, instead of explicit property tensors,
+        just use the results instance, so that everything is generated "on the fly"
+        """
+        self.lwl = lwl
+
+        tensors = [pollen, polvel, gtenvel, aten]
+
+
+        self.intensities = np.zeros(len(self.states))
+
+        totaltens = []
+        tmptens = []
+        for t in tensors:
+            tmptens.append(np.zeros(t.prop[0]))
+            totaltens.append(np.zeros(t.prop[0]))
+
+        nstates = len(self.states)
+
+        for i in xrange(1, nstates):
+            for tt in totaltens:
+                tt *= 0.0
+
+
+            for istate in xrange(nstates):
+                ci = self.vectors[istate, 0]  # initial state's coefficient
+
+                for fstate in xrange(nstates):
+                    cf = self.vectors[fstate, i]  # final state's coefficient
+                    for tt in tmptens:
+                        tt *= 0.0
+
+                    order = self.order_of_transition((self.states[istate], self.states[fstate]))
+                    if order == 0:
+                        for j in xrange(self.nmodes):
+                            jistate = self.states[istate][j]
+                            jfstate = self.states[fstate][j]
+                            
+                            for ti, t in enumerate(tensors):
+                                ind = t.indices.index(j)
+                                for o in range(t.prop[0]):
+                                    tmptens[ti][o] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                                      * t.data[ind][:,o]).sum()
+
+                    elif order == 1:
+                        n = self.states[istate]
+                        m = self.states[fstate]
+                        j = [x != y for x, y in zip(n, m)].index(True)  # give me the index of the element that differs two vectors
+                        jistate = self.states[istate][j]
+                        jfstate = self.states[fstate][j]
+                        for ti, t in enumerate(tensors):
+                            ind = t.indices.index(j)
+                            for o in range(t.prop[0]):
+                                tmptens[ti][o] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                                  * t.data[ind][:,o]).sum()
+                    
+                    for tn,tt in enumerate(totaltens):
+                        tt += tmptens[tn] * ci * cf
+
+            #calculate the invariants
+            # bG
+            pi = tensors.index(polvel)
+            gi = tensors.index(gtenvel)
+            pol = totaltens[pi]
+            gt = totaltens[gi]
+            bG = 0.5 * (3*pol[0]*gt[0] - pol[0]*gt[0] +
+                        3*pol[1]*gt[1] - pol[0]*gt[4] +
+                        3*pol[2]*gt[2] - pol[0]*gt[8] +
+                        3*pol[1]*gt[3] - pol[3]*gt[0] +
+                        3*pol[3]*gt[4] - pol[3]*gt[4] +
+                        3*pol[4]*gt[5] - pol[3]*gt[8] +
+                        3*pol[2]*gt[6] - pol[5]*gt[0] +
+                        3*pol[4]*gt[7] - pol[5]*gt[4] +
+                        3*pol[5]*gt[8] - pol[5]*gt[8])
+            bG = bG*(Misc.Bohr_in_Angstrom**4) * (1 / Misc.cvel) * 1e6
+            # bA
+            pi = tensors.index(pollen)
+            ai = tensors.index(aten)
+            pol = totaltens[pi]
+            at = totaltens[ai]
+            bA = 0.5 * self.lwl * (  (pol[3]-pol[0])*at[11]
+                                   + (pol[0]-pol[5])*at[6]
+                                   + (pol[5]-pol[3])*at[15]
+                                   + pol[1]*(at[19]-at[20]+at[8]-at[14]) 
+                                   + pol[2]*(at[25]-at[21]+at[3]-at[4]) 
+                                   + pol[4]*(at[10]-at[24]+at[12]-at[5])
+                                  )
+            bA = bA*(Misc.Bohr_in_Angstrom**4) * (1 / Misc.cvel) * 1e6
+            
+            roa =  1e-6*96.0*(bG + (1.0/3.0)*bA)
+            f = self.energies[i]-self.energies[0]
+            roa *= 2*f
+            self.intensities[i]=roa
+
 
     def _v1_integral(self, mode, lstate, rstate):  # calculate integral of type < mode(lstate) | V1 | mode(rstate) >
         ind = self.v1_indices.index(mode)
