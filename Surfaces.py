@@ -15,7 +15,7 @@ class Surface:
     def __init__(self, grids=None, order=1, prop=(1,)):
         """
         An object is initialized with existing grids, the order of the surface (how many modes are involved), and
-        the shape of the property: (1,) for energy, (3,) for dipole moment, (3,3) for polarizability
+        the shape of the property: (1,) for energy, (3,) for dipole moment, (6,) for polarizability
 
         @param grids: Vibrations grid object
         @param order: Order (or dimensionality) of the surface
@@ -75,23 +75,11 @@ class Surface:
         for i,e in enumerate(self.data):
             self.data[i] *=0.0
 
-
-
-
-class Potential(Surface):
-
-    def __init__(self, grids=None, order=1):
-        Surface.__init__(self, grids, order, prop=(1,))
-        self.index = 0  # will be used for the iterator
-
-# TODO
-# 3. method for saving?
-
     def __getitem__(self, item):
         """
-        Gets a potential for given indices, if more Nindices == 2*Nmodes -> for a given grid point
+        Gets a surface/element for given indices, Nindices == 2*Nmodes => for a given grid point
         :param item: Indices of the modes
-        :return: Potential for given indices
+        :return: Property for given indices
         """
         if len(item) == self.order:
             ind = list(item)
@@ -103,7 +91,7 @@ class Potential(Surface):
                 #return np.transpose(self.data[self.indices.index(tuple(newind))],sorted(range(len(ind)), key=lambda k: ind[k]))
                 return np.transpose(self.data[self.indices.index(tuple(newind))],axes=(tuple([newind.index(i) for i in ind])))
             except:
-                raise Exception('Potential not found')
+                raise Exception('Surface not found')
 
         elif len(item) == 2 * self.order:
             ind = list(item)
@@ -116,9 +104,51 @@ class Potential(Surface):
                 #return  self.data[self.indices.index(tuple(newind[:self.order]))][tuple(newind[self.order:])]
                 return  self.data[self.indices.index(tuple(modes))][tuple(points)]
             except:
-                raise Exception('Potential not found')
+                raise Exception('Point not found')
         else:
             pass
+
+
+
+class Potential(Surface):
+
+    def __init__(self, grids=None, order=1):
+        Surface.__init__(self, grids, order, prop=(1,))
+        self.index = 0  # will be used for the iterator
+
+
+#   def __getitem__(self, item):
+#       """
+#       Gets a potential for given indices, if more Nindices == 2*Nmodes -> for a given grid point
+#       :param item: Indices of the modes
+#       :return: Potential for given indices
+#       """
+#       if len(item) == self.order:
+#           ind = list(item)
+#           newind = ind[:]
+#           newind.sort() #  the data in the object is sorted according to the indices
+#           #whichelement = self.indices.index(tuple(newind))
+#           #print whichelement
+#           try:
+#               #return np.transpose(self.data[self.indices.index(tuple(newind))],sorted(range(len(ind)), key=lambda k: ind[k]))
+#               return np.transpose(self.data[self.indices.index(tuple(newind))],axes=(tuple([newind.index(i) for i in ind])))
+#           except:
+#               raise Exception('Potential not found')
+
+#       elif len(item) == 2 * self.order:
+#           ind = list(item)
+#           newind = zip(ind[:self.order],ind[self.order:])
+#           newind.sort()
+#           newind2 = [x[0] for x in newind] + [x[1] for x in newind]
+#           modes = newind2[:self.order]
+#           points = newind2[self.order:]
+#           try:
+#               #return  self.data[self.indices.index(tuple(newind[:self.order]))][tuple(newind[self.order:])]
+#               return  self.data[self.indices.index(tuple(modes))][tuple(points)]
+#           except:
+#               raise Exception('Potential not found')
+#       else:
+#           pass
 
     def __iter__(self):
         return self
