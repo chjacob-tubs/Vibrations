@@ -488,7 +488,7 @@ class VCI(object):
         self.solved = True
         self.H = hamiltonian.copy()
 
-    def print_results(self, which=1, maxfreq=4000):
+    def print_results(self, which=1, maxfreq=4000, short=False):
         """
         Prints VCI results, can be limited to the states mostly contributed from given type of transitions (1 - singles,
         etc.), and to the maximal energy (usually 4000cm^-1 is the range of interest)
@@ -504,11 +504,27 @@ class VCI(object):
                 en = self.energiesrcm[i] - self.energiesrcm[0]
                 if sum([x > 0 for x in state]) < which+1 and sum(state) < which+1:
                     if en < maxfreq:
-                        print "%s %10.4f %10.4f %10.4f" % (state, (self.vectors[:, i]**2).max(), self.energiesrcm[i],
-                                                   en)
+                        if not short:
+                            print "%s %10.4f %10.4f %10.4f" % (state, (self.vectors[:, i]**2).max(), self.energiesrcm[i],
+                                                               en)
+                        else:
+                            print "%s %10.4f %10.4f %10.4f" % (self.print_short_state(state), (self.vectors[:, i]**2).max(), self.energiesrcm[i],
+                                                               en)
+
 
         else:
             print Misc.fancy_box('Solve the VCI first')
+
+    def print_short_state(self,state):
+        s = ''
+        ds = [state.index(x) for x in state if x]
+        s += str(len(ds))
+        s += ': '
+        for d in ds:
+            s += str(d)+ '(' + str(state[d]) + ')' + ' '
+
+        return s
+
 
     def print_contributions(self, mincon=0.1,which=1, maxfreq=4000):
         """
@@ -935,6 +951,7 @@ class VCI(object):
             self.intensities[i] = intens
             print '%7.1f %7.1f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
 
+    @do_cprofile
     def calculate_roa(self, pollen,polvel,gtenvel, aten, lwl):
         """
         Calculate ROA backscattering, instead of explicit property tensors,
@@ -965,35 +982,53 @@ class VCI(object):
 
                 for fstate in xrange(nstates):
                     cf = self.vectors[fstate, i]  # final state's coefficient
-                    for tt in tmptens:
-                        tt *= 0.0
+                    if ci and cf:
+                        for tt in tmptens:
+                            tt *= 0.0
 
-                    order = self.order_of_transition((self.states[istate], self.states[fstate]))
-                    if order == 0:
-                        for j in xrange(self.nmodes):
+                        order = self.order_of_transition((self.states[istate], self.states[fstate]))
+                        if order == 0:
+                            for j in xrange(self.nmodes):
+                                jistate = self.states[istate][j]
+                                jfstate = self.states[fstate][j]
+                                
+                                for ti, t in enumerate(tensors):
+                                    ind = t.indices.index(j)
+                                    for o in range(t.prop[0]):
+                                        #tmptens[ti][o] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                        #                  * t.data[ind][:,o]).sum()
+                                        try:
+                                            s1 = self.integrals[(j,jistate,jfstate)]
+                                        except:
+                                            s1 = (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate])
+                                            self.integrals[(j,jistate,jfstate)] = s1
+
+                                        #s = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate] * self.v1_data[ind]).sum()
+                                        tmptens[ti][o] += np.dot(t.data[ind][:,o],s1)
+
+                        elif order == 1:
+                            n = self.states[istate]
+                            m = self.states[fstate]
+                            j = [x != y for x, y in zip(n, m)].index(True)  # give me the index of the element that differs two vectors
                             jistate = self.states[istate][j]
                             jfstate = self.states[fstate][j]
-                            
                             for ti, t in enumerate(tensors):
                                 ind = t.indices.index(j)
                                 for o in range(t.prop[0]):
-                                    tmptens[ti][o] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
-                                                      * t.data[ind][:,o]).sum()
+                                    #tmptens[ti][o] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
+                                    #                  * t.data[ind][:,o]).sum()
+                                    #tmptens[ti][o] += np.dot((self.dx[j] * self.wfns[j, jistate] * t.data[ind][:,o]),self.wfns[j, jfstate])
+                                    try:
+                                        s1 = self.integrals[(j,jistate,jfstate)]
+                                    except:
+                                        s1 = (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate])
+                                        self.integrals[(j,jistate,jfstate)] = s1
 
-                    elif order == 1:
-                        n = self.states[istate]
-                        m = self.states[fstate]
-                        j = [x != y for x, y in zip(n, m)].index(True)  # give me the index of the element that differs two vectors
-                        jistate = self.states[istate][j]
-                        jfstate = self.states[fstate][j]
-                        for ti, t in enumerate(tensors):
-                            ind = t.indices.index(j)
-                            for o in range(t.prop[0]):
-                                tmptens[ti][o] += (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate]
-                                                  * t.data[ind][:,o]).sum()
-                    
-                    for tn,tt in enumerate(totaltens):
-                        tt += tmptens[tn] * ci * cf
+                                    #s = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate] * self.v1_data[ind]).sum()
+                                    tmptens[ti][o] += np.dot(t.data[ind][:,o],s1)
+                        
+                        for tn,tt in enumerate(totaltens):
+                            tt += tmptens[tn] * ci * cf
 
             #calculate the invariants
             # bG
