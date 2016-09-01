@@ -58,7 +58,6 @@ class Surface:
         @param ind: List of tuples of modes
         """
         for ind in lind:
-            type(ind)
             ind = list(ind)
             ind.sort()
             try:
@@ -81,6 +80,12 @@ class Surface:
         :param item: Indices of the modes
         :return: Property for given indices
         """
+        if self.order == 1:
+            if type(item) is int:
+                return self.data[self.indices.index(item)]
+            elif len(item) == 2*self.order:
+                return self.data[self.indices.index(item[0])][item[1]]
+
         if len(item) == self.order:
             ind = list(item)
             newind = ind[:]
@@ -91,6 +96,7 @@ class Surface:
                 #return np.transpose(self.data[self.indices.index(tuple(newind))],sorted(range(len(ind)), key=lambda k: ind[k]))
                 return np.transpose(self.data[self.indices.index(tuple(newind))],axes=(tuple([newind.index(i) for i in ind])))
             except:
+                #pass
                 raise Exception('Surface not found')
 
         elif len(item) == 2 * self.order:
@@ -169,8 +175,9 @@ class Potential(Surface):
         elif self.order == 2:
             for i in range(tmparray.shape[0]):
                 for j in range(i+1,tmparray.shape[0]):
-                    self.indices.append((i,j))
-                    self.data.append(tmparray[i,j,:,:])
+                    if not np.all(tmparray[i,j,:,:]==0.0):
+                        self.indices.append((i,j))
+                        self.data.append(tmparray[i,j,:,:])
         
         elif self.order == 3:
             for i in range(tmparray.shape[0]):
