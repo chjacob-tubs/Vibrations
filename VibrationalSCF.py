@@ -9,7 +9,7 @@ import Wavefunctions
 
 class VSCF:
     """
-    The mother class for VSCF.
+    The parent class for VSCF.
     G{classtree}
     """
 
@@ -102,6 +102,9 @@ class VSCF:
         return eigval, phi
         
     def _norm(self, phi, dx):
+        """
+        Norms the wavefunction
+        """
 
         wnorm = 0.0
 
@@ -444,14 +447,13 @@ class VSCF2D(VSCF):
         if self.solved:
             print ''
             print Misc.fancy_box('VSCF Results')
-            print 'States       Energy / cm^-1'
+            print 'VSCF states energies in cm^-1'
             print '---------------------------'
             for i, s in enumerate(self.states):
                 print s, '%.1f' % self.energies[i]
             print ''
-            print 'Assuming ', self.states[0], ' as the reference state'
-            print '--------------------------------------------------'
-            print 'Final states  Energy / cm^-1' 
+            print 'Initial state: ', self.states[0]
+            print 'Transition energies in cm^-1' 
             for i, s in enumerate(self.states):
                 if i != 0:
                     print '-> ', s, '%.1f' % (self.energies[i]-self.energies[0])

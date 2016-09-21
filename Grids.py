@@ -1,5 +1,5 @@
 """
-The module containing the grid-related class.
+Module containing the grid-related class.
 """
 
 import numpy as np
@@ -8,8 +8,8 @@ import Misc
 
 class Grid:
     """
-    Class containing and manipulating the grids, which are used both for Potential Energy Surface (PES) or Dipole Moment
-    Surface (DMS) evaluation, and for VSCF/VCI calculations.
+    Class containing and manipulating the grids. The grids are used for evaluation of the property
+    surfaces, and for integrals in the VSCF/VCI calculations.
     """
 
     def __init__(self, mol=None, modes=None):
@@ -18,7 +18,7 @@ class Grid:
         an empty grid is created, this may be used to read in an existing grid from *.npy file, see read_np method
 
         @param mol: molecule object
-        @type mol: PyADF Molecule
+        @type mol: PyADF/VibTools Molecule
         @param modes: vibrational modes object
         @type modes: VibTools Modes
         """
@@ -40,6 +40,9 @@ class Grid:
 
 
     def __str__(self):
+        """
+        Just printing the grids' properties and the grids themself
+        """
 
         s = ''
         s += 'Grids:\n'
@@ -60,8 +63,9 @@ class Grid:
 
     def generate_grids(self, ngrid, amp):   # generate grid with ngrid number of points per mode and amp amplitude
         """
-        Method generating the grids for a given molecule and vibrational modes
-
+        Generate the grids with a ngrid number of grid points
+        and amp grid's amplitude, see ChemPhysChem 15 (2014) 3365 for
+        the details
         @param ngrid: number of grid points
         @type ngrid: Integer
         @param amp: grid amplitude
@@ -89,9 +93,15 @@ class Grid:
 
     def get_grid_structure(self, modes, points, unit = 'Angstrom'):
         """
-        Method generating a molecular structure for a given grid point
-        returns atomic numbers and coordinates
+        Obtain the structure for the given point(s) of the given mode(s).
+        Returns atomic numbers and coordinates.
 
+        Example usage:
+        >>> get_grid_structure([0,1],[10,11]) 
+        
+        returns the structure
+        displaced along modes 0 and 1 to the grid points 10 and 11,
+        repsectively.
 
         @param modes: list of modes of a given order
         @type modes: List of Integer
@@ -120,7 +130,7 @@ class Grid:
 
     def get_pyadf_molecule(self, modes, points):
         """
-        Method returns a pyadf.molecule object for a desired point of the N-dimensional grid
+        Same as L{get_grid_structure} but returns PyADF molecule object.
         """
         import pyadf
 
@@ -133,7 +143,7 @@ class Grid:
 
     def read_np(self, fname):
         """
-        Read in an already existing grid from NumPy formatted binary file *.npy
+        Read in an existing grid from NumPy formatted binary file *.npy
 
         @param fname: file name
         @type fname: String
@@ -151,7 +161,7 @@ class Grid:
 
     def save_grids(self, fname='grids'):
         """
-        Save the grid contained in the object to a NumPy formatted binary file *.npy
+        Save the grid to a NumPy formatted binary file *.npy
 
         @param fname: file name, without extension
         @type fname: String

@@ -1,5 +1,5 @@
 """
-The module containing some more or less useful functions and constants.
+More or less useful functions and constants.
 
 @var pi: the ratio of a circle's circumference to its diameter
 @var cvel: speed of light in  atomic units
