@@ -32,6 +32,48 @@ def fancy_box(s):  # doing a fancy box around a string
 
     return s1+s2+s1
 
+
+import time
+
+import cProfile
+
+def do_cprofile(func):
+        def profiled_func(*args, **kwargs):
+            profile = cProfile.Profile()
+            try:
+                profile.enable()
+                result = func(*args, **kwargs)
+                profile.disable()
+                return result
+            finally:
+                profile.print_stats()
+        return profiled_func
+
+def timefunc(f):
+    def f_timer(*args, **kwargs):
+        start = time.time()
+        result = f(*args, **kwargs)
+        end = time.time()
+        print f.__name__, 'took', end - start, 'time'
+        return result
+    return f_timer
+
+def _pickle_method(method):
+    func_name = method.im_func.__name__
+    obj = method.im_self
+    cls = method.im_class
+    return _unpickle_method, (func_name, obj, cls)
+
+def _unpickle_method(func_name, obj, cls):
+    for cls in cls.mro():
+        try:
+            func = cls.__dict__[func_name]
+        except KeyError:
+            pass
+        else:
+            break
+    return func.__get__(obj, cls)
+
 pi = 3.141592653589793
 cvel = 137.0359895
 cvel_ms = 2.99792458e08
