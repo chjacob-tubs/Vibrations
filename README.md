@@ -9,8 +9,8 @@ of the code, see the following articles [ChemPhysChem 15 (2014) 3365](http://dx.
 ## Requirements
 
 Vibrations is an independent code that for running needs only Python standard packages, extended with NumPy and SciPy.
-However for typical usage, where normal modes from previous calculations are read in, the potential energy surfaces are
-calculated with QM programs, another packages are needed
+However, for typical usage, when normal modes from previous calculations are read in, and/or the potential energy surfaces are
+calculated with QM programs, additional packages are needed
  * [LocVib package](http://www.christophjacob.eu/) for reading in normal modes, localizing them, etc.
  * [PyADF suite](http://pyadf.org) as an interface to QM codes, for calculating potential energy and property surfaces
 
