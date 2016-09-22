@@ -17,7 +17,7 @@
 # along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-The module reeated to the VCI class for Vibrational Confinuration Interaction calculations
+Module related to the VCI class for Vibrational Confinuration Interaction calculations
 """
 
 import numpy as np
@@ -52,9 +52,6 @@ class VCI(object):
     def __init__(self, wavefunctions, *potentials):
         """
         The class must be initialized with grids, some, e.g. VSCF, wave functions, and potentials
-
-        @param grids: The object containing the grids
-        @type grids: Vibrations/Grid
         @param wavefunctions: The object containing the reference wave function, e.g. VSCF wfn
         @type wavefunctions: Vibrations/Wavefunction
         @param potentials: The potentials

@@ -15,9 +15,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.
-
 """
-Classes related to property hypersurfaces: potential energy surface, dipole moment surface, and other
+Module containing classes related to property hypersurfaces: 
+potential energy surface, dipole moment surface, and other
 properties surfaces.
 """
 
@@ -73,7 +73,7 @@ class Surface:
         """
         Deleting a surface of given index (ind)
         
-        @param ind: List of tuples of modes
+        @param lind: List of tuples of modes
         """
         for ind in lind:
             ind = list(ind)

@@ -17,7 +17,7 @@
 # along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-More or less useful functions and constants.
+Module containing more or less useful functions and constants.
 
 @var pi: the ratio of a circle's circumference to its diameter
 @var cvel: speed of light in  atomic units
@@ -40,6 +40,9 @@ More or less useful functions and constants.
 
 
 def fancy_box(s):  # doing a fancy box around a string
+    """
+    Just printing a box around a string.
+    """
 
     s = str(s)
     l = len(s)
@@ -56,18 +59,24 @@ import time
 import cProfile
 
 def do_cprofile(func):
-        def profiled_func(*args, **kwargs):
-            profile = cProfile.Profile()
-            try:
-                profile.enable()
-                result = func(*args, **kwargs)
-                profile.disable()
-                return result
-            finally:
-                profile.print_stats()
-        return profiled_func
+    """
+    Profiler decorator
+    """
+    def profiled_func(*args, **kwargs):
+        profile = cProfile.Profile()
+        try:
+            profile.enable()
+            result = func(*args, **kwargs)
+            profile.disable()
+            return result
+        finally:
+            profile.print_stats()
+    return profiled_func
 
 def timefunc(f):
+    """
+    Timing decorator
+    """
     def f_timer(*args, **kwargs):
         start = time.time()
         result = f(*args, **kwargs)

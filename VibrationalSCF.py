@@ -428,8 +428,8 @@ class VSCF2D(VSCF):
         """
         Solves the VSCF for given states
 
-        @param *states: considered states, the first given is assumed to be the ground state
-        @type *states: List of Integer
+        @param states: considered states, the first given is assumed to be the ground state
+        @type states: List of Integer
         """
         if len(states) == 0:
             states = [[0]*self.nmodes]  # if no states defined, only gs considered

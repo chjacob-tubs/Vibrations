@@ -17,7 +17,7 @@
 # along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-The module related to the vibrational wave functions
+Module related to the vibrational wave functions class
 """
 import numpy as np
 
