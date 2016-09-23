@@ -18,6 +18,9 @@ calculated with QM programs, additional packages are needed
 
 Just clone this repository and run the tests in `tests` directory.
 
+    cd tests
+    pyton tests.py
+
 ## Documentation
 
 In order to compile the documentation [epydoc](http://epydoc.sourceforge.net) is needed.
