@@ -22,7 +22,7 @@ Module related to the vibrational wave functions class
 import numpy as np
 
 
-class Wavefunction:
+class Wavefunction(object):
     """
     The class containing and manipulating the vibrational wave functions
     """

@@ -1,0 +1,209 @@
+# PyADF script to generate grid structures and calculate anharmonic
+# potentials
+
+import glob
+from VibTools.Constants import *
+import VibTools
+import vibrations as vib
+import numpy as np
+
+
+### WHICH POTENTIALS?
+V1 = True
+V2 = True
+
+### PATH TO ENERGY FILES
+
+print 'Energy files will be stored in: '
+enpath = 
+print enpath
+
+### USED CORES; CHANGED AUTOMATICALLY WITH distribute_on_cores.py
+
+actcore = 1
+totcores = 12
+
+### PyADF results
+
+tmres = {}
+lastjob = 0
+
+### FUNCTIONS
+
+
+
+def run_single_point(mol,modes,points):
+
+    # First check if energy file exists
+    order = len(modes)
+    if order != len(points):
+        raise Exception('Number of modes should be equal number of grid points')
+
+    fname = 'v'
+    fname += str(order)+'_'
+    for i in modes:
+        fname += str(i) + '_'
+    for p in points:
+        fname += str(p) + '_'
+    fname = fname[:-1]+'.dat'
+    print 'Energy point: <modes> <grid points> ',modes,points
+    print ' Looking for file: %s' %(os.path.join(enpath,fname))
+    try:
+        with open(os.path.join(enpath,fname)) as f:
+            print ' -File %s found!' %(os.path.join(enpath,fname))
+            lines = f.readlines()
+            if len(lines) == 1:
+                print '  -the file contains one line'
+                print '  -and following data: ',lines[0].split()
+                if len(lines[0].split()) == 4:
+                    print '  *Everything seems to be ok, nothing to do'
+                else:
+                    raise Exception('The amount of data is wrong')
+            else:
+                raise Exception('Too few or too many lines')
+    except:
+        print ' !File not found or job not finished, running the job...'
+        sett = TurbomoleSinglePointSettings(verbose_level=2)
+        job = TurbomoleSinglePointJob(mol,method='dft',settings=sett)
+        sett.set_dft_functional('bp86')
+        sett.set_dft_grid('m3')
+        sett.set_ri(True)
+        sett.set_basis_set('def2-SV(P)')
+        sett.set_scfiterlimit(200)
+        job = TurbomoleSinglePointJob(mol,method='dft',settings=sett)
+        global lastjob
+        try:
+            job.set_restart(lastjob)
+        except:
+            pass
+        tres = job.run()
+        lastjob = tres
+        dm = np.array(tres.get_dipole_vector())* au_in_Debye
+        en = tres.get_energy()
+        with open(os.path.join(enpath,fname),'w+') as f:
+            outline = str(en)+' '+str(dm[0])+' '+str(dm[1])+' '+str(dm[2])
+            f.write(outline)
+    print "****** DONE ***** "
+
+
+    
+
+def localize_subset(modes,subset):
+    # method that takes normal modes
+    # and a range of modes, returns them
+    # localized + the cmat
+    tmpmodes = modes.get_subset(subset)
+    tmploc = VibTools.LocVib(tmpmodes, 'PM')
+    tmploc.localize()
+    tmploc.sort_by_residue()
+    tmploc.adjust_signs()
+    tmpcmat = tmploc.get_couplingmat(hessian=True)
+
+    return tmploc.locmodes.modes_mw, tmploc.locmodes.freqs, tmpcmat
+
+def localize_subsets(modes,subsets):
+    # method that takes normal modes and list of lists (beginin and end)
+    # of subsets and make one set of modes localized in subsets
+
+    # first get number of modes in total
+    total = 0
+    modes_mw = np.zeros((0, 3*modes.natoms))
+    freqs = np.zeros((0,))
+
+    for subset in subsets:
+        n = len(subset)
+        total += n
+
+
+    print 'Modes localized: %i, modes in total: %i' %(total, modes.nmodes)
+
+    if total > modes.nmodes:
+        raise Exception('Number of modes in the subsets is larger than the total number of modes')
+    else:
+        cmat = np.zeros((total, total))
+        actpos = 0 #actual position in the cmat matrix
+        for subset in subsets:
+            tmp = localize_subset(modes, subset)
+            modes_mw = np.concatenate((modes_mw, tmp[0]), axis = 0)
+            freqs = np.concatenate((freqs, tmp[1]), axis = 0)
+            cmat[actpos:actpos + tmp[2].shape[0],actpos:actpos + tmp[2].shape[0]] = tmp[2]
+            actpos = actpos + tmp[2].shape[0] 
+        localmodes = VibTools.VibModes(total, modes.mol)
+        localmodes.set_modes_mw(modes_mw)
+        localmodes.set_freqs(freqs)
+
+        return localmodes, cmat
+
+### end of function
+
+ngrid = 16
+amp = 14
+outname = os.path.join(pyadfenv.outdir,'snf.out')
+restartname = os.path.join(pyadfenv.outdir,'restart')
+coordfile = os.path.join(pyadfenv.outdir,'coord')
+
+res = VibTools.SNFResults(outname=outname,restartname=restartname,
+                     coordfile=coordfile)
+res.read()
+
+mol = res.mol
+
+modes = res.modes
+
+modelist = [[0,1,2]]
+
+print '\n\n'
+print '*** Localization: '
+
+
+
+localmodes,cmat = localize_subsets(modes,modelist)
+
+grid = vib.Grid(mol,localmodes)
+grid.generate_grids(ngrid,amp)
+
+nmodes = localmodes.nmodes
+counter = 0
+
+print 'Core: %i' %(actcore)
+
+
+#myfiles.import_resultsdir('/home/pawel/VSCF/ROA/310-disub/Ala10/Potentials/1D/pyadf_results.126609')
+#mol = molecule(os.path.join(pyadfenv.outdir,'coord'),inputformat='tmol')
+#sett = TurbomoleSinglePointSettings(verbose_level=2)
+#job = TurbomoleSinglePointJob(mol,method='dft',settings=sett)
+#sett.set_dft_functional('bp86')
+#sett.set_dft_grid('m3')
+#sett.set_ri(True)
+#sett.set_basis_set('def2-TZVP')
+#sett.set_scfiterlimit(200)
+#job = TurbomoleSinglePointJob(mol,method='dft',settings=sett)
+#treseq = job.run()
+#lastjob = treseq
+
+if V1:
+    for i in range(nmodes):
+        for j in range(ngrid):
+            dest = counter%totcores + 1
+            if dest == actcore:
+                print ' *** Calculating point: ',i,',',j
+                mol = grid.get_pyadf_molecule([i],[j])
+                run_single_point(mol,[i],[j])
+            counter += 1
+
+if V2:
+    for i in range(nmodes):
+        for j in range(i+1,nmodes):
+            for k in range(ngrid):
+                for l in range(ngrid):
+                    dest = counter%totcores + 1
+                    if dest == actcore:
+                        print ' *** Calculating point: Mode=',i,' Point=',k,' Mode=',j,' Point=',l
+                        mol = grid.get_pyadf_molecule([i,j],[k,l])
+                        run_single_point(mol,[i,j],[k,l])
+                    counter += 1
+
+print
+print '*** Calculations done!'
+
+

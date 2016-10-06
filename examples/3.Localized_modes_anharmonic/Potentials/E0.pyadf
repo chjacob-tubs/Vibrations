@@ -1,0 +1,45 @@
+# PyADF script to generate grid structures and calculate anharmonic
+# potentials
+
+import glob
+from VibTools.Constants import *
+import VibTools
+import vibrations as vib
+import numpy as np
+
+
+### WHICH POTENTIALS?
+V1 = True
+V2 = True
+
+### PATH TO ENERGY FILES
+
+print 'Energy files will be stored in: '
+#enpath = "/home/pawel/VSCF/ROA/Ala20/Alpha/Potentials/V1/energies" # where the energies are stored
+enpath = os.path.join(pyadfenv.outdir,'energies')
+print enpath
+
+
+
+print
+print
+print 'Calculating the reference energy E0'
+print
+
+mol = molecule(os.path.join(pyadfenv.outdir,'coord'),inputformat='tmol')
+sett = TurbomoleSinglePointSettings(verbose_level=2)
+job = TurbomoleSinglePointJob(mol,method='dft',settings=sett)
+sett.set_dft_functional('bp86')
+sett.set_dft_grid('m3')
+sett.set_ri(True)
+sett.set_basis_set('def-SV(P)')
+job = TurbomoleSinglePointJob(mol,method='dft',settings=sett)
+E0res = job.run()
+
+dm = np.array(E0res.get_dipole_vector())* au_in_Debye
+en = E0res.get_energy()
+fname = 'E0.dat'
+with open(os.path.join(enpath,fname),'w+') as f:
+    outline = str(en)+' '+str(dm[0])+' '+str(dm[1])+' '+str(dm[2])
+    f.write(outline)
+

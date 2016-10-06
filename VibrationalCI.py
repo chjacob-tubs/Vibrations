@@ -347,7 +347,7 @@ class VCI(object):
         """
         if self.solved:
             print Misc.fancy_box('Results of the VCI')
-            print 'State %15s %15s %15s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
+            print 'State %14s %10s %10s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
             for i in xrange(len(self.energies)):  # was self.states, is self.energies
                 state = self.states[(self.vectors[:, i]**2).argmax()]
                 en = self.energiesrcm[i] - self.energiesrcm[0]
@@ -410,8 +410,11 @@ class VCI(object):
         Prints the vibrational states used in the VCI calculations
         """
         print ''
-        print Misc.fancy_box('CI Space')
-        print self.states
+        print Misc.fancy_box('VCI Space')
+        print 'There are %i states: ' %len(self.states)
+        for i,s in enumerate(self.states):
+            print i, s
+        print
 
     def generate_states_nmax(self, nexc=None, smax=None):
         """
@@ -1219,8 +1222,13 @@ class VCI(object):
             self.generate_states()
 
         nstates = len(self.states)
-
-        print Misc.fancy_box('There are %i states') % (nstates)
+        #s = 'There are %i states' %nstates
+        #print Misc.fancy_box('There are %i states') % (nstates)
+        #print Misc.fancy_box(s)
+        #for s in self.states:
+        #    print s
+        #print
+        self.print_states()
 
         self.H = np.zeros((nstates, nstates))
 

@@ -45,6 +45,7 @@ def fancy_box(s):  # doing a fancy box around a string
     """
 
     s = str(s)
+    s = s.strip()
     l = len(s)
     l += 10
 

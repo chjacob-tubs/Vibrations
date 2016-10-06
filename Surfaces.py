@@ -25,7 +25,7 @@ import numpy as np
 import Misc
 
 
-class Surface:
+class Surface(object):
     """
     Class containing and manipulating a generic property surface
     """

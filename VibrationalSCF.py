@@ -25,7 +25,7 @@ import Misc
 import Wavefunctions
 
 
-class VSCF:
+class VSCF(object):
     """
     The parent class for VSCF.
     G{classtree}

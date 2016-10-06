@@ -1,0 +1,51 @@
+In this example vibrational modes od water molecule are used.
+
+First, Example3_1_Harmonic_L-VCI-S.py, all modes are localized
+and harmonic potentials are used in L-VCI-S calculations.
+As previously, the frequencies and intensities of the initial
+normal modes are restored.
+
+In the second example, Example3_2_Anharmonic_L-VCI-S.py, anharmonic 
+1- and 2-mode potentials are calculated for the localized modes 
+and used in anharmonic L-VCI-S calculations.
+
+For this purpose in the 'Potentials' directory several scripts 
+automatizing the potentials calculation are given.
+The idea is to perform grid computations, i.e., the set of 
+single-point calculations is divided on many cores, each core
+is represented by a distinct directory.
+
+1: Calculate_Potentials.pyadf -- a PyADF script for generating
+   structures for 1- and 2-mode potentials, and running single 
+   point calculations. 
+   Things to setup:
+     - V1, V2 = True -- which potentials should be included
+     - run_single_point function -- setup settings of the single-point
+       calculations (DFT functional, basis set, etc.), see documentation
+       of PyADF for details
+2: E0.pyadf -- a PyADF script calculating reference energy,
+   the energy of the equilibrium structure, cf. formulation 
+   of the n-mode expansion.
+3: distribute_on_cores.py -- a Python script which generates
+   a given number of directories to propagate the potentials
+   calculations on many cores. It just creates n directories,
+   and in each of them a different part of the single-point
+   calculations is computed.
+   Usage:
+     ./distribute_on_cores ncores jobrunner
+     Where ncores gives a number of cores,
+     and jobrunner is 'Calculate_Potentials.pyadf'
+     By default the single-point energies are stored in
+     the 'energies' directory.
+4: get_potentials.py -- a Python script for obtaining the 
+   anharmonic 1- and 2-mode potentials from the 'energies'
+   directory. The user has to set the number of modes and
+   grid points manually. The resulting files *.npy are used in
+   the L-VCI-S calcualtions in 'Example3_2_Anharmonic_L-VCI-S.py'
+
+!Important:
+ - Make sure that the number of grid points, the grid amplitude,
+   and the vibrational modes are the same during the calculations
+   of the potetnials and in the VSCF/VCi calculations
+ - Use the same settings for calculating specific grid points
+   and E0 energy

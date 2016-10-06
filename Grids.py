@@ -24,7 +24,7 @@ import numpy as np
 import Misc
 
 
-class Grid:
+class Grid(object):
     """
     Class containing and manipulating the grids. The grids are used for evaluation of the property
     surfaces, and for integrals in the VSCF/VCI calculations.
