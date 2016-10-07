@@ -16,8 +16,7 @@ running the tests_), when normal modes from previous calculations are read in,
 and/or the potential energy surfaces are
 calculated with QM programs, additional packages are needed
  * [LocVib package](http://www.christophjacob.eu/) for reading in normal modes, 
-   localizing them, etc. _for historical reasons in this implemetation this
-   package is imported as VibTools_
+   localizing them, etc. 
  * [PyADF suite](http://pyadf.org) as an interface to QM codes, for calculating 
    potential energy and property surfaces
 
