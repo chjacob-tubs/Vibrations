@@ -1,10 +1,7 @@
 # PyADF script to generate grid structures and calculate anharmonic
 # potentials
 
-import glob
-from VibTools.Constants import *
-import VibTools
-import vibrations as vib
+from LocVib.Constants import au_in_Debye
 import numpy as np
 
 

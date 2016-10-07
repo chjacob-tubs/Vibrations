@@ -1,4 +1,4 @@
-import VibTools
+import LocVib
 import vibrations as vib
 import numpy as np
 
@@ -13,7 +13,7 @@ def localize_subset(modes,subset):
     # and a range of modes, returns them
     # localized + the cmat
     tmpmodes = modes.get_subset(subset)
-    tmploc = VibTools.LocVib(tmpmodes, 'PM')
+    tmploc = LocVib.LocVib(tmpmodes, 'PM')
     tmploc.localize()
     tmploc.sort_by_residue()
     tmploc.adjust_signs()
@@ -48,7 +48,7 @@ def localize_subsets(modes,subsets):
             freqs = np.concatenate((freqs, tmp[1]), axis = 0)
             cmat[actpos:actpos + tmp[2].shape[0],actpos:actpos + tmp[2].shape[0]] = tmp[2]
             actpos = actpos + tmp[2].shape[0] 
-        localmodes = VibTools.VibModes(total, modes.mol)
+        localmodes = LocVib.VibModes(total, modes.mol)
         localmodes.set_modes_mw(modes_mw)
         localmodes.set_freqs(freqs)
 
@@ -58,9 +58,9 @@ def localize_subsets(modes,subsets):
 # The vibrations script begins here
 
 # Read in normal modes from SNF results
-# using VibTools (LocVib package)
+# using LocVib (LocVib package)
 
-res = VibTools.SNFResults()
+res = LocVib.SNFResults()
 res.read()
 
 # Now localize modes in separate subsets
@@ -111,7 +111,7 @@ VCI.calculate_IR(dm1,dm2) # calculate intensities
 
 # Compare the results
 
-# VibTools can provide IR intensities for normal
+# LocVib can provide IR intensities for normal
 # and localized modes
 
 irints = res.get_ir_intensity(modes=localmodes)
