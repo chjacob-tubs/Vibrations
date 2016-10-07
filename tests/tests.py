@@ -17,7 +17,7 @@
 # along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.
 
 import vibrations as vib
-import VibTools
+import LocVib
 import numpy as np
 import time
 import sys
@@ -51,7 +51,7 @@ class InputData:
         self.amp = int(grid_params[1])
 
 
-        res = VibTools.SNFResults(outname=dirname+'/snf.out',restartname=dirname+'/restart',
+        res = LocVib.SNFResults(outname=dirname+'/snf.out',restartname=dirname+'/restart',
                                   coordfile=dirname+'/coord')
         res.read()
 
