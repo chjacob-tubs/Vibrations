@@ -78,8 +78,14 @@ class VCI(object):
 
         self.tij = np.zeros((self.nmodes, self.ngrid, self.ngrid))  # calculate Tij only once as well
         self._calculate_kinetic_integrals()
-
-        self.integrals = {}  # dictionary storing the precomputed 1-mode integrals, {(mode,lstate,rstate):val}
+        
+        self.store_ints = True  # prescreen the precomputed 1-mode integrals
+        self.integrals = {}  # dictionary storing the precomputed parts of the  1-mode integrals, {(mode,lstate,rstate):val}
+        self.store_potints = True # store 1-,2-,3-, 4-mode integrals
+        self.int1d = {}  # 1-d integrals involving potentials
+        self.int2d = {}  # 2-d -,,-
+        self.int3d = {}  # 3-d -,,-
+        self.int4d = {}  # 4-d -,,-
 
         self.energies = np.array([])
         self.energiesrcm = np.array([])
@@ -983,14 +989,22 @@ class VCI(object):
         ind = self.v1_indices.index(mode)
 
         try:
-            s1 = self.integrals[(mode,lstate,rstate)]
+            return self.int1d[(mode,lstate,rstate)]
+
         except:
-            s1 = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate])
-            self.integrals[(mode,lstate,rstate)] = s1
 
-        s = (s1 * self.v1_data[ind]).sum()
+            try:
+                s1 = self.integrals[(mode,lstate,rstate)]
+            except:
+                s1 = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate])
+                if self.store_ints:
+                    self.integrals[(mode,lstate,rstate)] = s1
 
-        return s
+            s = (s1 * self.v1_data[ind]).sum()
+            if self.store_potints:
+                self.int1d[(mode,lstate,rstate)] = s
+
+            return s
    
     def v1_integral(self,mode,lstate,rstate):
         return self._v1_integral(mode,lstate,rstate)
@@ -1001,38 +1015,47 @@ class VCI(object):
 
         if (mode1, mode2) in self.v2_indices or (mode2, mode1) in self.v2_indices:
             try:
-                ind = self.v2_indices.index((mode1, mode2))
+                return self.int2d[(mode1,lstate1,rstate1,mode2,lstate2,rstate2)]
             except:
-                ind = self.v2_indices.index((mode2, mode1))
-            if mode1 < mode2: 
-                try:
-                    s1 = self.integrals[(mode1,lstate1,rstate1)]
-                except:
-                    s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1])
-                    self.integrals[(mode1,lstate1,rstate1)] = s1
-                try:
-                    s2 = self.integrals[(mode2,lstate2,rstate2)]
-                except:
-                    s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
-                    self.integrals[(mode2,lstate2,rstate2)] = s2
-                
-            
-                s1 = s1.transpose()
-                s = (s1.dot(self.v2_data[ind]).dot(s2)).sum()
-            else:
-                try:
-                    s1 = self.integrals[(mode1,lstate1,rstate1)]
-                except:
-                    s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1])
-                    self.integrals[(mode1,lstate1,rstate1)] = s1
-                try:
-                    s2 = self.integrals[(mode2,lstate2,rstate2)]
-                except:
-                    s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
-                    self.integrals[(mode2,lstate2,rstate2)] = s2
-                s1 = s1.transpose()
-                s = (s1.dot(self.v2_data[ind].transpose()).dot(s2)).sum()
 
+                try:
+                    ind = self.v2_indices.index((mode1, mode2))
+                except:
+                    ind = self.v2_indices.index((mode2, mode1))
+                if mode1 < mode2: 
+                    try:
+                        s1 = self.integrals[(mode1,lstate1,rstate1)]
+                    except:
+                        s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1])
+                        if self.store_ints:
+                            self.integrals[(mode1,lstate1,rstate1)] = s1
+                    try:
+                        s2 = self.integrals[(mode2,lstate2,rstate2)]
+                    except:
+                        s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
+                        if self.store_ints:
+                            self.integrals[(mode2,lstate2,rstate2)] = s2
+                    
+                
+                    s1 = s1.transpose()
+                    s = (s1.dot(self.v2_data[ind]).dot(s2)).sum()
+                else:
+                    try:
+                        s1 = self.integrals[(mode1,lstate1,rstate1)]
+                    except:
+                        s1 = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1])
+                        if self.store_ints:
+                            self.integrals[(mode1,lstate1,rstate1)] = s1
+                    try:
+                        s2 = self.integrals[(mode2,lstate2,rstate2)]
+                    except:
+                        s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
+                        if self.store_ints:
+                            self.integrals[(mode2,lstate2,rstate2)] = s2
+                    s1 = s1.transpose()
+                    s = (s1.dot(self.v2_data[ind].transpose()).dot(s2)).sum()
+                if self.store_potints: 
+                    self.int2d[(mode1,lstate1,rstate1,mode2,lstate2,rstate2)] = s
 
         return s
 
@@ -1063,25 +1086,35 @@ class VCI(object):
             ind = self.v3_indices.index((mode1,mode2,mode3))
         else:
             return 0.0
-        
+       
         try:
-            si = self.integrals[(mode1,lstate1,rstate1)]
+            return self.int3d[(mode1,lstate1,rstate1,mode2,lstate2,rstate2,mode3,lstate3,rstate3)]
         except:
-            si = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1])
-            self.integrals[(mode1,lstate1,rstate1)] = si
-        try:
-            sj = self.integrals[(mode2,lstate2,rstate2)]
-        except:
-            sj = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
-            self.integrals[(mode2,lstate2,rstate2)] = sj
-        try:
-            sk = self.integrals[(mode3,lstate3,rstate3)]
-        except:
-            sk = (self.dx[mode3] * self.wfns[mode3, lstate3] * self.wfns[mode3, rstate3])
-            self.integrals[(mode3,lstate3,rstate3)] = sk
+
+            try:
+                si = self.integrals[(mode1,lstate1,rstate1)]
+            except:
+                si = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1])
+                if self.store_ints:
+                    self.integrals[(mode1,lstate1,rstate1)] = si
+            try:
+                sj = self.integrals[(mode2,lstate2,rstate2)]
+            except:
+                sj = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
+                if self.store_ints:
+                    self.integrals[(mode2,lstate2,rstate2)] = sj
+            try:
+                sk = self.integrals[(mode3,lstate3,rstate3)]
+            except:
+                sk = (self.dx[mode3] * self.wfns[mode3, lstate3] * self.wfns[mode3, rstate3])
+                if self.store_ints:
+                    self.integrals[(mode3,lstate3,rstate3)] = sk
 
 
-        return np.einsum('i,j,k,ijk',si,sj,sk,self.v3_data[ind])  # einstein summation rules!
+            s =  np.einsum('i,j,k,ijk',si,sj,sk,self.v3_data[ind])  # einstein summation rules!
+            if self.store_potints:
+               self.int3d[(mode1,lstate1,rstate1,mode2,lstate2,rstate2,mode3,lstate3,rstate3)] = s
+            return s
 
     def _v4_integral(self, mode1, mode2, mode3, mode4, lstate1, lstate2, lstate3,
                      lstate4, rstate1, rstate2, rstate3, rstate4):
@@ -1112,28 +1145,35 @@ class VCI(object):
         rstate4 = rstates[3]
 
         try:
-            si = self.integrals[(mode1,lstate1,rstate1)]
-        except:
-            si = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1])
-            self.integrals[(mode1,lstate1,rstate1)] = si
-        try:
-            sj = self.integrals[(mode2,lstate2,rstate2)]
-        except:
-            sj = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
-            self.integrals[(mode2,lstate2,rstate2)] = sj
-        try:
-            sk = self.integrals[(mode3,lstate3,rstate3)]
-        except:
-            sk = (self.dx[mode3] * self.wfns[mode3, lstate3] * self.wfns[mode3, rstate3])
-            self.integrals[(mode3,lstate3,rstate3)] = sk
-        try:
-            sl = self.integrals[(mode4,lstate4,rstate4)]
-        except:
-            sl = (self.dx[mode4] * self.wfns[mode4, lstate4] * self.wfns[mode4, rstate4])
-            self.integrals[(mode4,lstate4,rstate4)] = sl
+            return self.int4d[(mode1,lstate1,rstate1,mode2,lstate2,rstate2,mode3,lstate3,rstate3,mode4,lstate4,rstate4)]
 
-        tmp = np.einsum('i,j,k,l,ijkl',si,sj,sk,sl,self.v4_data[potind])
-        return tmp
+        except:
+
+            try:
+                si = self.integrals[(mode1,lstate1,rstate1)]
+            except:
+                si = (self.dx[mode1] * self.wfns[mode1, lstate1] * self.wfns[mode1, rstate1])
+                self.integrals[(mode1,lstate1,rstate1)] = si
+            try:
+                sj = self.integrals[(mode2,lstate2,rstate2)]
+            except:
+                sj = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
+                self.integrals[(mode2,lstate2,rstate2)] = sj
+            try:
+                sk = self.integrals[(mode3,lstate3,rstate3)]
+            except:
+                sk = (self.dx[mode3] * self.wfns[mode3, lstate3] * self.wfns[mode3, rstate3])
+                self.integrals[(mode3,lstate3,rstate3)] = sk
+            try:
+                sl = self.integrals[(mode4,lstate4,rstate4)]
+            except:
+                sl = (self.dx[mode4] * self.wfns[mode4, lstate4] * self.wfns[mode4, rstate4])
+                self.integrals[(mode4,lstate4,rstate4)] = sl
+
+            s = np.einsum('i,j,k,l,ijkl',si,sj,sk,sl,self.v4_data[potind])
+            if self.store_potints:
+                self.int4d[(mode1,lstate1,rstate1,mode2,lstate2,rstate2,mode3,lstate3,rstate3,mode4,lstate4,rstate4)] = s
+            return s
 
 
     def _ovrlp_integral(self, mode, lstate, rstate):    # overlap integral < mode(lstates) | mode(rstate) >
