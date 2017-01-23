@@ -1,0 +1,7 @@
+In order to wrap Fortran routines for calculating integrals
+type:
+$ f2py -c v*.int -m fints
+This should provide fints.so module for Python.
+Usage in Python:
+>>> import fints
+>>> fints.v1(...)   # see the code of VibrationalCI for details

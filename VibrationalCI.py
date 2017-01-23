@@ -23,6 +23,7 @@ Module related to the VCI class for Vibrational Confinuration Interaction calcul
 import numpy as np
 import Misc
 import Surfaces
+import fints
 
 
 def multichoose(n, k):
@@ -86,6 +87,8 @@ class VCI(object):
         self.int2d = {}  # 2-d -,,-
         self.int3d = {}  # 3-d -,,-
         self.int4d = {}  # 4-d -,,-
+
+        self.fortran = True # use Fortran integrals (should be faster)
 
         self.energies = np.array([])
         self.energiesrcm = np.array([])
@@ -999,8 +1002,11 @@ class VCI(object):
                 s1 = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate])
                 if self.store_ints:
                     self.integrals[(mode,lstate,rstate)] = s1
-
-            s = (s1 * self.v1_data[ind]).sum()
+            
+            if self.fortran:
+                s = fints.v1int(self.v1_data[ind],s1)
+            else:
+                s = (s1 * self.v1_data[ind]).sum()
             if self.store_potints:
                 self.int1d[(mode,lstate,rstate)] = s
 
@@ -1036,9 +1042,11 @@ class VCI(object):
                         if self.store_ints:
                             self.integrals[(mode2,lstate2,rstate2)] = s2
                     
-                
-                    s1 = s1.transpose()
-                    s = (s1.dot(self.v2_data[ind]).dot(s2)).sum()
+                    if self.fortran:
+                        s = fints.v2int(self.v2_data[ind],s1,s2)
+                    else:
+                        s1 = s1.transpose()
+                        s = (s1.dot(self.v2_data[ind]).dot(s2)).sum()
                 else:
                     try:
                         s1 = self.integrals[(mode1,lstate1,rstate1)]
@@ -1052,8 +1060,12 @@ class VCI(object):
                         s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
                         if self.store_ints:
                             self.integrals[(mode2,lstate2,rstate2)] = s2
-                    s1 = s1.transpose()
-                    s = (s1.dot(self.v2_data[ind].transpose()).dot(s2)).sum()
+                    
+                    if self.fortran:
+                        s = fints.v2int(self.v2_data[ind],s1,s2)
+                    else:
+                        s1 = s1.transpose()
+                        s = (s1.dot(self.v2_data[ind].transpose()).dot(s2)).sum()
                 if self.store_potints: 
                     self.int2d[(mode1,lstate1,rstate1,mode2,lstate2,rstate2)] = s
 
@@ -1109,9 +1121,11 @@ class VCI(object):
                 sk = (self.dx[mode3] * self.wfns[mode3, lstate3] * self.wfns[mode3, rstate3])
                 if self.store_ints:
                     self.integrals[(mode3,lstate3,rstate3)] = sk
-
-
-            s =  np.einsum('i,j,k,ijk',si,sj,sk,self.v3_data[ind])  # einstein summation rules!
+            
+            if self.fortran:
+                s = fints.v3int(self.v3_data[ind],si,sj,sk)
+            else:
+                s = np.einsum('i,j,k,ijk',si,sj,sk,self.v3_data[ind])  # einstein summation rules!
             if self.store_potints:
                self.int3d[(mode1,lstate1,rstate1,mode2,lstate2,rstate2,mode3,lstate3,rstate3)] = s
             return s
@@ -1169,8 +1183,11 @@ class VCI(object):
             except:
                 sl = (self.dx[mode4] * self.wfns[mode4, lstate4] * self.wfns[mode4, rstate4])
                 self.integrals[(mode4,lstate4,rstate4)] = sl
-
-            s = np.einsum('i,j,k,l,ijkl',si,sj,sk,sl,self.v4_data[potind])
+            
+            if self.fortran:
+                s = fints.v4int(self.v4_data[ind],si,sj,sk,sl)
+            else:
+                s = np.einsum('i,j,k,l,ijkl',si,sj,sk,sl,self.v4_data[potind])
             if self.store_potints:
                 self.int4d[(mode1,lstate1,rstate1,mode2,lstate2,rstate2,mode3,lstate3,rstate3,mode4,lstate4,rstate4)] = s
             return s
@@ -1251,7 +1268,7 @@ class VCI(object):
 
                     self.sij[i, j, k] = self._dgs_ovrlp_integral(i, j, k)
     
-    #@Misc.do_cprofile
+    @Misc.do_cprofile
     def solve(self, parallel=False, diag='Direct'):
         """
         General solver for the VCI
@@ -1302,7 +1319,7 @@ class VCI(object):
             import dill
             import time
             import pathos.multiprocessing as mp
-            ncores = 6
+            ncores = 10
             pool = mp.ProcessingPool(nodes=ncores)
             # ntrans = sum(1 for _ in self.combgenerator())
             # ch,e = divmod(ntrans,ncores*4)
