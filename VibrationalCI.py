@@ -1185,7 +1185,7 @@ class VCI(object):
                 self.integrals[(mode4,lstate4,rstate4)] = sl
             
             if self.fortran:
-                s = fints.v4int(self.v4_data[ind],si,sj,sk,sl)
+                s = fints.v4int(self.v4_data[potind],si,sj,sk,sl)
             else:
                 s = np.einsum('i,j,k,l,ijkl',si,sj,sk,sl,self.v4_data[potind])
             if self.store_potints:
