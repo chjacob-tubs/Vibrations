@@ -1062,7 +1062,7 @@ class VCI(object):
                             self.integrals[(mode2,lstate2,rstate2)] = s2
                     
                     if self.fortran:
-                        s = fints.v2int(self.v2_data[ind],s1,s2)
+                        s = fints.v2int(self.v2_data[ind],s2,s1)
                     else:
                         s1 = s1.transpose()
                         s = (s1.dot(self.v2_data[ind].transpose()).dot(s2)).sum()
