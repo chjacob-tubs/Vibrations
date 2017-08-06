@@ -1,5 +1,5 @@
 import VibTools
-import vibrations as vib
+import Vibrations as vib
 import numpy as np
 
 print vib.Misc.fancy_box('Example 3:')

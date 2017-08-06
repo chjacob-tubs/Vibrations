@@ -1,4 +1,4 @@
-import vibrations as vib
+import Vibrations as vib
 
 print vib.Misc.fancy_box('Example 1:')
 print 'Use of existing grids and potentials.'
