@@ -1,4 +1,4 @@
 *.pyc
-/html
-/unittests
 *.log
+fints.so
+fints.so.dSYM/
