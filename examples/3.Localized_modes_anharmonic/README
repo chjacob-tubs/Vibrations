@@ -1,4 +1,4 @@
-In this example the vibrational modes od water molecule are used.
+In this example vibrational modes od water molecule are used.
 
 First, Example3_1_Harmonic_L-VCI-S.py, all modes are localized
 and harmonic potentials are used in L-VCI-S calculations.
