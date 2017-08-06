@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
-from vibrations.Grids import Grid
+from Vibrations.Grids import Grid
 
 class TestEmptyGrid(unittest.TestCase):
 

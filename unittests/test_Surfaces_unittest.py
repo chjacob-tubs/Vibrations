@@ -1,5 +1,5 @@
 import unittest
-from vibrations.Surfaces import Surface, Potential, Dipole
+from Vibrations.Surfaces import Surface, Potential, Dipole
 
 class TestAbstractSurface(unittest.TestCase):
 
