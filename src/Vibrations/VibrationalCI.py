@@ -397,21 +397,27 @@ class VCI(object):
         if self.solved:
             print Misc.fancy_box('Results of the VCI')
             print 'State %15s %15s %15s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
+
             for i in xrange(len(self.energies)): #was self.states is self.energies
-                state = self.states[(self.vectors[:, i]**2).argmax()]
-                #state = self.states[i]
+                nex_contrib = [0.0] * (self.smax+1)
+                for j, s in enumerate(self.states):
+                    nex_contrib[sum(s)] += self.vectors[j, i]**2
+                nex_contrib_max = max(enumerate(nex_contrib), key=lambda x: x[1])[0]
+
                 en = self.energiesrcm[i] - self.energiesrcm[0]
-                if sum([x > 0 for x in state]) < which+1:
+                if nex_contrib_max <= which:
                     if en < maxfreq:
-                        contrsum = 0.0
-                        print "%i %s %10.4f %10.4f %10.4f" % (i, state, (self.vectors[:, i]**2).max(), self.energiesrcm[i],
-                                                   en)
-                        for j,contr in enumerate(self.vectors[:, i]**2):
+                        print "State %3i      energy = %10.4f,  excitation energy = %10.4f" % (i, self.energiesrcm[i], en)
+                        for j, contr in enumerate(self.vectors[:, i]**2):
                             
                             if contr >= mincon:
-                                print "   %s %10.4f" %(self.states[j],contr)
-                                contrsum += contr
-                        print 15*' '+"%10.4f" %contrsum
+                                print "    %s %10.4f" %(self.states[j],contr)
+
+                        print 15*' ' + "GS: %6.2f, Fundamentals: %6.2f " % (nex_contrib[0], nex_contrib[1]),
+                        for j in range(2, self.smax+1):
+                            print "%2i: %6.2f" % (j, nex_contrib[j]),
+                        print
+                        print
 
                                 
     def print_states(self):
