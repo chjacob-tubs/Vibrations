@@ -345,6 +345,20 @@ class VCI(object):
         """
         return sum([x != y for (x, y) in zip(c[0], c[1])])
 
+    def nex_state(self, vci_state):
+        """
+        Returns the contributions of different types of states (0 - ground state,
+        1 - fundamentals, 2 - doubly excited etc.) for a given VCI state.
+        """
+        nex_contrib = [0.0] * (self.smax+1)
+        for j, s in enumerate(self.states):
+            nex_contrib[sum(s)] += vci_state[j]**2
+        return nex_contrib
+
+    def nexmax_state(self, vci_state):
+        nex_contrib = self.nex_state(vci_state)
+        nex_contrib_max = max(enumerate(nex_contrib), key=lambda x: x[1])[0]
+        return nex_contrib_max
 
     def print_results(self, which=1, maxfreq=4000, short=False):
         """
@@ -358,18 +372,19 @@ class VCI(object):
             print Misc.fancy_box('Results of the VCI')
             print 'State %14s %10s %10s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
             for i in xrange(len(self.energies)):  # was self.states, is self.energies
-                state = self.states[(self.vectors[:, i]**2).argmax()]
                 en = self.energiesrcm[i] - self.energiesrcm[0]
-                if sum([x > 0 for x in state]) < which+1 and sum(state) < which+1:
-                    if en < maxfreq:
+                if en < maxfreq:
+                    nex_contrib = self.nex_state(self.vectors[:,i])
+                    nex_contrib_max = max(enumerate(nex_contrib), key=lambda x: x[1])[0]
+
+                    state = self.states[(self.vectors[:, i]**2).argmax()]
+                    if nex_contrib_max <= which:
                         if not short:
-                            print "%s %10.4f %10.4f %10.4f" % (state, (self.vectors[:, i]**2).max(), self.energiesrcm[i],
-                                                               en)
+                            print "%s %10.4f %10.4f %10.4f" % (state, (self.vectors[:, i]**2).max(), 
+                                                               self.energiesrcm[i], en)
                         else:
-                            print "%s %10.4f %10.4f %10.4f" % (self.print_short_state(state), (self.vectors[:, i]**2).max(), self.energiesrcm[i],
-                                                               en)
-
-
+                            print "%s %10.4f %10.4f %10.4f" % (self.print_short_state(state), (self.vectors[:, i]**2).max(), 
+                                                               self.energiesrcm[i], en)
         else:
             print Misc.fancy_box('Solve the VCI first')
         print
@@ -399,19 +414,17 @@ class VCI(object):
             print 'State %15s %15s %15s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
 
             for i in xrange(len(self.energies)): #was self.states is self.energies
-                nex_contrib = [0.0] * (self.smax+1)
-                for j, s in enumerate(self.states):
-                    nex_contrib[sum(s)] += self.vectors[j, i]**2
-                nex_contrib_max = max(enumerate(nex_contrib), key=lambda x: x[1])[0]
-
                 en = self.energiesrcm[i] - self.energiesrcm[0]
-                if nex_contrib_max <= which:
-                    if en < maxfreq:
+                if en < maxfreq:
+                    nex_contrib = self.nex_state(self.vectors[:,i])
+                    nex_contrib_max = max(enumerate(nex_contrib), key=lambda x: x[1])[0]
+
+                    if nex_contrib_max <= which:
                         print "State %3i      energy = %10.4f,  excitation energy = %10.4f" % (i, self.energiesrcm[i], en)
-                        for j, contr in enumerate(self.vectors[:, i]**2):
+                        for j, contr in enumerate(self.vectors[:, i]):
                             
-                            if contr >= mincon:
-                                print "    %s %10.4f" %(self.states[j],contr)
+                            if contr**2 >= mincon:
+                                print " %9.4f   %s  %s" % (contr, self.states[j], self.print_short_state(self.states[j]))
 
                         print 15*' ' + "GS: %6.2f, Fundamentals: %6.2f " % (nex_contrib[0], nex_contrib[1]),
                         for j in range(2, self.smax+1):
