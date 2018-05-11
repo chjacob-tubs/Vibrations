@@ -1,0 +1,9 @@
+In step B, ypu have to run single point calculations for all the structures
+in the directory 'grid' (filenames grid_[vX_A_B].xyz).
+
+The results should be written to the directory 'energies' into one file for
+each single point, named [vX_A_B].dat (same as xyz files, but without 'grid'
+in the beginning and with extension '.dat').
+
+Each of these files contains
+Total energy, dipole moment x, y, z (separated by spaces)
