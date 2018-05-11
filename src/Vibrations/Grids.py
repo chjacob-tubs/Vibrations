@@ -146,6 +146,18 @@ class Grid(object):
 
         return (self.mol.get_atnums(), newcoords)
 
+    def get_molecule(self, modes, points):
+        """
+        Same as L{get_grid_structure} but returns VibTools molecule object.
+        """
+        import VibTools
+
+        mol = VibTools.VibToolsMolecule()
+        (atoms, coords) = self.get_grid_structure(modes, points)
+        mol.add_atoms(atoms, coords)
+
+        return mol
+
     def get_pyadf_molecule(self, modes, points):
         """
         Same as L{get_grid_structure} but returns PyADF molecule object.
@@ -153,7 +165,7 @@ class Grid(object):
         import pyadf
 
         mol = pyadf.molecule()
-        (atoms, coords) = self.get_grid_structure(modes,points)
+        (atoms, coords) = self.get_grid_structure(modes, points)
         mol.add_atoms(atoms, coords)
 
         return mol
