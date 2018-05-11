@@ -694,7 +694,7 @@ class VCI(object):
                 intens = (tens[0]**2 + tens[1]**2 + tens[2]**2) * Misc.intfactor * (self.energiesrcm[i]
                                                                                      - self.energiesrcm[0])
             self.intensities[i] = intens
-            print '%7.1f %7.1f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
+            print '%7.1f %12.6f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
         
 
     def calculate_intensities(self, *dipolemoments):
@@ -808,7 +808,7 @@ class VCI(object):
             intens = (totaltm[0]**2 + totaltm[1]**2 + totaltm[2]**2) * Misc.intfactor * (self.energiesrcm[i]
                                                                                  - self.energiesrcm[0])
             self.intensities[i] = intens
-            print '%7.1f %7.1f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
+            print '%7.1f %12.6f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
 
 
     def calculate_raman(self, *pols):
@@ -897,7 +897,7 @@ class VCI(object):
             f = self.energies[i] - self.energies[0]
             intens = 2 * f *  (45.0 * a2 + 7.0 * g2)
             self.intensities[i] = intens
-            print '%7.1f %7.1f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
+            print '%7.1f %12.6f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
 
     #@do_cprofile
     def calculate_roa(self, pollen,polvel,gtenvel, aten, lwl):
