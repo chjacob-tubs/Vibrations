@@ -53,7 +53,7 @@ class Grid(object):
 
         else:
 
-            self.natoms = int(self.mol.get_natoms())
+            self.natoms = int(self.mol.natoms)
             self.nmodes = int(self.modes.nmodes)
 
 

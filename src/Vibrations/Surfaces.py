@@ -265,6 +265,42 @@ class Potential(Surface):
 
                                 self.data.append(potential)
 
+    def generate_from_function(self, func):
+        """
+        Generates PES by calling a given function.
+
+        The function f((i,j,..), (qi,qj,...)) has a tuple with the mode indices as
+        its first argument and a tuple of the displacement values (possibly numpy
+        arrays) as its second argument.
+
+        Example for 1D:
+        def func(i, qi) :
+            return (qi ** 2 * freq[i]) / 2.0
+
+        Example for 2D:
+        def func(ij, qij) :
+            pot = .
+        """
+
+        if not self.empty:
+            if self.order == 1:
+                for i in range(self.grids.nmodes):
+                    self.indices.append(i)
+                    potential = func(i, self.grids.grids[i])
+                    self.data.append(potential)
+
+            elif self.order == 2:
+                for i in range(self.grids.nmodes):
+                    for j in range(i+1, self.grids.nmodes):
+                        self.indices.append((i,j))
+                        #f = np.vectorize(lambda x,y: func(i,j, y,x))
+                        #potential = f(self.grids.grids[i, :], self.grids.grids[j, :].reshape((self.grids.ngrid,1)))
+                        potential = np.zeros((self.grids.ngrid, self.grids.ngrid))
+                        for n in range(self.grids.ngrid) :
+                            for m in range(self.grids.ngrid) :
+                                potential[n,m] = func(i,j, self.grids.grids[i, n], self.grids.grids[j, m])
+                        self.data.append(potential)
+
 
 class Polarizability(Surface):
     """ 

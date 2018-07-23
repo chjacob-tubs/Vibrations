@@ -360,6 +360,21 @@ class VCI(object):
         nex_contrib_max = max(enumerate(nex_contrib), key=lambda x: x[1])[0]
         return nex_contrib_max
 
+    def idx_fundamentals(self):
+        if self.solved :
+            idx = []
+
+            nex_contrib_fund = np.zeros_like(self.energies)
+            for i in xrange(len(self.energies)):
+                nex_contrib_fund[i] = self.nex_state(self.vectors[:,i])[1]
+
+            idx = np.argsort(nex_contrib_fund)
+            idx = np.sort(idx[-self.nmodes:])
+
+            return list(idx)
+        else:
+            return None
+
     def print_results(self, which=1, maxfreq=4000, short=False):
         """
         Prints VCI results, can be limited to the states mostly contributed from given type of transitions (1 - singles,
@@ -1047,6 +1062,7 @@ class VCI(object):
                     ind = self.v2_indices.index((mode1, mode2))
                 except:
                     ind = self.v2_indices.index((mode2, mode1))
+
                 if mode1 < mode2: 
                     try:
                         s1 = self.integrals[(mode1,lstate1,rstate1)]
@@ -1060,12 +1076,13 @@ class VCI(object):
                         s2 = (self.dx[mode2] * self.wfns[mode2, lstate2] * self.wfns[mode2, rstate2])
                         if self.store_ints:
                             self.integrals[(mode2,lstate2,rstate2)] = s2
-                    
+
                     if self.fortran:
                         s = fints.v2int(self.v2_data[ind],s1,s2)
                     else:
                         s1 = s1.transpose()
                         s = (s1.dot(self.v2_data[ind]).dot(s2)).sum()
+
                 else:
                     try:
                         s1 = self.integrals[(mode1,lstate1,rstate1)]
@@ -1085,6 +1102,7 @@ class VCI(object):
                     else:
                         s1 = s1.transpose()
                         s = (s1.dot(self.v2_data[ind].transpose()).dot(s2)).sum()
+
                 if self.store_potints: 
                     self.int2d[(mode1,lstate1,rstate1,mode2,lstate2,rstate2)] = s
 
@@ -1287,7 +1305,7 @@ class VCI(object):
 
                     self.sij[i, j, k] = self._dgs_ovrlp_integral(i, j, k)
     
-    @Misc.do_cprofile
+    #@Misc.do_cprofile
     def solve(self, parallel=False, diag='Direct'):
         """
         General solver for the VCI

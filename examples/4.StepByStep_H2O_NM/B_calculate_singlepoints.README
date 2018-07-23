@@ -1,4 +1,4 @@
-In step B, ypu have to run single point calculations for all the structures
+In step B, you have to run single point calculations for all the structures
 in the directory 'grid' (filenames grid_[vX_A_B].xyz).
 
 The results should be written to the directory 'energies' into one file for
