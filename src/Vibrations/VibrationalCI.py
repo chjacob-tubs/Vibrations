@@ -21,6 +21,8 @@ Module related to the VCI class for Vibrational Confinuration Interaction calcul
 """
 
 import numpy as np
+import scipy
+import scipy.linalg
 import Misc
 import Surfaces
 import fints
@@ -511,6 +513,8 @@ class VCI(object):
         """
         nstates = len(self.states)
         for i in xrange(nstates):
+            if i % 500 == 0:
+                 print 'combgenerator', i, 'of', nstates
             for j in xrange(i, nstates):
                 if sum([x != y for (x, y) in zip(self.states[i], self.states[j])]) < self.maxpot+1:
                     yield (self.states[i], self.states[j])
@@ -1317,14 +1321,16 @@ class VCI(object):
 
         nstates = len(self.states)
         #s = 'There are %i states' %nstates
-        #print Misc.fancy_box('There are %i states') % (nstates)
+        print Misc.fancy_box('There are %i states') % (nstates)
         #print Misc.fancy_box(s)
         #for s in self.states:
         #    print s
         #print
-        self.print_states()
+        #self.print_states()
 
-        self.H = np.zeros((nstates, nstates))
+        #self.H = np.zeros((nstates, nstates))
+        import scipy.sparse
+        self.H = scipy.sparse.dok_matrix((nstates, nstates))
 
         if not parallel:
             import time
@@ -1371,9 +1377,11 @@ class VCI(object):
                 self.H[r[0],r[1]] = r[2]
                 self.H[r[1],r[0]] = r[2]
 
+        self.H = self.H.tocsr()
+
         if diag=='Direct':
             print Misc.fancy_box('Hamiltonian matrix constructed. Diagonalization...')
-            w, v = np.linalg.eigh(self.H, UPLO='U')
+            w, v = np.linalg.eigh(self.H.toarray(), UPLO='U')
             self.energies = w
             self.vectors = v
             self.energiesrcm = self.energies / Misc.cm_in_au
