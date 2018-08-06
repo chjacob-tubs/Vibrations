@@ -83,7 +83,7 @@ grid.generate_grids(ngrid,amp)
 # Generate harmonic 1-mode potentials
 
 v1 = vib.Potential(grid, order=1)
-v1.generate_harmonic()
+v1.generate_harmonic(cmat=cmat)
 
 # Generate harmonic 1-mode dipole moments
 
