@@ -346,7 +346,7 @@ class VCI(object):
         :param c: combination, a tuple of two vectors, left and right, representing the transition
         :return: order of the transition, 1 for singles, 2 for doubles etc.
         """
-        return sum([x != y for (x, y) in zip(c[0], c[1])])
+        return np.count_nonzero(c[0]-c[1])
 
     def nex_state(self, vci_state):
         """
@@ -516,10 +516,9 @@ class VCI(object):
         for i in xrange(nstates):
             if i % 500 == 0:
                  print 'combgenerator', i, 'of', nstates
-            for j in xrange(i, nstates):
-                if np.count_nonzero(self.states[i]-self.states[j]) < self.maxpot+1 :
-                #if sum([x != y for (x, y) in zip(self.states[i], self.states[j])]) < self.maxpot+1:
-                    yield (self.states[i], self.states[j], i, j)
+            sdiff = np.count_nonzero(self.states[i:,:] - self.states[i,:], axis=1)
+            for j in np.nonzero(sdiff < self.maxpot+1)[0] :
+                 yield (self.states[i], self.states[j+i], i, j+i)
     
     def combgenerator_nofilter(self):
         """
