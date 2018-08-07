@@ -264,7 +264,8 @@ class VCI(object):
         n = c[0]
         m = c[1]
 
-        indices = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e is True]
+        indices = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e]
+
         i = indices[0]
         j = indices[1]
 
@@ -300,7 +301,7 @@ class VCI(object):
         n = c[0]
         m = c[1]
 
-        indices = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e is True]
+        indices = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e]
         i = indices[0]
         j = indices[1]
         k = indices[2]
@@ -327,7 +328,7 @@ class VCI(object):
         n = c[0]
         m = c[1]
         
-        indices = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e is True]
+        indices = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e]
         i = indices[0]
         j = indices[1]
         k = indices[2]
@@ -487,7 +488,7 @@ class VCI(object):
             res += multichoose(self.nmodes, i)
 
         res = filter(lambda x: len(filter(None, x)) < nexc + 1, res)
-        self.states = res
+        self.states = np.array(res)
 
         self.nmax = nexc
         self.smax = smax
@@ -516,8 +517,9 @@ class VCI(object):
             if i % 500 == 0:
                  print 'combgenerator', i, 'of', nstates
             for j in xrange(i, nstates):
-                if sum([x != y for (x, y) in zip(self.states[i], self.states[j])]) < self.maxpot+1:
-                    yield (self.states[i], self.states[j])
+                if np.count_nonzero(self.states[i]-self.states[j]) < self.maxpot+1 :
+                #if sum([x != y for (x, y) in zip(self.states[i], self.states[j])]) < self.maxpot+1:
+                    yield (self.states[i], self.states[j], i, j)
     
     def combgenerator_nofilter(self):
         """
@@ -526,7 +528,7 @@ class VCI(object):
         nstates = len(self.states)
         for i in xrange(nstates):
             for j in xrange(i, nstates):
-                yield (self.states[i], self.states[j])
+                yield (self.states[i], self.states[j], i, j)
 
     def calculate_transition_moments(self, *properties):
         """
@@ -647,7 +649,7 @@ class VCI(object):
                         elif tensors2 and  order == 2:
                             n = self.states[istate]
                             m = self.states[fstate]
-                            j,k = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e is True]
+                            j,k = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e]
                             jistate = n[j]
                             jfstate = m[j]
                             kistate = n[k]
@@ -1330,7 +1332,7 @@ class VCI(object):
 
         #self.H = np.zeros((nstates, nstates))
         import scipy.sparse
-        self.H = scipy.sparse.dok_matrix((nstates, nstates))
+        self.H = scipy.sparse.lil_matrix((nstates, nstates))
 
         if not parallel:
             import time
@@ -1352,8 +1354,8 @@ class VCI(object):
 
                 if abs(tmp) < 1e-8: 
                     tmp = 0.0
-                nind = self.states.index(c[0])  # find the indices of the vectors
-                mind = self.states.index(c[1])
+                nind = c[2]  # find the indices of the vectors
+                mind = c[3]
                 self.H[nind, mind] = tmp
                 self.H[mind, nind] = tmp
                 counter += 1
