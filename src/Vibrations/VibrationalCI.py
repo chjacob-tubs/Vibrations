@@ -409,7 +409,7 @@ class VCI(object):
 
     def print_short_state(self,state):
         s = ''
-        ds = [state.index(x) for x in state if x]
+        ds = [list(state).index(x) for x in state if x]
         s += str(len(ds))
         s += ': '
         for d in ds:
@@ -529,6 +529,7 @@ class VCI(object):
             for j in xrange(i, nstates):
                 yield (self.states[i], self.states[j], i, j)
 
+    #@Misc.do_cprofile
     def calculate_transition_moments(self, *properties):
         """
         Calculates VCI transition moments for given properties
@@ -676,7 +677,7 @@ class VCI(object):
             transitions[i]=totaltens
         return transitions
     
-    #@do_cprofile
+    #@Misc.do_cprofile
     def calculate_IR(self, *dipolemoments):
         
         print Misc.fancy_box('VCI IR Intensities')
