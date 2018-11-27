@@ -66,7 +66,7 @@ class VCI(object):
         self.nmodes = int(potentials[0].grids.nmodes)
         self.ngrid = int(potentials[0].grids.ngrid)
 
-        self.states = []
+        self.states = None
         self.combinations = None
         self.solved = False
 
@@ -147,8 +147,9 @@ class VCI(object):
         if abs(tmp) < 1e-8: 
             tmp = 0.0
 
-        nind = self.states.index(c[0])  # find the indices of the vectors
-        mind = self.states.index(c[1])
+        nind = c[2]  # find the indices of the vectors
+        mind = c[3]
+
         return (nind,mind,tmp)
 
     def __call__(self,c):
@@ -487,8 +488,7 @@ class VCI(object):
         for i in xrange(1, smax+1):
             res += multichoose(self.nmodes, i)
 
-        res = filter(lambda x: len(filter(None, x)) < nexc + 1, res)
-        self.states = np.array(res)
+        self.filter_states(lambda x: len(filter(None, x)) < nexc + 1)
 
         self.nmax = nexc
         self.smax = smax
@@ -498,6 +498,8 @@ class VCI(object):
         self.nmax = maxexc
         self.smax = maxexc
 
+    def filter_states(self, func):
+        self.states = np.array(filter(func, self.states))
 
     def filter_combinations(self):
         """
@@ -1374,7 +1376,7 @@ class VCI(object):
             print 'Ncores:' ,ncores
             print 'Chunksize: ',ch
             # print 'Transitions: ',ntrans
-            results =  pool.map(self.calculate_transition, self.combgenerator(),chunksize=ch)
+            results =  pool.map(self.calculate_transition, self.combgenerator(), chunksize=ch)
             for r in results:
                 self.H[r[0],r[1]] = r[2]
                 self.H[r[1],r[0]] = r[2]
