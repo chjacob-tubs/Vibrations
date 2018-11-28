@@ -25,7 +25,13 @@ import scipy
 import scipy.linalg
 import Misc
 import Surfaces
-import fints
+
+try:
+    import fints
+except ImportError:
+    fints = None
+    print "WARNING: Fortran routines not used for integrals, this might be very slow. "
+    print "         see src/Vibrations/README_f2py " 
 
 
 def multichoose(n, k):
@@ -90,7 +96,11 @@ class VCI(object):
         self.int3d = {}  # 3-d -,,-
         self.int4d = {}  # 4-d -,,-
 
-        self.fortran = True # use Fortran integrals (should be faster)
+        # use Fortran integrals (should be faster)
+        self.fortran = (fints is not None)
+        if not self.fortran :
+            print "WARNING: Fortran routines not used for integrals, this might be very slow. "
+            print "         see src/Vibrations/README_f2py " 
 
         self.energies = np.array([])
         self.energiesrcm = np.array([])
