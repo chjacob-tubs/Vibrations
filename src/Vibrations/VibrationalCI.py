@@ -488,6 +488,7 @@ class VCI(object):
         for i in xrange(1, smax+1):
             res += multichoose(self.nmodes, i)
 
+        self.states = np.array(res)
         self.filter_states(lambda x: len(filter(None, x)) < nexc + 1)
 
         self.nmax = nexc
