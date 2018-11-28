@@ -1,20 +1,26 @@
 # This file is a part of 
-# Vibrations - a Python Code for Anharmonic Vibrational Calculations
-# wiht User-defined Vibrational Coordinates
+# Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
 # Copyright (C) 2014-2018 by Pawel T. Panek, and Christoph R. Jacob.
 #
-# Vibrations is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+#    Vibrations is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
 #
-# Vibrations is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#    Vibrations is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.
+#    You should have received a copy of the GNU General Public License
+#    along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.
+#
+# In scientific publications using Vibrations please cite:
+#   P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.
+#   P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.
+# 
+# The most recent version of Vibrations is available at
+#   http://www.christophjacob.eu/software
 
 """
 Vibrations
@@ -44,8 +50,8 @@ calculated with QM programs, another packages are needed
 Any suggestions and improvements are welcome.
 
 @author: Pawel Panek
-@organization: TU-Braunschweig
-@contact: c.jacob@tu-bs.de
+@organization: TU Braunschweig
+@contact: c.jacob@tu-braunschweig.de
 """
 
 from VibrationalSCF import *
@@ -60,22 +66,28 @@ print ' '+75*'*'
 print ' *'
 print ' *  Vibrations v0.9'
 print ' *'                        
-print ' *  Vibrations - a Python Code for Anharmonic Vibrational Calculations' 
-print ' *  wiht User-defined Vibrational Coordinates'
+print ' *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy' 
 print ' *  Copyright (C) 2014-2018 by Pawel T. Panek, and Christoph R. Jacob.'
 print ' *'
-print ' *  Vibrations is free software: you can redistribute it and/or modify'
-print ' *  it under the terms of the GNU General Public License as published by'
-print ' *  the Free Software Foundation, either version 3 of the License, or'
-print ' *  (at your option) any later version.'
+print ' *     Vibrations is free software: you can redistribute it and/or modify'
+print ' *     it under the terms of the GNU General Public License as published by'
+print ' *     the Free Software Foundation, either version 3 of the License, or'
+print ' *     (at your option) any later version.'
 print ' *' 
-print ' *  Vibrations is distributed in the hope that it will be useful,'
-print ' *  but WITHOUT ANY WARRANTY; without even the implied warranty of'
-print ' *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the'  
-print ' *  GNU General Public License for more details.'
+print ' *     Vibrations is distributed in the hope that it will be useful,'
+print ' *     but WITHOUT ANY WARRANTY; without even the implied warranty of'
+print ' *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the'  
+print ' *     GNU General Public License for more details.'
 print ' *'
-print ' *  You should have received a copy of the GNU General Public License'
-print ' *  along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.' 
+print ' *     You should have received a copy of the GNU General Public License'
+print ' *     along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.' 
+print ' *'
+print ' *  In scientific publications using Vibrations please cite:'
+print ' *    P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.'
+print ' *    P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.'
+print ' *'
+print ' *  The most recent version of Vibrations is available at'
+print ' *    http://www.christophjacob.eu/software'
 print ' *'
 print ' '+75*'*'
 print
