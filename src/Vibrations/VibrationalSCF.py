@@ -1,7 +1,7 @@
 # This file is a part of 
 # Vibrations - a Python Code for Anharmonic Vibrational Calculations
 # wiht User-defined Vibrational Coordinates
-# Copyright (C) 2014-2016 by Pawel T. Panek, and Christoph R. Jacob.
+# Copyright (C) 2014-2018 by Pawel T. Panek, and Christoph R. Jacob.
 #
 # Vibrations is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
