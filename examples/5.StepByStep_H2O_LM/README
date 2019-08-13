@@ -1,0 +1,66 @@
+Example for running VSCF/VCI with Vibrations (using local modes)
+============================================
+
+
+Step A
+------
+
+Generate grid (displaced structures) for which single-points have to
+be calculated.
+
+>>> python A_h2o_make_normalmode_grid.py
+
+This reads a harmonic vibrational calculation from an SNF calculation
+(in directory h2o_snf). Results from Turbomole (aoforce) can also be
+read. Implementing reading from other codes is easy to implement, see
+LocVib (or let me know what you need).
+
+It writes xyz files to the directory 'grid'.
+
+The number of grid points per mode (ngrid) is set to 16 and the amp
+parameter uses a default value of 14. This should be fine for most
+cases, see our ChemPhysChem paper for definitions of these parameters.
+
+Here, one-mode and two-mode grids are generated. Higher order grids
+could also be written if necessary.
+
+NOTE: The grids are generated wrt local modes here. This requires an
+appropriate choice of localization subsets. 
+
+
+Step B
+------
+
+Run single points. See B_calculate_singlepoints.README for instructions.
+
+We have PyADF scripts for this step using Turbomole (that could be extended
+to other codes as well), but you can do this in whichever way you like.
+
+
+Step C
+------
+
+Generate 1-mode and 2-mode potentials
+
+>>> C_make_potentials.py 
+
+Reads single-point results from 'energies' directory and generates .npy
+files in the directory 'potentials'.
+
+You might need to change 'nmodes' in this script according to the number
+of normal modes of your molecule.
+
+
+Step D
+------
+
+VSCF/VCI calculation
+
+>>> D_vscf_vci.py
+
+Here, you have to make sure the same grid as in step A is used (the first
+part of the script is the same as A_h2o_make_normalmode_grid.py
+
+In the VCI part, you can choose the excitation level (generate_states_nmax).
+
+
