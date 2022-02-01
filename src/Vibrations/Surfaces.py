@@ -28,7 +28,7 @@ properties surfaces.
 """
 
 import numpy as np
-import Misc
+from . import Misc
 
 
 class Surface(object):
@@ -89,7 +89,7 @@ class Surface(object):
                 self.indices.pop(i)
                 self.data.pop(i)
             except:
-                print 'Surface of index ',ind,' not found'
+                print('Surface of index ',ind,' not found')
 
     def zero(self):
         """
@@ -125,7 +125,7 @@ class Surface(object):
 
         elif len(item) == 2 * self.order:
             ind = list(item)
-            newind = zip(ind[:self.order],ind[self.order:])
+            newind = list(zip(ind[:self.order],ind[self.order:]))
             newind.sort()
             newind2 = [x[0] for x in newind] + [x[1] for x in newind]
             modes = newind2[:self.order]
@@ -228,7 +228,7 @@ class Potential(Surface):
 
         shape = [self.grids.nmodes] * self.order + [self.ngrid] * self.order
         shape = tuple(shape)
-        print shape
+        print(shape)
         tmparray = np.zeros(shape)
 
         for i,ind in enumerate(self.indices):
@@ -323,7 +323,7 @@ class Polarizability(Surface):
         res -- VibTools results instance
         """
         pol_deriv_nm = res.get_tensor_deriv_nm('pol'+self.gauge, ncomp=6, modes=self.grids.modes)
-        print pol_deriv_nm.shape
+        print(pol_deriv_nm.shape)
 
         if not self.empty:
             if self.order == 1:

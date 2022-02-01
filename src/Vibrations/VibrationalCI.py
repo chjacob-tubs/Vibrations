@@ -26,17 +26,18 @@ Module related to the VCI class for Vibrational Confinuration Interaction calcul
 """
 
 import numpy as np
+from numpy import linalg as LA
 import scipy
 import scipy.linalg
-import Misc
-import Surfaces
+from . import Misc
+from . import Surfaces
 
 try:
-    import fints
+    from . import fints
 except ImportError:
     fints = None
-    print "WARNING: Fortran routines not used for integrals, this might be very slow. "
-    print "         see src/Vibrations/README_f2py " 
+    print("WARNING: Fortran routines not used for integrals, this might be very slow. ")
+    print("         see src/Vibrations/README_f2py ") 
 
 
 def multichoose(n, k):
@@ -104,8 +105,8 @@ class VCI(object):
         # use Fortran integrals (should be faster)
         self.fortran = (fints is not None)
         if not self.fortran :
-            print "WARNING: Fortran routines not used for integrals, this might be very slow. "
-            print "         see src/Vibrations/README_f2py " 
+            print("WARNING: Fortran routines not used for integrals, this might be very slow. ")
+            print("         see src/Vibrations/README_f2py ") 
 
         self.energies = np.array([])
         self.energiesrcm = np.array([])
@@ -184,40 +185,40 @@ class VCI(object):
         m = c[1]
         
         if self.maxpot == 2:
-            for i in xrange(self.nmodes):
+            for i in range(self.nmodes):
                 tmpv1 = self._v1_integral(i, n[i], m[i])
                 tmpt = self._kinetic_integral(i, n[i], m[i])
                 tmp += tmpv1 + tmpt
 
-                for j in xrange(i+1, self.nmodes):
+                for j in range(i+1, self.nmodes):
                     tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
                     tmp += tmpv2 
 
         elif self.maxpot == 3:
-            for i in xrange(self.nmodes):
+            for i in range(self.nmodes):
                 tmpv1 = self._v1_integral(i, n[i], m[i])
                 tmpt = self._kinetic_integral(i, n[i], m[i])
                 tmp += tmpv1 + tmpt
 
-                for j in xrange(i+1, self.nmodes):
+                for j in range(i+1, self.nmodes):
                     tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
                     tmp += tmpv2 
-                    for k in xrange(j+1,self.nmodes):
+                    for k in range(j+1,self.nmodes):
                         tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                         tmp += tmpv3
         elif self.maxpot == 4:
-            for i in xrange(self.nmodes):
+            for i in range(self.nmodes):
                 tmpv1 = self._v1_integral(i, n[i], m[i])
                 tmpt = self._kinetic_integral(i, n[i], m[i])
                 tmp += tmpv1 + tmpt
 
-                for j in xrange(i+1, self.nmodes):
+                for j in range(i+1, self.nmodes):
                     tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
                     tmp += tmpv2 
-                    for k in xrange(j+1,self.nmodes):
+                    for k in range(j+1,self.nmodes):
                         tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                         tmp += tmpv3
-                        for l in xrange(k+1,self.nmodes):
+                        for l in range(k+1,self.nmodes):
                             tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
                             tmp += tmpv4
 
@@ -240,29 +241,29 @@ class VCI(object):
         tmp += tmpv1 + tmpt
 
         if self.maxpot == 2:
-            for j in xrange(self.nmodes):
+            for j in range(self.nmodes):
                 if j != i:
                     tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
                     tmp += tmpv2
         elif self.maxpot == 3:
-            for j in xrange(self.nmodes):
+            for j in range(self.nmodes):
                 if j != i:
                     tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
                     tmp += tmpv2
-                    for k in xrange(j+1,self.nmodes):
+                    for k in range(j+1,self.nmodes):
                         if k != j and k != i:
                             tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                             tmp += tmpv3
         elif self.maxpot == 4:
-            for j in xrange(self.nmodes):
+            for j in range(self.nmodes):
                 if j != i:
                     tmpv2 = self._v2_integral(i, j, n[i], n[j], m[i], m[j])
                     tmp += tmpv2
-                    for k in xrange(j+1,self.nmodes):
+                    for k in range(j+1,self.nmodes):
                         if k != j and k != i:
                             tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                             tmp += tmpv3
-                            for l in xrange(k+1, self.nmodes):
+                            for l in range(k+1, self.nmodes):
                                 if l != j and l!= i and l != k:
                                     tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
                                     tmp += tmpv4
@@ -289,16 +290,16 @@ class VCI(object):
         tmp += tmpv2
 
         if self.maxpot == 3 :
-            for k in xrange(self.nmodes):
+            for k in range(self.nmodes):
                 if k != i and k != j:
                     tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                     tmp += tmpv3
         elif self.maxpot == 4:
-            for k in xrange(self.nmodes):
+            for k in range(self.nmodes):
                 if k != i and k != j:
                     tmpv3 = self._v3_integral(i, j, k, n[i], n[j], n[k], m[i], m[j], m[k])
                     tmp += tmpv3
-                    for l in xrange(k+1,self.nmodes):
+                    for l in range(k+1,self.nmodes):
                         if l != i and l != j and l != k:
                             tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
                             tmp += tmpv4
@@ -326,7 +327,7 @@ class VCI(object):
         tmp += tmpv3
         
         if self.maxpot == 4 :
-            for l in xrange(self.nmodes):
+            for l in range(self.nmodes):
                 if l != i and l!= j and l!=k:
                     tmpv4 = self._v4_integral(i,j,k,l,n[i],n[j],n[k],n[l],m[i],m[j],m[k],m[l])
                     tmp += tmpv4
@@ -384,7 +385,7 @@ class VCI(object):
             idx = []
 
             nex_contrib_fund = np.zeros_like(self.energies)
-            for i in xrange(len(self.energies)):
+            for i in range(len(self.energies)):
                 nex_contrib_fund[i] = self.nex_state(self.vectors[:,i])[1]
 
             idx = np.argsort(nex_contrib_fund)
@@ -403,9 +404,9 @@ class VCI(object):
         :return: void
         """
         if self.solved:
-            print Misc.fancy_box('Results of the VCI')
-            print 'State %14s %10s %10s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
-            for i in xrange(len(self.energies)):  # was self.states, is self.energies
+            print(Misc.fancy_box('Results of the VCI'))
+            print('State %14s %10s %10s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1'))
+            for i in range(len(self.energies)):  # was self.states, is self.energies
                 en = self.energiesrcm[i] - self.energiesrcm[0]
                 if en < maxfreq:
                     nex_contrib = self.nex_state(self.vectors[:,i])
@@ -414,14 +415,14 @@ class VCI(object):
                     state = self.states[(self.vectors[:, i]**2).argmax()]
                     if nex_contrib_max <= which:
                         if not short:
-                            print "%s %10.4f %10.4f %10.4f" % (state, (self.vectors[:, i]**2).max(), 
-                                                               self.energiesrcm[i], en)
+                            print("%s %10.4f %10.4f %10.4f" % (state, (self.vectors[:, i]**2).max(), 
+                                                               self.energiesrcm[i], en))
                         else:
-                            print "%s %10.4f %10.4f %10.4f" % (self.print_short_state(state), (self.vectors[:, i]**2).max(), 
-                                                               self.energiesrcm[i], en)
+                            print("%s %10.4f %10.4f %10.4f" % (self.print_short_state(state), (self.vectors[:, i]**2).max(), 
+                                                               self.energiesrcm[i], en))
         else:
-            print Misc.fancy_box('Solve the VCI first')
-        print
+            print(Misc.fancy_box('Solve the VCI first'))
+        print()
 
     def print_short_state(self,state):
         s = ''
@@ -444,39 +445,39 @@ class VCI(object):
         :return: void
         """
         if self.solved:
-            print Misc.fancy_box('Results of the VCI')
-            print 'State %15s %15s %15s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1')
+            print(Misc.fancy_box('Results of the VCI'))
+            print('State %15s %15s %15s' % ('Contrib', 'E /cm^-1', 'DE /cm^-1'))
 
-            for i in xrange(len(self.energies)): #was self.states is self.energies
+            for i in range(len(self.energies)): #was self.states is self.energies
                 en = self.energiesrcm[i] - self.energiesrcm[0]
                 if en < maxfreq:
                     nex_contrib = self.nex_state(self.vectors[:,i])
                     nex_contrib_max = max(enumerate(nex_contrib), key=lambda x: x[1])[0]
 
                     if nex_contrib_max <= which:
-                        print "State %3i      energy = %10.4f,  excitation energy = %10.4f" % (i, self.energiesrcm[i], en)
+                        print("State %3i      energy = %10.4f,  excitation energy = %10.4f" % (i, self.energiesrcm[i], en))
                         for j, contr in enumerate(self.vectors[:, i]):
                             
                             if contr**2 >= mincon:
-                                print " %9.4f   %s  %s" % (contr, self.states[j], self.print_short_state(self.states[j]))
+                                print(" %9.4f   %s  %s" % (contr, self.states[j], self.print_short_state(self.states[j])))
 
-                        print 15*' ' + "GS: %6.2f, Fundamentals: %6.2f " % (nex_contrib[0], nex_contrib[1]),
+                        print(15*' ' + "GS: %6.2f, Fundamentals: %6.2f " % (nex_contrib[0], nex_contrib[1]), end=' ')
                         for j in range(2, self.smax+1):
-                            print "%2i: %6.2f" % (j, nex_contrib[j]),
-                        print
-                        print
+                            print("%2i: %6.2f" % (j, nex_contrib[j]), end=' ')
+                        print()
+                        print()
 
                                 
     def print_states(self):
         """
         Prints the vibrational states used in the VCI calculations
         """
-        print ''
-        print Misc.fancy_box('VCI Space')
-        print 'There are %i states: ' %len(self.states)
+        print('')
+        print(Misc.fancy_box('VCI Space'))
+        print('There are %i states: ' %len(self.states))
         for i,s in enumerate(self.states):
-            print i, s
-        print
+            print(i, s)
+        print()
 
     def generate_states_nmax(self, nexc=None, smax=None):
         """
@@ -500,11 +501,11 @@ class VCI(object):
 
         res = [[0] * self.nmodes]
 
-        for i in xrange(1, smax+1):
+        for i in range(1, smax+1):
             res += multichoose(self.nmodes, i)
 
         self.states = np.array(res)
-        self.filter_states(lambda x: len(filter(None, x)) < nexc + 1)
+        self.filter_states(lambda x: len([_f for _f in x if _f]) < nexc + 1)
 
         self.nmax = nexc
         self.smax = smax
@@ -515,7 +516,7 @@ class VCI(object):
         self.smax = maxexc
 
     def filter_states(self, func):
-        self.states = np.array(filter(func, self.states))
+        self.states = np.array(list(filter(func, self.states)))
 
     def filter_combinations(self):
         """
@@ -531,9 +532,9 @@ class VCI(object):
         Generator returning combinations of states that contribute due to available potentials
         """
         nstates = len(self.states)
-        for i in xrange(nstates):
+        for i in range(nstates):
             if i % 500 == 0:
-                 print 'combgenerator', i, 'of', nstates
+                 print('combgenerator', i, 'of', nstates)
             sdiff = np.count_nonzero(self.states[i:,:] - self.states[i,:], axis=1)
             for j in np.nonzero(sdiff < self.maxpot+1)[0] :
                  yield (self.states[i], self.states[j+i], i, j+i)
@@ -543,8 +544,8 @@ class VCI(object):
         Generates combinations of states without prescreening
         """
         nstates = len(self.states)
-        for i in xrange(nstates):
-            for j in xrange(i, nstates):
+        for i in range(nstates):
+            for j in range(i, nstates):
                 yield (self.states[i], self.states[j], i, j)
 
     #@Misc.do_cprofile
@@ -585,22 +586,23 @@ class VCI(object):
         nstates = len(self.states)
         transitions = [[] for i in range(nstates)]
 
-        for i in xrange(1, nstates):  # loop over all VCI states except the ground state
+        
+        for i in range(1, nstates):  # loop over all VCI states except the ground state
             totaltens = []
             for t in tensors:
                 totaltens.append(np.zeros(t.prop[0]))
-            for istate in xrange(nstates):
+            for istate in range(nstates):
                 ci = self.vectors[istate, 0]  # initial state's coefficient
 
-                for fstate in xrange(nstates):
+                for fstate in range(nstates):
                     cf = self.vectors[fstate, i]  # final state's coefficient
                     if ci and cf:
                         for tt in tmptens:
                             tt *= 0.0
-                        
+
                         order = self.order_of_transition((self.states[istate], self.states[fstate]))
                         if order == 0:
-                            for j in xrange(self.nmodes):
+                            for j in range(self.nmodes):
                                 jistate = self.states[istate][j]
                                 jfstate = self.states[fstate][j]
                                 try:
@@ -608,14 +610,14 @@ class VCI(object):
                                 except:
                                     s1 = (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate])
                                     self.integrals[(j,jistate,jfstate)] = s1
-                                
+
                                 for ti, t in enumerate(tensors):
                                     ind = t.indices.index(j)
                                     for o in range(t.prop[0]):
                                         tmptens[ti][o] += np.dot(t.data[ind][:,o],s1)
 
                                 if tensors2:
-                                    for k in xrange(j+1, self.nmodes):
+                                    for k in range(j+1, self.nmodes):
                                         if (j,k) in tensors2[0].indices:
                                             kistate = self.states[istate][k]
                                             kfstate = self.states[fstate][k]
@@ -624,7 +626,7 @@ class VCI(object):
                                             except:
                                                 s2 = (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate])
                                                 self.integrals[(k,kistate,kfstate)] = s2
-                                             
+
                                             for ti, t in enumerate(tensors2):
                                                 ind = t.indices.index((j,k)) 
                                                 for o in range(t.prop[0]):
@@ -642,12 +644,12 @@ class VCI(object):
                                 s1 = (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate])
                                 self.integrals[(j,jistate,jfstate)] = s1
                             for ti, t in enumerate(tensors):
-                                                                                      
+
                                 ind = t.indices.index(j)
                                 for o in range(t.prop[0]):
                                     tmptens[ti][o] += np.dot(t.data[ind][:,o],s1)
                             if tensors2:
-                                for k in xrange(self.nmodes):
+                                for k in range(self.nmodes):
                                     if j!=k and ((j,k) in tensors2[0].indices or (k,j) in tensors2[0].indices):
                                         kistate = self.states[istate][k]
                                         kfstate = self.states[fstate][k]
@@ -656,7 +658,7 @@ class VCI(object):
                                         except:
                                             s2 = (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate])
                                             self.integrals[(k,kistate,kfstate)] = s2
-                                        
+
                                         for ti, t in enumerate(tensors2):
                                             try:
                                                 ind = t.indices.index((j,k))
@@ -694,30 +696,186 @@ class VCI(object):
                             tt += tmptens[tn]   * ci * cf
             transitions[i]=totaltens
         return transitions
+
+    #@Misc.do_cprofile
+    def calculate_transition_matrix(self, *properties):
+        """
+        Calculates VCI transition moments for given properties as a matrix and intensities
+        """
+        if not self.solved:
+            raise Exception('Solve the VCI first')
+
+        maxprop = len(properties)
+        self.prop1 = None
+        self.prop2 = None
+        self.transitions = None
+
+        if maxprop == 0:
+            raise Exception('No property surfaces given')
+        elif maxprop == 1:
+            self.prop1 = properties[0]
+        elif maxprop == 2:
+            self.prop1 = properties[0]
+            self.prop2 = properties[1]
+        else:
+            raise Exception('Too many properties, only up to second order used')
+
+        tensors = self.prop1
+        tensors2 = None
+        if self.prop2:
+            tensors2 = self.prop2
+
+
+        totaltens = []
+        tmptens = []
+        for t in tensors:
+            tmptens.append(np.zeros(t.prop[0]))
+            totaltens.append(np.zeros(t.prop[0]))
+
+        nstates = len(self.states)
+        #transitions = [[] for i in range(nstates)]
+        transitions = [[[] for j in range(nstates)] for i in range(nstates)]
+        inten = [[[] for j in range(nstates)] for i in range(nstates)]
+        freqs = [[[] for j in range(nstates)] for i in range(nstates)]
+
+        for ii in range(0, nstates):
+            for i in range(0, nstates):  # loop over all VCI states except the ground state
+                totaltens = []
+                for t in tensors:
+                    totaltens.append(np.zeros(t.prop[0]))
+                for istate in range(nstates):
+                    ci = self.vectors[istate, ii]  # initial state's coefficient
+
+                    for fstate in range(nstates):
+                        cf = self.vectors[fstate, i]  # final state's coefficient
+                        if ci and cf:
+                            for tt in tmptens:
+                                tt *= 0.0
+
+                            order = self.order_of_transition((self.states[istate], self.states[fstate]))
+                            if order == 0:
+                                for j in range(self.nmodes):
+                                    jistate = self.states[istate][j]
+                                    jfstate = self.states[fstate][j]
+                                    try:
+                                        s1 = self.integrals[(j,jistate,jfstate)]
+                                    except:
+                                        s1 = (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate])
+                                        self.integrals[(j,jistate,jfstate)] = s1
+
+                                    for ti, t in enumerate(tensors):
+                                        ind = t.indices.index(j)
+                                        for o in range(t.prop[0]):
+                                            tmptens[ti][o] += np.dot(t.data[ind][:,o],s1)
+
+                                    if tensors2:
+                                        for k in range(j+1, self.nmodes):
+                                            if (j,k) in tensors2[0].indices:
+                                                kistate = self.states[istate][k]
+                                                kfstate = self.states[fstate][k]
+                                                try:
+                                                    s2 = self.integrals[(k,kistate,kfstate)]
+                                                except:
+                                                    s2 = (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate])
+                                                    self.integrals[(k,kistate,kfstate)] = s2
+
+                                                for ti, t in enumerate(tensors2):
+                                                    ind = t.indices.index((j,k)) 
+                                                    for o in range(t.prop[0]):
+                                                        tmptens[ti][o] += np.einsum('i,j,ij', s1, s2, t.data[ind][:,:,o])
+
+                            elif order == 1:
+                                n = self.states[istate]
+                                m = self.states[fstate]
+                                j = [x != y for x, y in zip(n, m)].index(True)  # give me the index of the element that differs two vectors
+                                jistate = self.states[istate][j]
+                                jfstate = self.states[fstate][j]
+                                try:
+                                    s1 = self.integrals[(j,jistate,jfstate)]
+                                except:
+                                    s1 = (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate])
+                                    self.integrals[(j,jistate,jfstate)] = s1
+                                for ti, t in enumerate(tensors):
+
+                                    ind = t.indices.index(j)
+                                    for o in range(t.prop[0]):
+                                        tmptens[ti][o] += np.dot(t.data[ind][:,o],s1)
+                                if tensors2:
+                                    for k in range(self.nmodes):
+                                        if j!=k and ((j,k) in tensors2[0].indices or (k,j) in tensors2[0].indices):
+                                            kistate = self.states[istate][k]
+                                            kfstate = self.states[fstate][k]
+                                            try:
+                                                s2 = self.integrals[(k,kistate,kfstate)]
+                                            except:
+                                                s2 = (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate])
+                                                self.integrals[(k,kistate,kfstate)] = s2
+
+                                            for ti, t in enumerate(tensors2):
+                                                try:
+                                                    ind = t.indices.index((j,k))
+                                                except:
+                                                    ind = t.indices.index((k,j))
+                                                for o in range(t.prop[0]):
+                                                    tmptens[ti][o] += np.einsum('i,j,ij', s1, s2, t.data[ind][:,:,o])
+                            elif tensors2 and  order == 2:
+                                n = self.states[istate]
+                                m = self.states[fstate]
+                                j,k = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e]
+                                jistate = n[j]
+                                jfstate = m[j]
+                                kistate = n[k]
+                                kfstate = m[k]
+                                try:
+                                    s1 = self.integrals[(j,jistate,jfstate)]
+                                except:
+                                    s1 = (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate])
+                                    self.integrals[(j,jistate,jfstate)] = s1
+                                    try:
+                                        s2 = self.integrals[(k,kistate,kfstate)]
+                                    except:
+                                        s2 = (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate])
+                                        self.integrals[(k,kistate,kfstate)] = s2
+                                    if (j,k) in t.indices or (k,j) in t.indices: 
+                                        for ti, t in enumerate(tensors2):
+                                            try:
+                                                ind = t.indices.index((j,k))
+                                            except:
+                                                ind = t.indices.index((k,j))
+                                            for o in range(t.prop[0]):
+                                                tmptens[ti][o] += np.einsum('i,j,ij', s1, s2, t.data[ind][:,:,o])
+                            for tn,tt in enumerate(totaltens):
+                                tt += tmptens[tn]   * ci * cf
+                #transitions[i]=totaltens
+                transitions[i][ii]=totaltens
+                inten[i][ii] = (LA.norm(totaltens))**2 * Misc.intfactor * (self.energiesrcm[ii] - self.energiesrcm[i])
+                freqs[i][ii] = self.energiesrcm[ii] - self.energiesrcm[i]
+            
+        return transitions, inten, freqs
     
     #@Misc.do_cprofile
     def calculate_IR(self, *dipolemoments):
         
-        print Misc.fancy_box('VCI IR Intensities')
+        print(Misc.fancy_box('VCI IR Intensities'))
 
         self.dm1 = None
         self.dm2 = None
         if len(dipolemoments) == 0:
             raise Exception('No dipole moments given')
         elif len(dipolemoments) == 1:
-            print 'Only one set of dipole moments given.'
-            print
+            print('Only one set of dipole moments given.')
+            print()
             self.dm1 = dipolemoments[0]
             transm = self.calculate_transition_moments([self.dm1])
         elif len(dipolemoments) == 2:
-            print 'Two sets of dipole moments given.'
-            print
+            print('Two sets of dipole moments given.')
+            print()
             self.dm1 = dipolemoments[0]
             self.dm2 = dipolemoments[1]
             transm = self.calculate_transition_moments([self.dm1],[self.dm2])
         elif len(dipolemoments) > 2:
-            print 'More than two sets of dipole moments given, only the two first will be used'
-            print
+            print('More than two sets of dipole moments given, only the two first will be used')
+            print()
             self.dm1 = dipolemoments[0]
             self.dm2 = dipolemoments[1]
             transm = self.calculate_transition_moments([self.dm1],[self.dm2])
@@ -725,15 +883,14 @@ class VCI(object):
         
         nstates = len(self.states)
         self.intensities=np.zeros(nstates)
-        print '%7s %7s' %('Freq.','Int.')
-        print '%7s %7s' %('[cm^-1]','[km*mol^-1]')
+        print('%7s %7s' %('Freq.','Int.'))
+        print('%7s %7s' %('[cm^-1]','[km*mol^-1]'))
         for i in range(1,nstates):
             totaltm = transm[i]
             for tens in totaltm:
-                intens = (tens[0]**2 + tens[1]**2 + tens[2]**2) * Misc.intfactor * (self.energiesrcm[i]
-                                                                                     - self.energiesrcm[0])
+                intens = (tens[0]**2 + tens[1]**2 + tens[2]**2) * Misc.intfactor * (self.energiesrcm[i] - self.energiesrcm[0])
             self.intensities[i] = intens
-            print '%7.1f %12.6f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
+            print('%7.1f %12.6f' % (self.energiesrcm[i] - self.energiesrcm[0], intens))
         
 
     def calculate_intensities(self, *dipolemoments):
@@ -751,14 +908,14 @@ class VCI(object):
         if len(dipolemoments) == 0:
             raise Exception('No dipole moments given')
         elif len(dipolemoments) == 1:
-            print 'Only one set of dipole moments given, the second will be taken as 0.'
+            print('Only one set of dipole moments given, the second will be taken as 0.')
             self.dm1 = dipolemoments[0]
         elif len(dipolemoments) == 2:
-            print 'Two sets of dipole moments given.'
+            print('Two sets of dipole moments given.')
             self.dm1 = dipolemoments[0]
             self.dm2 = dipolemoments[1]
         elif len(dipolemoments) > 2:
-            print 'More than two sets of dipole moments given, only the two first will be used'
+            print('More than two sets of dipole moments given, only the two first will be used')
             self.dm1 = dipolemoments[0]
             self.dm2 = dipolemoments[1]
 
@@ -771,23 +928,23 @@ class VCI(object):
         tmpd2 = np.zeros(3)
         nstates = len(self.states)
 
-        for i in xrange(1, nstates):
+        for i in range(1, nstates):
             totaltm *= 0.0
-            for istate in xrange(nstates):
+            for istate in range(nstates):
                 ci = self.vectors[istate, 0]  # initial state's coefficient
 
-                for fstate in xrange(nstates):
+                for fstate in range(nstates):
                     cf = self.vectors[fstate, i]  # final state's coefficient
                     if ci and cf:
                         tmptm *= 0.0
 
-                        for j in xrange(self.nmodes):
+                        for j in range(self.nmodes):
                             tmpd1 *= 0.0
                             tmpovrlp = 1.0
                             jistate = self.states[istate][j]
                             jfstate = self.states[fstate][j]
 
-                            for k in xrange(self.nmodes):
+                            for k in range(self.nmodes):
 
                                 if k == j:
                                     #  calculate <psi|u|psi>
@@ -807,18 +964,18 @@ class VCI(object):
 
                             tmptm += tmpd1 * tmpovrlp
                         if self.dm2:
-                            for j in xrange(self.nmodes):
+                            for j in range(self.nmodes):
                                 jistate = self.states[istate][j]
                                 jfstate = self.states[fstate][j]
-                                for k in xrange(j+1, self.nmodes):
+                                for k in range(j+1, self.nmodes):
                                     tmpd2 *= 0.0
                                     kistate = self.states[istate][k]
                                     kfstate = self.states[fstate][k]
 
                                     ind = self.dm2.indices.index((j, k))
 
-                                    for l in xrange(self.ngrid):
-                                        for m in xrange(self.ngrid):
+                                    for l in range(self.ngrid):
+                                        for m in range(self.ngrid):
                                             tmpd2[0] += self.dx[j] * self.dx[k] * self.dm2.data[ind][l, m, 0] \
                                                 * self.wfns[j, jistate, l] * self.wfns[j, jfstate, l] \
                                                 * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
@@ -830,7 +987,7 @@ class VCI(object):
                                                 * self.wfns[k, kistate, m] * self.wfns[k, kfstate, m]
                                     tmpovrlp = 1.0
 
-                                    for n in xrange(self.nmodes):
+                                    for n in range(self.nmodes):
                                         if n != j and n != k:
                                             nistate = self.states[istate][n]
                                             nfstate = self.states[fstate][n]
@@ -843,11 +1000,11 @@ class VCI(object):
 
                                     tmptm += tmpd2 * tmpovrlp
                         totaltm += tmptm * ci * cf
-            print np.square(totaltm).sum()
+            print(np.square(totaltm).sum())
             intens = (totaltm[0]**2 + totaltm[1]**2 + totaltm[2]**2) * Misc.intfactor * (self.energiesrcm[i]
                                                                                  - self.energiesrcm[0])
             self.intensities[i] = intens
-            print '%7.1f %12.6f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
+            print('%7.1f %12.6f' % (self.energiesrcm[i] - self.energiesrcm[0], intens))
 
 
     def calculate_raman(self, *pols):
@@ -862,11 +1019,11 @@ class VCI(object):
         if len(pols) == 0:
             raise Exception('No dipole moments given')
         elif len(pols) == 1:
-            print 'Only one set of dipole moments given, the second will be taken as 0.'
+            print('Only one set of dipole moments given, the second will be taken as 0.')
             self.pol1 = pols[0]
             self.maxpol = 1
         elif len(pols) > 1:
-            print 'More than one sets of properties given, only the first will be used'
+            print('More than one sets of properties given, only the first will be used')
             self.pol1 = pols[0]
             self.maxpol = 1
 
@@ -878,18 +1035,18 @@ class VCI(object):
         tmpp1 = np.zeros(6)
         nstates = len(self.states)
 
-        for i in xrange(1, nstates):
+        for i in range(1, nstates):
             totalpol *= 0.0
-            for istate in xrange(nstates):
+            for istate in range(nstates):
                 ci = self.vectors[istate, 0]  # initial state's coefficient
 
-                for fstate in xrange(nstates):
+                for fstate in range(nstates):
                     cf = self.vectors[fstate, i]  # final state's coefficient
                     if ci and cf:   
                         order = self.order_of_transition((self.states[istate], self.states[fstate]))
                         tmpp1 *= 0.0
                         if order == 0:
-                            for j in xrange(self.nmodes):
+                            for j in range(self.nmodes):
                                 jistate = self.states[istate][j]
                                 jfstate = self.states[fstate][j]
                                 ind = self.pol1.indices.index(j)
@@ -936,7 +1093,7 @@ class VCI(object):
             f = self.energies[i] - self.energies[0]
             intens = 2 * f *  (45.0 * a2 + 7.0 * g2)
             self.intensities[i] = intens
-            print '%7.1f %12.6f' % (self.energiesrcm[i] - self.energiesrcm[0], intens)
+            print('%7.1f %12.6f' % (self.energiesrcm[i] - self.energiesrcm[0], intens))
 
     #@do_cprofile
     def calculate_roa(self, pollen,polvel,gtenvel, aten, lwl):
@@ -959,15 +1116,15 @@ class VCI(object):
 
         nstates = len(self.states)
 
-        for i in xrange(1, nstates):
+        for i in range(1, nstates):
             for tt in totaltens:
                 tt *= 0.0
 
 
-            for istate in xrange(nstates):
+            for istate in range(nstates):
                 ci = self.vectors[istate, 0]  # initial state's coefficient
 
-                for fstate in xrange(nstates):
+                for fstate in range(nstates):
                     cf = self.vectors[fstate, i]  # final state's coefficient
                     if ci and cf:
                         for tt in tmptens:
@@ -975,7 +1132,7 @@ class VCI(object):
 
                         order = self.order_of_transition((self.states[istate], self.states[fstate]))
                         if order == 0:
-                            for j in xrange(self.nmodes):
+                            for j in range(self.nmodes):
                                 jistate = self.states[istate][j]
                                 jfstate = self.states[fstate][j]
                                 
@@ -1143,9 +1300,9 @@ class VCI(object):
         modes = list((mode1,mode2,mode3))
         lstates = list((lstate1,lstate2,lstate3))
         rstates = list((rstate1,rstate2,rstate3))
-        ind = zip(modes,lstates,rstates)
+        ind = list(zip(modes,lstates,rstates))
         ind.sort()
-        (modes,lstates,rstates)=zip(*ind)
+        (modes,lstates,rstates)=list(zip(*ind))
         mode1 = modes[0]
         mode2 = modes[1]
         mode3 = modes[2]
@@ -1197,9 +1354,9 @@ class VCI(object):
         modes = list((mode1,mode2,mode3,mode4))
         lstates = list((lstate1,lstate2,lstate3,lstate4))
         rstates = list((rstate1,rstate2,rstate3,rstate4))
-        ind = zip(modes,lstates,rstates)
+        ind = list(zip(modes,lstates,rstates))
         ind.sort()
-        (modes,lstates,rstates)=zip(*ind)
+        (modes,lstates,rstates)=list(zip(*ind))
 
         if (modes[0],modes[1],modes[2],modes[3]) in self.v4_indices:
             potind = self.v4_indices.index((modes[0],modes[1],modes[2],modes[3]))
@@ -1265,8 +1422,8 @@ class VCI(object):
         t = 0.0
         return np.einsum('i,j,ij', self.coefficients[mode, lstate],
                          self.coefficients[mode, rstate],self.tij[mode])
-        for i in xrange(self.ngrid):
-            for j in xrange(self.ngrid):
+        for i in range(self.ngrid):
+            for j in range(self.ngrid):
                 t += self.coefficients[mode, lstate, i] * self.coefficients[mode, rstate, j] * self.tij[mode, i, j]
 
         return t
@@ -1299,13 +1456,13 @@ class VCI(object):
 
     def _calculate_coeff(self):  # calculates basis set coefficients, using grid and wave function values
 
-        for i in xrange(self.nmodes):  # for each mode
+        for i in range(self.nmodes):  # for each mode
 
-            for j in xrange(self.ngrid):  # for each state
+            for j in range(self.ngrid):  # for each state
 
                 chi = np.zeros((self.ngrid, self.ngrid))
-                for k in xrange(self.ngrid):
-                    for l in xrange(self.ngrid):
+                for k in range(self.ngrid):
+                    for l in range(self.ngrid):
                         chi[k, l] = self._chi(self.grids[i, l], self.a[i], self.grids[i, k])
 
                 c = np.linalg.solve(chi, self.wfns[i, j])
@@ -1313,19 +1470,19 @@ class VCI(object):
 
     def _calculate_kinetic_integrals(self):
 
-        for i in xrange(self.nmodes):  # for each mode
+        for i in range(self.nmodes):  # for each mode
 
-            for j in xrange(self.ngrid):
-                for k in xrange(self.ngrid):
+            for j in range(self.ngrid):
+                for k in range(self.ngrid):
 
                     self.tij[i, j, k] = self._dgs_kinetic_integral(i, j, k)
 
     def _calculate_ovrlp_integrals(self):
 
-        for i in xrange(self.nmodes):  # for each mode
+        for i in range(self.nmodes):  # for each mode
 
-            for j in xrange(self.ngrid):
-                for k in xrange(self.ngrid):
+            for j in range(self.ngrid):
+                for k in range(self.ngrid):
 
                     self.sij[i, j, k] = self._dgs_ovrlp_integral(i, j, k)
     
@@ -1336,12 +1493,12 @@ class VCI(object):
         """
 
         if len(self.states) == 0:
-            print Misc.fancy_box('No VCI states defined, by default singles will be used')
+            print(Misc.fancy_box('No VCI states defined, by default singles will be used'))
             self.generate_states()
 
         nstates = len(self.states)
         #s = 'There are %i states' %nstates
-        print Misc.fancy_box('There are %i states') % (nstates)
+        print(Misc.fancy_box('There are %i states') % (nstates))
         #print Misc.fancy_box(s)
         #for s in self.states:
         #    print s
@@ -1389,8 +1546,8 @@ class VCI(object):
             # if e:
             #    ch += 1
             ch = 85
-            print 'Ncores:' ,ncores
-            print 'Chunksize: ',ch
+            print('Ncores:' ,ncores)
+            print('Chunksize: ',ch)
             # print 'Transitions: ',ntrans
             results =  pool.map(self.calculate_transition, self.combgenerator(), chunksize=ch)
             for r in results:
@@ -1400,7 +1557,7 @@ class VCI(object):
         self.H = self.H.tocsr()
 
         if diag=='Direct':
-            print Misc.fancy_box('Hamiltonian matrix constructed. Diagonalization...')
+            print(Misc.fancy_box('Hamiltonian matrix constructed. Diagonalization...'))
             w, v = np.linalg.eigh(self.H.toarray(), UPLO='U')
             self.energies = w
             self.vectors = v
@@ -1408,7 +1565,7 @@ class VCI(object):
             self.solved = True
             self.print_results()
         elif diag=='Iterative':
-            print Misc.fancy_box('Hamiltonian matrix constructed. Iterative diagonalization.')
+            print(Misc.fancy_box('Hamiltonian matrix constructed. Iterative diagonalization.'))
             k = (np.sort(self.H.diagonal()-self.H.diagonal()[0])/Misc.cm_in_au < 4000).nonzero()[0][-1]
             k += 50
             if k > self.H.shape[0]:
@@ -1422,7 +1579,7 @@ class VCI(object):
             self.print_results()
 
         else:
-            print Misc.fancy_box('Hamiltonian contstructed and saved to file. No diag.')
+            print(Misc.fancy_box('Hamiltonian contstructed and saved to file. No diag.'))
             np.save('Hessian.npy',self.H)
 
 
@@ -1435,7 +1592,7 @@ class VCI(object):
                 fname = 'VCI_%i_%i_results.npz' %(self.nmax,self.smax)
             np.savez_compressed(fname, vec=self.vectors, enrcm=self.energiesrcm, states=self.states)
         else:
-            print 'Solve VCI first'
+            print('Solve VCI first')
 
     def read_vectors(self,fname=None):
         if fname:
@@ -1447,5 +1604,5 @@ class VCI(object):
                 self.states = npzfile['states']
                 self.solved = True
             else:
-                print 'The results do not fit the defined CI space'
+                print('The results do not fit the defined CI space')
 
