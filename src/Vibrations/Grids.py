@@ -26,7 +26,7 @@ Module containing the grid-related class.
 """
 
 import numpy as np
-import Misc
+from . import Misc
 
 
 class Grid(object):

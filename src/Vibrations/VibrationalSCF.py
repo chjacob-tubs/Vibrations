@@ -26,8 +26,8 @@ Module containing all Vibrational SCF classes
 G{classtree VSCF}
 """
 import numpy as np
-import Misc
-import Wavefunctions
+from . import Misc
+from . import Wavefunctions
 
 
 class VSCF(object):
@@ -182,7 +182,7 @@ class VSCFDiag(VSCF):
             raise Exception('No potential given')
 
         elif len(potentials) > 1:
-            print 'More than one potentials given, only the first will be used'
+            print('More than one potentials given, only the first will be used')
 
         VSCF.__init__(self, potentials[0])  # fist call the constructor of mother class
         self.v1 = potentials[0]
@@ -194,7 +194,7 @@ class VSCFDiag(VSCF):
         Solves the diagonal VSCF
         """
         if self.solved:
-            print 'Already solved, nothing to do. See results with print_results() method'
+            print('Already solved, nothing to do. See results with print_results() method')
 
         else:
 
@@ -215,25 +215,25 @@ class VSCFDiag(VSCF):
         """
         if self.solved:
 
-            print 'Fundamental transitions:'
+            print('Fundamental transitions:')
             for i in range(self.nmodes):
-                print 'Mode %i, eigv: %f' % (i, (self.eigv[i, 1]-self.eigv[i, 0])/Misc.cm_in_au)
+                print('Mode %i, eigv: %f' % (i, (self.eigv[i, 1]-self.eigv[i, 0])/Misc.cm_in_au))
 
-            print 'Eigenvalues: '
+            print('Eigenvalues: ')
             for i in range(self.nmodes):
-                print 'Mode %i, eigv: %f' % (i, self.eigv[i, 0]/Misc.cm_in_au)
+                print('Mode %i, eigv: %f' % (i, self.eigv[i, 0]/Misc.cm_in_au))
         else:
-            print 'VSCF not solved yet. Use solve() method first'
+            print('VSCF not solved yet. Use solve() method first')
 
     def print_eigenvalues(self):
         """
         Prints the eigenvalues
         """
         for i in range(self.nmodes):
-            print 'Mode %i' % i
+            print('Mode %i' % i)
 
             for j in range(self.nstates):
-                print self.eigv[i, j], self.eigv[i, j]/Misc.cm_in_au
+                print(self.eigv[i, j], self.eigv[i, j]/Misc.cm_in_au)
 
     def save_wave_functions(self, fname='1D_wavefunctions'):
         """
@@ -260,7 +260,7 @@ class VSCF2D(VSCF):
         elif len(potentials) == 1:
             raise Exception('Only one set of  potentials given, go to VSCF_diag() class')
         elif len(potentials) > 2:
-            print 'More than two sets potentials given. Only the two first will be used'
+            print('More than two sets potentials given. Only the two first will be used')
 
         VSCF.__init__(self, potentials[0])
         import copy
@@ -298,13 +298,13 @@ class VSCF2D(VSCF):
         if len(dipolemoments) == 0:
             raise Exception('No dipole moments given.')
         elif len(dipolemoments) == 1:
-            print 'Only one dipole moment surface given, the 2D counterpart will be set to 0.'
+            print('Only one dipole moment surface given, the 2D counterpart will be set to 0.')
             self.dm1 = dipolemoments[0]
         elif len(dipolemoments) == 2:
             self.dm1 = dipolemoments[0]
             self.dm2 = dipolemoments[1]
         elif len(dipolemoments) > 2:
-            print 'More than two sets of dipole moments given, only the two first will be used.'
+            print('More than two sets of dipole moments given, only the two first will be used.')
             self.dm1 = dipolemoments[0]
             self.dm2 = dipolemoments[1]
 
@@ -322,8 +322,8 @@ class VSCF2D(VSCF):
 
         # assuming that the first state is a ground state
         gs = self.states[0]
-        print Misc.fancy_box('VSCF Intensities')
-        print 'State        Energy /cm^-1    Intensity /km*mol^-1'
+        print(Misc.fancy_box('VSCF Intensities'))
+        print('State        Energy /cm^-1    Intensity /km*mol^-1')
         self.intensities = []
         for s in self.states[1:]:
             tmptm = np.array([0.0, 0.0, 0.0])
@@ -390,7 +390,7 @@ class VSCF2D(VSCF):
             factor = 2.5048
             intens = (tmptm[0]**2 + tmptm[1]**2 + tmptm[2]**2)*factor*(self.energies[stateindex]-self.energies[0])
             self.intensities.append(intens)
-            print '%s %7.1f %7.1f' % (s, self.energies[stateindex]-self.energies[0], intens)
+            print('%s %7.1f %7.1f' % (s, self.energies[stateindex]-self.energies[0], intens))
         self.intensities = np.array(self.intensities)
 
     def get_groundstate_wfn(self):
@@ -440,16 +440,16 @@ class VSCF2D(VSCF):
             states = [[0]*self.nmodes]  # if no states defined, only gs considered
 
         if self.solved and self.states == list(states):
-            print 'Already solved, nothing to do. See results with print_results() method'
+            print('Already solved, nothing to do. See results with print_results() method')
 
         else:
-            print ''
-            print Misc.fancy_box('Solving VSCF')
+            print('')
+            print(Misc.fancy_box('Solving VSCF'))
             self.states = list(states)  # use new states and do the VSCF
             self.energies = []
             self.vscf_wavefunctions = []
             for i, s in enumerate(self.states):
-                print Misc.fancy_box('Solving State: '+str(s))         
+                print(Misc.fancy_box('Solving State: '+str(s)))         
                 (energy, wfn, eigenvalues) = self._solve_state(s)
                 self.energies.append(energy)
                 wfn_obj = Wavefunctions.Wavefunction(self.v1.grids)
@@ -458,9 +458,9 @@ class VSCF2D(VSCF):
                 self.eigenvalues.append(eigenvalues)
 
             self.solved = True
-            print ''
-            print Misc.fancy_box('VSCF Done')
-            print ''
+            print('')
+            print(Misc.fancy_box('VSCF Done'))
+            print('')
             self.print_results()
 
     def print_results(self):
@@ -468,20 +468,20 @@ class VSCF2D(VSCF):
         Prints the results
         """
         if self.solved:
-            print ''
-            print Misc.fancy_box('VSCF Results')
-            print 'VSCF states energies in cm^-1'
-            print '---------------------------'
+            print('')
+            print(Misc.fancy_box('VSCF Results'))
+            print('VSCF states energies in cm^-1')
+            print('---------------------------')
             for i, s in enumerate(self.states):
-                print s, '%.1f' % self.energies[i]
-            print ''
-            print 'Initial state: ', self.states[0]
-            print 'Transition energies in cm^-1' 
+                print(s, '%.1f' % self.energies[i])
+            print('')
+            print('Initial state: ', self.states[0])
+            print('Transition energies in cm^-1') 
             for i, s in enumerate(self.states):
                 if i != 0:
-                    print '-> ', s, '%.1f' % (self.energies[i]-self.energies[0])
+                    print('-> ', s, '%.1f' % (self.energies[i]-self.energies[0]))
         else:
-            print 'VSCF not solved yet. Use solve() method first'
+            print('VSCF not solved yet. Use solve() method first')
 
     def _solve_state(self, state):
 
@@ -502,8 +502,8 @@ class VSCF2D(VSCF):
         for niter in range(maxiter):
             etot = 0.0
             eigenvalues = []
-            print 'Iteration: %i ' % (niter+1)
-            print 'Mode State   Eigv'
+            print('Iteration: %i ' % (niter+1))
+            print('Mode State   Eigv')
             for i in range(self.nmodes):
                 diagpot = self.v1.data[self.v1.indices.index(i)]
                 # now get effective potential
@@ -515,17 +515,17 @@ class VSCF2D(VSCF):
                 tmpwfns[i] = wavefunction
                 # add energy
                 etot += energies[state[i]]   # add optimized state-energy
-                print '%4i %5i %8.1f' % (i+1, state[i], energies[state[i]]/Misc.cm_in_au)
+                print('%4i %5i %8.1f' % (i+1, state[i], energies[state[i]]/Misc.cm_in_au))
 
             #calculate correction
             actualwfns = tmpwfns
             emp1 = self._scfcorr(state, actualwfns)
-            print 'Sum of eigenvalues %.1f, SCF correction %.1f, total energy %.1f / cm^-1' \
+            print('Sum of eigenvalues %.1f, SCF correction %.1f, total energy %.1f / cm^-1' \
                 % (etot/Misc.cm_in_au,
                   emp1/Misc.cm_in_au,
-                  (etot - emp1)/Misc.cm_in_au)
+                  (etot - emp1)/Misc.cm_in_au))
             etot -= emp1
-            print ''
+            print('')
             if abs(etot-eprev) < eps:
                 break
             else:
