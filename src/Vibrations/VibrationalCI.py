@@ -23,7 +23,7 @@
 # The most recent version of Vibrations is available at
 #   http://www.christophjacob.eu/software
 """
-Module related to the VCI class for Vibrational Confinuration Interaction calculations
+Module related to the VCI class for Vibrational Confinuration Interaction calculations.
 """
 
 import numpy as np
@@ -44,12 +44,18 @@ except ImportError:
 def multichoose(n, k):
     """
     General algorithm for placing k balls in n buckets. Here will be used
-    for generating VCI states
+    for generating VCI states.
 
-    @param n: Number of buckets, here number of modes
-    @type n: Integer
-    @param k: Number of balls, here excitation quanta
-    @type k: Integer
+    Parameters
+    ----------
+    n : int
+        Number of buckets, here number of modes.
+    k : int 
+       Number of balls, here excitation quant.
+
+    Returns
+    -------
+    list of balls in buckets : integer list of lists 
     """
     if not k:
         return [[0]*n]
@@ -63,11 +69,20 @@ def multichoose(n, k):
 
 class VCI(object):
     """
-    The class performing and storing VCI calculations
+    The class performing and storing VCI calculations.
+
+    Parameters
+    ----------
+    wavefunctions : Vibrations/Wavefunction
+       The object containing the reference wave function, e.g. VSCF wfn.
+    potentials : Vibrations/Potential
+       The potentials.
+
+    
     """
     def __init__(self, wavefunctions, *potentials):
         """
-        The class must be initialized with grids, some, e.g. VSCF, wave functions, and potentials
+        The class must be initialized with grids, some, e.g. VSCF, wave functions, and potentials.
         @param wavefunctions: The object containing the reference wave function, e.g. VSCF wfn
         @type wavefunctions: Vibrations/Wavefunction
         @param potentials: The potentials
@@ -142,7 +157,7 @@ class VCI(object):
             self.v2_data = (potentials[1].data)
             self.maxpot = 2
         else:
-            raise Exception('Only two- or three-mode potentials accepted')
+            raise Exception('Only two-, three- or four-mode potentials accepted')
    
 
     def calculate_transition(self,c):
@@ -702,14 +717,116 @@ class VCI(object):
     def calculate_transition_matrix(self, *properties):
         """
         Calculates VCI transition moments for given properties as a matrix and intensities
+        Properties: IR spectroscopy uses density matrices dm1 and/or dm2
+        Calculations according to formula from SI from "Anharmonic Theoretical Vibrational Spectroscopy of Polypeptides"
+        P_{0 -> J} = \sum_{ij} c_i^0 c_j^J * < \prod_k \phi_k^{0,n_k^0} | \hat{\boldsymbol{P}} | \prod_l \phi_l^{0,n_l^J} >
+        
         """
         if not self.solved:
             raise Exception('Solve the VCI first')
 
+        def calc_tmptens(istate,fstate): 
+            tmptens = np.zeros((len(tensors),tensors[0].prop[0]))
+            # t.prop = shape of property: (1,) for energy, (3,) for dipole moment, (6,) for polarizability
+                
+            order = self.order_of_transition((self.states[istate], self.states[fstate]))
+            # Gives the order of the transition (how many modes are changed upon the transition)
+            if order == 0:
+                for j in range(self.nmodes):
+                    jistate = self.states[istate][j]
+                    jfstate = self.states[fstate][j]
+                    try:
+                        s1 = self.integrals[(j,jistate,jfstate)]
+                    except:
+                        s1 = (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate])
+                        self.integrals[(j,jistate,jfstate)] = s1
+
+                    for ti, t in enumerate(tensors):
+                        ind = t.indices.index(j)
+                        for o in range(t.prop[0]):
+                            tmptens[ti][o] += np.dot(t.data[ind][:,o],s1)
+
+                    if tensors2:
+                        for k in range(j+1, self.nmodes):
+                            if (j,k) in tensors2[0].indices:
+                                kistate = self.states[istate][k]
+                                kfstate = self.states[fstate][k]
+                                try:
+                                    s2 = self.integrals[(k,kistate,kfstate)]
+                                except:
+                                    s2 = (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate])
+                                    self.integrals[(k,kistate,kfstate)] = s2
+
+                                for ti, t in enumerate(tensors2):
+                                    ind = t.indices.index((j,k)) 
+                                    for o in range(t.prop[0]):
+                                        tmptens[ti][o] += np.einsum('i,j,ij', s1, s2, t.data[ind][:,:,o])
+
+            elif order == 1:
+                n = self.states[istate]
+                m = self.states[fstate]
+                j = [x != y for x, y in zip(n, m)].index(True)  # give me the index of the element that differs two vectors
+                jistate = self.states[istate][j]
+                jfstate = self.states[fstate][j]
+                try:
+                    s1 = self.integrals[(j,jistate,jfstate)]
+                except:
+                    s1 = (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate])
+                    self.integrals[(j,jistate,jfstate)] = s1
+                for ti, t in enumerate(tensors):
+
+                    ind = t.indices.index(j)
+                    for o in range(t.prop[0]):
+                        tmptens[ti][o] += np.dot(t.data[ind][:,o],s1)
+                if tensors2:
+                    for k in range(self.nmodes):
+                        if j!=k and ((j,k) in tensors2[0].indices or (k,j) in tensors2[0].indices):
+                            kistate = self.states[istate][k]
+                            kfstate = self.states[fstate][k]
+                            try:
+                                s2 = self.integrals[(k,kistate,kfstate)]
+                            except:
+                                s2 = (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate])
+                                self.integrals[(k,kistate,kfstate)] = s2
+
+                            for ti, t in enumerate(tensors2):
+                                try:
+                                    ind = t.indices.index((j,k))
+                                except:
+                                    ind = t.indices.index((k,j))
+                                for o in range(t.prop[0]):
+                                    tmptens[ti][o] += np.einsum('i,j,ij', s1, s2, t.data[ind][:,:,o])
+            elif tensors2 and  order == 2:
+                n = self.states[istate]
+                m = self.states[fstate]
+                j,k = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e]
+                jistate = n[j]
+                jfstate = m[j]
+                kistate = n[k]
+                kfstate = m[k]
+                try:
+                    s1 = self.integrals[(j,jistate,jfstate)]
+                except:
+                    s1 = (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate])
+                    self.integrals[(j,jistate,jfstate)] = s1
+                    try:
+                        s2 = self.integrals[(k,kistate,kfstate)]
+                    except:
+                        s2 = (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate])
+                        self.integrals[(k,kistate,kfstate)] = s2
+                    if (j,k) in t.indices or (k,j) in t.indices: 
+                        for ti, t in enumerate(tensors2):
+                            try:
+                                ind = t.indices.index((j,k))
+                            except:
+                                ind = t.indices.index((k,j))
+                            for o in range(t.prop[0]):
+                                tmptens[ti][o] += np.einsum('i,j,ij', s1, s2, t.data[ind][:,:,o])
+            return tmptens 
+
         maxprop = len(properties)
-        self.prop1 = None
-        self.prop2 = None
-        self.transitions = None
+        self.prop1 = None        # gets filled with data from [dm1]
+        self.prop2 = None        # gets filled with data from [dm2] (if given)
 
         if maxprop == 0:
             raise Exception('No property surfaces given')
@@ -721,138 +838,34 @@ class VCI(object):
         else:
             raise Exception('Too many properties, only up to second order used')
 
-        tensors = self.prop1
-        tensors2 = None
+        tensors = self.prop1       # gets filled with data from self.prop1/[dm1]
+        tensors2 = None            # gets filled with data from self.prop2/[dm2] (if given)
         if self.prop2:
             tensors2 = self.prop2
-
-
-        totaltens = []
-        tmptens = []
-        for t in tensors:
-            tmptens.append(np.zeros(t.prop[0]))
-            totaltens.append(np.zeros(t.prop[0]))
-
-        nstates = len(self.states)
-        #transitions = [[] for i in range(nstates)]
-        transitions = [[[] for j in range(nstates)] for i in range(nstates)]
-        inten = [[[] for j in range(nstates)] for i in range(nstates)]
-        freqs = [[[] for j in range(nstates)] for i in range(nstates)]
-
-        for ii in range(0, nstates):
-            for i in range(0, nstates):  # loop over all VCI states except the ground state
-                totaltens = []
-                for t in tensors:
-                    totaltens.append(np.zeros(t.prop[0]))
-                for istate in range(nstates):
-                    ci = self.vectors[istate, ii]  # initial state's coefficient
-
-                    for fstate in range(nstates):
-                        cf = self.vectors[fstate, i]  # final state's coefficient
-                        if ci and cf:
-                            for tt in tmptens:
-                                tt *= 0.0
-
-                            order = self.order_of_transition((self.states[istate], self.states[fstate]))
-                            if order == 0:
-                                for j in range(self.nmodes):
-                                    jistate = self.states[istate][j]
-                                    jfstate = self.states[fstate][j]
-                                    try:
-                                        s1 = self.integrals[(j,jistate,jfstate)]
-                                    except:
-                                        s1 = (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate])
-                                        self.integrals[(j,jistate,jfstate)] = s1
-
-                                    for ti, t in enumerate(tensors):
-                                        ind = t.indices.index(j)
-                                        for o in range(t.prop[0]):
-                                            tmptens[ti][o] += np.dot(t.data[ind][:,o],s1)
-
-                                    if tensors2:
-                                        for k in range(j+1, self.nmodes):
-                                            if (j,k) in tensors2[0].indices:
-                                                kistate = self.states[istate][k]
-                                                kfstate = self.states[fstate][k]
-                                                try:
-                                                    s2 = self.integrals[(k,kistate,kfstate)]
-                                                except:
-                                                    s2 = (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate])
-                                                    self.integrals[(k,kistate,kfstate)] = s2
-
-                                                for ti, t in enumerate(tensors2):
-                                                    ind = t.indices.index((j,k)) 
-                                                    for o in range(t.prop[0]):
-                                                        tmptens[ti][o] += np.einsum('i,j,ij', s1, s2, t.data[ind][:,:,o])
-
-                            elif order == 1:
-                                n = self.states[istate]
-                                m = self.states[fstate]
-                                j = [x != y for x, y in zip(n, m)].index(True)  # give me the index of the element that differs two vectors
-                                jistate = self.states[istate][j]
-                                jfstate = self.states[fstate][j]
-                                try:
-                                    s1 = self.integrals[(j,jistate,jfstate)]
-                                except:
-                                    s1 = (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate])
-                                    self.integrals[(j,jistate,jfstate)] = s1
-                                for ti, t in enumerate(tensors):
-
-                                    ind = t.indices.index(j)
-                                    for o in range(t.prop[0]):
-                                        tmptens[ti][o] += np.dot(t.data[ind][:,o],s1)
-                                if tensors2:
-                                    for k in range(self.nmodes):
-                                        if j!=k and ((j,k) in tensors2[0].indices or (k,j) in tensors2[0].indices):
-                                            kistate = self.states[istate][k]
-                                            kfstate = self.states[fstate][k]
-                                            try:
-                                                s2 = self.integrals[(k,kistate,kfstate)]
-                                            except:
-                                                s2 = (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate])
-                                                self.integrals[(k,kistate,kfstate)] = s2
-
-                                            for ti, t in enumerate(tensors2):
-                                                try:
-                                                    ind = t.indices.index((j,k))
-                                                except:
-                                                    ind = t.indices.index((k,j))
-                                                for o in range(t.prop[0]):
-                                                    tmptens[ti][o] += np.einsum('i,j,ij', s1, s2, t.data[ind][:,:,o])
-                            elif tensors2 and  order == 2:
-                                n = self.states[istate]
-                                m = self.states[fstate]
-                                j,k = [ind for ind, e in enumerate([x != y for x, y in zip(n, m)]) if e]
-                                jistate = n[j]
-                                jfstate = m[j]
-                                kistate = n[k]
-                                kfstate = m[k]
-                                try:
-                                    s1 = self.integrals[(j,jistate,jfstate)]
-                                except:
-                                    s1 = (self.dx[j] * self.wfns[j, jistate] * self.wfns[j, jfstate])
-                                    self.integrals[(j,jistate,jfstate)] = s1
-                                    try:
-                                        s2 = self.integrals[(k,kistate,kfstate)]
-                                    except:
-                                        s2 = (self.dx[k] * self.wfns[k, kistate] * self.wfns[k, kfstate])
-                                        self.integrals[(k,kistate,kfstate)] = s2
-                                    if (j,k) in t.indices or (k,j) in t.indices: 
-                                        for ti, t in enumerate(tensors2):
-                                            try:
-                                                ind = t.indices.index((j,k))
-                                            except:
-                                                ind = t.indices.index((k,j))
-                                            for o in range(t.prop[0]):
-                                                tmptens[ti][o] += np.einsum('i,j,ij', s1, s2, t.data[ind][:,:,o])
-                            for tn,tt in enumerate(totaltens):
-                                tt += tmptens[tn]   * ci * cf
-                #transitions[i]=totaltens
-                transitions[i][ii]=totaltens
-                inten[i][ii] = (LA.norm(totaltens))**2 * Misc.intfactor * (self.energiesrcm[ii] - self.energiesrcm[i])
-                freqs[i][ii] = self.energiesrcm[ii] - self.energiesrcm[i]
             
-        return transitions, inten, freqs
+        nstates = len(self.states)                                    # number of vibrational states used in VCI calculations
+        transitions = np.zeros((nstates,nstates,tensors[0].prop[0]))  # empty np array to store transition data
+        tmptransitions = np.zeros_like(transitions)                   # empty np array to store temporary transition data
+        
+        # get tmptransitions
+        # < \prod_k \phi_k^{0,n_k^0} | \hat{\boldsymbol{P}} | \prod_l \phi_l^{0,n_l^J} >
+        for istate in range(nstates):
+            for fstate in range(nstates):
+                if fstate >= istate:
+                    tmptns = calc_tmptens(istate,fstate)
+                    tmptransitions[istate,fstate] = tmptns
+                    tmptransitions[fstate,istate] = tmptns
+                    
+        # Sum over muliplication with coefficients
+        # P_{0 -> J} = \sum_{ij} c_i^0 c_j^J * tmptransitions
+        
+        # try to use lambda functions, but cannot fill map into np.arrays... 
+        # transitions = np.array(map(lambda n : np.dot(self.vectors.T, np.dot(tmptransitions[:,:,n], self.vectors)), range(tensors[0].prop[0])))
+        # transitions = np.asarray(list(map(lambda n : np.dot(self.vectors.T, np.dot(tmptransitions[:,:,n], self.vectors)), range(tensors[0].prop[0]))))
+        
+        for n in range(tensors[0].prop[0]):
+            transitions[:,:,n] = np.dot(self.vectors.T, np.dot(tmptransitions[:,:,n], self.vectors))
+        return transitions 
     
     #@Misc.do_cprofile
     def calculate_IR(self, *dipolemoments):
