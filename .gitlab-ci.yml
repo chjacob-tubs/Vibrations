@@ -1,0 +1,129 @@
+variables:
+  SCHEDULER_PARAMETERS: "-n 1 -p nitrogen"
+  USER: legit
+  VIBRA_HOME: $CI_BUILDS_DIR/$CI_PROJECT_PATH
+
+
+stages:
+    - build
+    - test
+
+before_script:
+        - hostname
+        - module load module_include_dir
+        - . /usr/share/modules/init/bash
+        - . /usr/share/modules/init/setup 
+        - export PYTHONPATH=$PYTHONPATH:$VIBRA_HOME/src
+        - module load python/anaconda3-2021.11
+        - source activate base
+        - conda init bash
+        - conda activate ci_vibrations
+        - module load pyadf/master-20220201
+        - module list 
+        - pip list
+        
+        
+check-requirements:
+    tags:
+        - nodes
+    stage: build
+    script:
+        - hostname
+        - module load module_include_dir
+        - . /usr/share/modules/init/bash
+        - . /usr/share/modules/init/setup 
+        - export PYTHONPATH=$PYTHONPATH:$VIBRA_HOME/src
+        - module load python/anaconda3-2021.11
+        - source activate base
+        - conda activate ci_vibrations
+        - conda env list
+        - conda list
+        - module load pyadf/master-20220201
+
+
+unittest-Grids-Pawel:
+    tags:
+        - nodes
+    stage: test
+    script:
+        - cd unittests/
+        - pytest -v test_Grids_unittest.py
+        - cd ../
+
+unittest-Surface-Pawel:
+    tags:
+        - nodes
+    stage: test
+    script:
+        - cd unittests/
+        - pytest -v test_Surfaces_unittest.py
+        - cd ../
+
+unittest-Grids:
+    tags:
+        - nodes
+    stage: test
+    script:
+        - cd unittests/
+        - pytest -v test_Grids.py
+        - cd ../
+
+unittest-Surface:
+    tags:
+        - nodes
+    stage: test
+    script:
+        - cd unittests/
+        - pytest -v test_Surface.py
+        - cd ../
+
+
+unittest-Wavefunctions:
+    tags:
+        - nodes
+    stage: test
+    script:
+        - cd unittests/
+        - pytest -v test_Wavefunction.py
+        - cd ../
+
+unittest-VSCF:
+    tags:
+        - nodes
+    stage: test
+    script:
+        - cd unittests/
+        - pytest -v test_VSCF.py
+        - cd ../
+
+unittest-VCI:
+    tags:
+        - nodes
+    stage: test
+    script:
+        - cd unittests/
+        - pytest -v test_VCI.py
+        - cd ../
+
+
+
+
+
+test-vibrations-Pawel:
+    tags:
+        - nodes
+    stage: test
+    script:
+        - cd unittests/
+        - pytest -v test_Surfaces_unittest.py
+        - cd ../
+
+ 
+#test-sphinx:
+#    tags:
+#        - nodes
+#    stage: test
+#    script:
+#        - cd doc/
+#        - sphinx-build . _build/
+#        - cd ../
