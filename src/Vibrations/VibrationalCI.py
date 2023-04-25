@@ -393,7 +393,7 @@ class VCI(object):
 
     def nexmax_state(self, vci_state):
         nex_contrib = self.nex_state(vci_state)
-        nex_contrib_max = max(enumerate(nex_contrib), key=lambda x: x[1])[0]
+        nex_contrib_max = max(enumerate(nex_contrib), key=lambda x: x[1][0])
         return nex_contrib_max
 
     def idx_fundamentals(self):
@@ -715,7 +715,7 @@ class VCI(object):
 
     #@Misc.do_cprofile
     def calculate_transition_matrix(self, *properties):
-        """
+        r"""
         Calculates VCI transition moments for given properties as a matrix and intensities
         Properties: IR spectroscopy uses density matrices dm1 and/or dm2
         Calculations according to formula from SI from "Anharmonic Theoretical Vibrational Spectroscopy of Polypeptides"
