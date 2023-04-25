@@ -1,4 +1,4 @@
-#import VibTools
+import VibTools 
 import os, sys
 import Vibrations as vib
 import VibTools as vt
@@ -6,6 +6,10 @@ import numpy as np
 import pytest
 import pickle
 import scipy
+
+
+#TODO: Tests are created by trial and error.
+#      Summarize redundant test arrangements into pytest.fixtures
 
 def blockPrinting(func):
     #https://stackoverflow.com/questions/8391411/how-to-block-calls-to-print
@@ -99,6 +103,9 @@ def dipole_1mode(SNFResults,Grid):
 
 
 
+
+
+
 class RefGrid(object):
     # VibTools.Grid
     def __init__(self):
@@ -111,9 +118,42 @@ class RefGrid(object):
         self.natoms = 0
         self.nmodes = 12
 
+
+
+def assert_VibTools_Molecule(refVTMolecule,testVTMolecule):
+    # VT = VibTools; VT.Molecule
+    print("Assert VibTools.Molecule Class")
+    np.testing.assert_almost_equal(refVTMolecule.natoms,testVTMolecule.natoms)
+    np.testing.assert_almost_equal(refVTMolecule.atmasses, testVTMolecule.atmasses)
+    np.testing.assert_almost_equal(refVTMolecule.atnums     ,testVTMolecule.atnums)
+    np.testing.assert_almost_equal(refVTMolecule.coordinates,testVTMolecule.coordinates)
+
+
+def assert_VibTools_Modes(refVTModes, testVTModes):
+    print("Assert VibTools.Modes Class")
+    assert refVTModes.nmodes   == testVTModes.nmodes  
+#    np.testing.assert_almost_equal( refVTModes.mol      ,  testVTModes.mol    ) 
+    if refVTModes.mol != None: 
+        assert_VibTools_Molecule(refVTModes.mol,testVTModes.mol)
+    np.testing.assert_almost_equal( refVTModes.natoms   ,  testVTModes.natoms  )
+    np.testing.assert_almost_equal( refVTModes.freqs    ,  testVTModes.freqs   )
+    np.testing.assert_almost_equal( refVTModes.modes_mw ,  testVTModes.modes_mw)
+    np.testing.assert_almost_equal( refVTModes.modes_c  ,  testVTModes.modes_c )
+
+
 def assert_GridClass(refgrid,testgrid):
-    assert refgrid.modes  == testgrid.modes 
-    assert refgrid.mol    == testgrid.mol   
+    print("Assert GridClass:")    
+    if refgrid.mol == None:
+        assert testgrid.mol == None
+    else:
+        assert_VibTools_Molecule(refgrid.mol,testgrid.mol)  
+
+    if refgrid.modes == None:
+        assert testgrid.modes == None
+    else:
+        assert_VibTools_Modes(refgrid.modes,testgrid.modes) 
+
+    
     assert refgrid.ngrid  == testgrid.ngrid 
     assert refgrid.amp    == testgrid.amp   
     np.testing.assert_almost_equal(refgrid.grids,testgrid.grids)
@@ -134,7 +174,9 @@ class RefSurfaceDipole(object):
         data = np.load('test_data/data_prod/VibCI/Ref_VT_SurfaceDipole_Class_data.npy')
         self.data = data
 
+
 def assert_SurfaceDipoleClass(refSD,testSD):
+    print("Assert SurfaceDipoleClass")
     assert_GridClass(refSD.grids,testSD.grids)
     assert refSD.empty   == testSD.empty   
     assert refSD.ngrid   == testSD.ngrid    
@@ -142,7 +184,6 @@ def assert_SurfaceDipoleClass(refSD,testSD):
     assert refSD.prop    == testSD.prop      
     assert refSD.indices == testSD.indices 
     np.testing.assert_almost_equal(refSD.data,testSD.data)     
-
 
 
 
@@ -227,6 +268,7 @@ def assert_vci_class(refvci,vci):
     ## check keys
     for i in range(len(keys)):
         key = keys[i]
+        print('\n------ key:',key)
         vci_attr = vci[key]
         refvci_attr = refvci[key]
         if type(vci_attr) == np.ndarray  or  type(refvci_attr) == np.ndarray:
@@ -234,13 +276,14 @@ def assert_vci_class(refvci,vci):
                 # sign reversal possible
                 vci_attr = abs(vci_attr)
                 refvci_attr = abs(refvci_attr)
-            assert np.allclose(vci_attr,refvci_attr) == True
+   #         assert np.allclose(vci_attr,refvci_attr) == True
+                np.testing.assert_almost_equal( vci_attr,refvci_attr)
         else:
             assert vci_attr == refvci_attr
 
 
 
-def assert_solved_vci_class(refvci,vci):
+def assert_solved_vci_class(refvci,vci,show=False):
     # converting classes to dictionaries
     vci = vci.__dict__
     refvci = refvci.__dict__
@@ -252,10 +295,10 @@ def assert_solved_vci_class(refvci,vci):
         key = keys[i]
         vci_attr = vci[key]
         refvci_attr = refvci[key]
-#        print('==============================')
-        print('key:',key)     
-        print('type(vci_attr)=',type(vci_attr))
-        print('type(refvci_attr)=',type(refvci_attr))
+        if show == True:
+            print('key:',key)     
+            print('type(vci_attr)=',type(vci_attr))
+            print('type(refvci_attr)=',type(refvci_attr))
         if type(vci_attr) == scipy.sparse.csr.csr_matrix:
             vci_attr = np.array(vci_attr)
         elif type(vci_attr) == np.ndarray  or  type(refvci_attr) == np.ndarray:
@@ -266,27 +309,23 @@ def assert_solved_vci_class(refvci,vci):
             if key == 'vectors':
                 vci_attr = abs(vci_attr)
                 refvci_attr = abs(refvci_attr)        
-            assert np.allclose(vci_attr,refvci_attr) == True
+#            assert np.allclose(vci_attr,refvci_attr) == True
+            np.testing.assert_almost_equal(vci_attr,refvci_attr)
+
         elif type(vci_attr) == dict and type(refvci_attr) == dict:
             dickey = list(vci_attr.keys())
             ref_dickey = list(refvci_attr.keys())
             if dickey == []:
                 vci_attr == refvci_attr
- #               print('langweilig!')
             else:
-                assert np.allclose(dickey,ref_dickey) == True          
-          #      print('vci_attr.keys',dickey)
-          #      print('dickey[0]',dickey[0])
-          #      print('dickey[0]',dickey[0])
-          #      print('vci_attr[dickey[0]]',vci_attr[dickey[0]])
+#                assert np.allclose(dickey,ref_dickey) == True          
+                np.testing.assert_almost_equal(dickey,ref_dickey)          
                 for i in range(len(dickey)):
                     k = dickey[i]
-                #    print('k=',k)
                     dic = vci_attr[k]
-                #    print('dic=',dic)
                     ref_dic = refvci_attr[k]
-                #    print('ref_dic=',ref_dic)
-                    assert np.allclose(abs(dic),abs(ref_dic)) == True 
+#                    assert np.allclose(abs(dic),abs(ref_dic)) == True 
+                    np.testing.assert_almost_equal(abs(dic),abs(ref_dic))  
         else:
             assert vci_attr == refvci_attr
 
@@ -324,94 +363,201 @@ def test_VCI_init(Potentials,Ref_VCI):
 
 
 
-def test_calculate_transition():
-    pass 
+def test_calculate_transition(DAR_Set, DAR_comb_generator_c):
+    # arrange 
+    ## input
+    vci2, dm1, dm2 = DAR_Set
+    # this input provides same output as vci(dar).combgenerator() = c
+    c_list = DAR_comb_generator_c
+    ## reference
+    refvci2 = RefVCI2_DAR_solved()
+    ref_triple_list= [(0, 0, 0.004778267246682157), (0, 1, -1.235878924578447e-07), 
+                      (0, 2, 9.668211647974323e-07), (1, 1, 0.014260336755916174), 
+                      (1, 2, -1.070959739485084e-06), (2, 2, 0.023648145874827876)]
+    # act
+    triple_list = []
+    for i in range(len(c_list)):
+        triple = vci2.calculate_transition(c_list[i])
+        triple_list.append(triple)    
+    # assert
+#    assert ref_triple_list == triple_list 
+    np.testing.assert_almost_equal(ref_triple_list,triple_list) 
+
+    ## assert attributes
+    assert_solved_vci_class(refvci2,vci2)
+
+
+
+def test_calculate_diagonal(DAR_Set, DAR_comb_generator_c):
+    # arrange 
+    ## input
+    vci2, dm1, dm2 = DAR_Set
+    # this input provides same output as vci(dar).combgenerator() = c
+    c_list = DAR_comb_generator_c
+    ## reference
+    refvci2 = RefVCI2_DAR_solved() 
+    ref_tmp_list= [0.004778267246682157, -1.235878924578447e-07, 
+                   9.668211647974323e-07, 0.014260336755916174, 
+                   -1.070959739485084e-06, 0.023648145874827876]         
+    # act
+    tmp_list = []
+    for i in range(len(c_list)):
+        tmp = vci2.calculate_diagonal(c_list[i])
+        tmp_list.append(tmp)    
+    # assert
+#    assert ref_tmp_list == tmp_list 
+    np.testing.assert_almost_equal( ref_tmp_list,tmp_list) 
+    ## assert attributes
+    assert_solved_vci_class(refvci2,vci2)
+
+
+
+def test_calculate_single(DAR_Set, DAR_comb_generator_c):
+    # arrange 
+    ## input
+    vci2, dm1, dm2 = DAR_Set
+    # this input provides same output as vci(dar).combgenerator() = c
+    c_list = DAR_comb_generator_c
+    index = [1,2,4]
+    ## reference
+    refvci2 = RefVCI2_DAR_solved()
+    ref_tmp_list=[-1.235878924578447e-07, 
+                   9.668211647974323e-07, 
+                  -1.070959739485084e-06] 
+    # act
+    tmp_list = []
+    for i in range(len(index)):
+        tmp = vci2.calculate_single(c_list[index[i]])
+        tmp_list.append(tmp)
+        print(tmp)
+    # assert
+    np.testing.assert_almost_equal( ref_tmp_list,tmp_list)
+    ## assert attributes
+    assert_solved_vci_class(refvci2,vci2)
+
+
+
+
+
+
+def test_calculate_double(Potentials, dipole_1mode,Ref_solved_VCI):
+    # Arrange
+    ## Input
+    VSCF, v1,v2 = Potentials
+    gwfn =VSCF.get_groundstate_wfn()
+    # Input for act:
+    dmh = dipole_1mode
+    ## Ref - VCI - Class
+    refvci = Ref_solved_VCI
+    # Pre-Act
+    vci = vib.VCI(gwfn, v1,v2)
+    vci.generate_states(1)
+    vci.solve()
+    # Input c: combgenerator
+    c= (np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]), np.array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), 1, 12)
+    reftmp= 2.10252938124636e-05
+    # Act
+    tmp = vci.calculate_double(c)
+#    # Assert
+    np.testing.assert_almost_equal(abs(tmp),abs(reftmp))
+    assert_solved_vci_class(refvci,vci)
+
+
+#TODO: Reference data needed
+#def test_calculate_quadriple():
+#    pass 
+    # Arrange
+    # Act
+    # Assert
+#def test_calculate_triple():
+#    pass 
     # Arrange
     # Act
     # Assert
 
 
 
-def test_calculate_transition():
-    pass 
-    # Arrange
+def test_order_of_transition(DAR_Set, DAR_comb_generator_c):
+    # Arrange 
+    ## Input
+    VCI2, dm1, dm2 = DAR_Set
+    # This input provides same output as VCI(DAR).combgenerator() = c
+    c_list = DAR_comb_generator_c
+    ## Reference
+    refVCI2 = RefVCI2_DAR_solved() 
+    ref_order = [0,1,1,0,1,0]
     # Act
+    order = []
+    for i in range(len(c_list)):
+        count = VCI2.order_of_transition(c_list[i])
+        order.append(count)
     # Assert
+    assert ref_order == order
 
 
-
-def test_calculate_diagonal():
-    pass 
+def test_nex_state(Ref_solved_VCI,Potentials):
     # Arrange
+    ## Input
+    VSCF, v1,v2 = Potentials
+    gwfn =VSCF.get_groundstate_wfn()
+    # Input for act:
+    dmh = dipole_1mode
+    ## Ref - VCI - Class
+    refvci = Ref_solved_VCI
+    # Pre-Act
+    vci = vib.VCI(gwfn, v1,v2)
+    vci.generate_states(1)
+    vci.solve()
+    refcontri = [np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]), 
+                 np.array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.])]
     # Act
+    contri = vci.nex_state(vci.states)
     # Assert
+    np.testing.assert_almost_equal(refcontri,contri)
+    assert_solved_vci_class(refvci,vci)
 
 
-
-def test_calculate_single():
-    pass 
+def test_nexmax_state(Potentials,Ref_solved_VCI):
     # Arrange
+    ## Input
+    VSCF, v1,v2 = Potentials
+    gwfn =VSCF.get_groundstate_wfn()
+    # Input for act:
+    dmh = dipole_1mode
+    ## Ref - VCI - Class
+    refvci = Ref_solved_VCI
+    # Pre-Act
+    vci = vib.VCI(gwfn, v1,v2)
+    vci.generate_states(1)
+    vci.solve()
+    refcontri = (1,np.array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]))
     # Act
+    contri = vci.nexmax_state(vci.states)
     # Assert
+    np.testing.assert_almost_equal(refcontri[:1],contri[:1])
+    assert_solved_vci_class(refvci,vci)
 
 
 
-def test_calculate_double():
-    pass 
+def test_idx_fundamentals(Potentials,Ref_solved_VCI):
     # Arrange
+    ## Input
+    VSCF, v1,v2 = Potentials
+    gwfn =VSCF.get_groundstate_wfn()
+    # Input for act:
+    dmh = dipole_1mode
+    ## Ref - VCI - Class
+    refvci = Ref_solved_VCI
+    # Pre-Act
+    vci = vib.VCI(gwfn, v1,v2)
+    vci.generate_states(1)
+    vci.solve()
+    refidx = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]    
     # Act
+    idx = vci.idx_fundamentals()
     # Assert
-
-
-
-def test_calculate_quadriple():
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test_calculate_triple():
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test_order_of_transition():
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test_nex_state():
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test_nexmax_state():
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test_idx_fundamentals():
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-#TODO: Print
+    np.testing.assert_almost_equal(refidx,idx)
+    assert_solved_vci_class(refvci,vci)
 
 def test_print_results(vciCalcIR):
     # Arrange
@@ -528,151 +674,309 @@ def test_generate_states(Potentials,Ref_VCI):
     assert vci.smax == 1
 
 
-def test_filter_states():
-    pass 
+def test_filter_states(Potentials,Ref_solved_VCI):
     # Arrange
+    filename = 'test_data/data_prod/VibCI/Ref_input_VCI_filter_states.npz'
+    file = np.load(filename)
+    ## Input
+    VSCF, v1,v2 = Potentials
+    gwfn =VSCF.get_groundstate_wfn()
+    vci = vib.VCI(gwfn, v1,v2)
+    vci.generate_states(1)
+    vci.solve()
+    states = file['states_input']
+    nexc = 1
+    func = lambda x :len([_f for _f in x if _f]) < nexc + 1
+    vci.states = states
+    ## Ref
+    refvci = Ref_solved_VCI
+    ref_states = file['states_ref']
+    refvci.states = ref_states
     # Act
+    vci.filter_states(func)
     # Assert
+    np.testing.assert_almost_equal(ref_states, vci.states)
+    #assert_vci_class(refvci,vci)
+    assert_solved_vci_class(refvci,vci)
 
 
 
-def test_filter_combinations():
-    pass 
+#TODO: Check if the vci attribute is necessary!  self.combinations
+def test_filter_combinations(Potentials,Ref_solved_VCI):
     # Arrange
+    ## Input
+    VSCF, v1,v2 = Potentials
+    gwfn =VSCF.get_groundstate_wfn()
+    vci = vib.VCI(gwfn, v1,v2)
+    vci.generate_states(1)
+    vci.solve()
+    ## Ref
+    refvci = Ref_solved_VCI
     # Act
+    vci.filter_combinations()
     # Assert
+    assert_solved_vci_class(refvci,vci)
 
 
 
-def test_combgenerator():
-    pass 
+
+
+
+
+
+def test_combgenerator(DAR_Set,DAR_comb_generator_c):
     # Arrange
-    # Act
+    ## Ref
+    ref_c_list = DAR_comb_generator_c
+    refVCI2 = RefVCI2_DAR_solved()
+    ## Input
+    VCI2, dm1, dm2 = DAR_Set
+    # Act # combgenerator = yield function
+    c_list = []
+    for c in VCI2.combgenerator():
+        c_list.append(c)
+        print(c)
     # Assert
+    assert c_list == ref_c_list
+    ## Assert Attributes
+    assert_solved_vci_class(refVCI2,VCI2)
 
 
-
-def test_combgenerator_nofilter():
-    pass 
-    # Arrange
-    # Act
+def test_combgenerator_nofilter(DAR_Set,DAR_comb_generator_c):
+    # This input provides same output as VCI(DAR).combgenerator()
+    # Arrange 
+    ## Ref
+    ref_c_list = DAR_comb_generator_c
+    refVCI2 = RefVCI2_DAR_solved()
+    ## Input
+    VCI2, dm1, dm2 = DAR_Set
+    # Act # combgenerator = yield function
+    c_list = []
+    for c in VCI2.combgenerator_nofilter():
+        c_list.append(c)
+        print(c)
     # Assert
+    assert c_list == ref_c_list
+    ## Assert Attributes
+    assert_solved_vci_class(refVCI2,VCI2)
+
+
+# = ========= JU ==== TEST ============================================= START
+class RefVCI2_DAR_solved(object):
+    def __init__(self):
+        filename = 'test_data/data_prod/VibCI/ref_dat_VCI2_DAR.npz'
+        file = np.load(filename, allow_pickle=True)
+        # Attributes
+        self.grids   = file['grids']
+        self.wfns    = file['wfns']
+        self.nmodes       = 1
+        self.ngrid        = 16
+        self.states       = [[0], [1], [2]]
+        self.combinations = None
+        self.solved       = True
+        self.dx           = [7.363896585476766]
+        self.a            = [0.009036093545336975]
+        self.coefficients = file['coefficients']
+        self.sij          = file['sij']
+        self.tij          = file['tij']
+        self.store_ints   = True
+        self.integrals    = file['integrals'].item()
+        self.store_potints = True
+        int1d       = file['int1d']
+        self.int1d       = int1d.item()
+        self.int2d       = {}
+        self.int3d       = {}
+        self.int4d       = {}
+        self.fortran     = False
+        self.energies    = [0.00477827, 0.01426034, 0.02364815]
+        self.energiesrcm = [1048.70843133, 3129.78212626, 5190.16813616]
+        self.H           = file['H']
+        self.vectors     = file['vectors']
+        self.intensities = None
+        self.maxpot      = 2
+        self.v1_indices = [0,1]
+        self.v1_data    = file['v1_data']
+        self.v2_indices = [(0,1)]
+        self.v2_data    = file['v2_data']
+        self.nmax       = 2
+        self.smax       = 2
+
+class Ref_DAR_Molecule():
+     # VibTools.Molecule
+     def __init__(self):
+         filename = 'test_data/data_prod/VibCI/Ref_DAR_VibToolsMolecule.npz'
+         file = np.load(filename,allow_pickle=True)
+         self.natoms =      file['natoms']
+         self.atmasses =    file['atmasses']
+         self.atnums =      file['atnums']
+         self.coordinates = file['coordinates']
 
 
 
-def test_calculate_transition_moments():
-    pass 
-    # Arrange
-    # Act
-    # Assert
+class Ref_DAR_Modes(object):
+    def __init__(self):
+        file = np.load('test_data/data_prod/VibCI/Ref_DAR_VibToolsModes.npz')
+        self.nmodes = 1
+        self.mol = None
+        self.natoms = 19
+        self.freqs = [2086.62515]
+        modes_mw = file['modes_mw']         
+        self.modes_mw = modes_mw
+        modes_c = file['modes_c']
+        self.modes_c = modes_c
 
 
+class Ref_DAR_Grid(object):
+    # VibTools.Grid
+    def __init__(self):
+        grids = np.load('test_data/data_prod/VibCI/Ref_DAR_VibrationsGrids_grids.npy')
+        self.modes = Ref_DAR_Modes()
+        self.mol = Ref_DAR_Molecule()
+        self.ngrid = 16
+        self.amp = 14
+        self.grids = grids
+        self.natoms = 19
+        self.nmodes = 1
+
+class Ref_DAR_SurfaceDipole(object):
+    # VibTools.Surface.Dipole
+    def __init__(self):
+        # VibTools.Grids
+        grids = Ref_DAR_Grid()
+        self.grids = grids
+        self.empty = False
+        self.ngrid = 16
+        self.order = 1
+        self.prop = (3,)
+        self.indices = [0, 1]
+        data = np.load('test_data/data_prod/VibCI/Ref_DAR_VibrationsSurfaceDipole_data.npy',allow_pickle=True)
+        self.data = data
+
+
+
+@pytest.fixture
+def DAR_Set(): 
+    # Read SNF-Results
+    path = 'test_data/DAR/'
+    res = vt.SNFResults(outname=path+'snf.out',
+                        restartname=path+'restart',
+                         coordfile=path+'coord')
+    res.read()
+    subsets = np.load(path+'subsets.npy')
+
+    ## TEST extended VibTools functions for data production
+    import sys # added!
+    sys.path.append("test_data/data_prod/") # added!
+    import data_prod_funcs_VibTools as datprod 
+    localmodes,cmat = datprod.localize_subsets(res.modes,subsets)
+    #localmodes,cmat = localize_subsets(res.modes,subsets)
+
+    ngrid = 16
+    amp = 14
+    grid = vib.Grid(res.mol,localmodes)
+    grid.generate_grids(ngrid,amp)
+    # Read ub  anharmonic 1-mode potentials
     
+    v1 = vib.Potential(grid, order=1)
+    v1.read_np(path+'V1_g16.npy')
+    #v1.generate_harmonic(cmat=cmat)
 
-#@pytest.fixture
-#def generate_dm1_dm2():
-#    import pickle
-#    path = 'test_data/DAR/'
-#    
-#    # get the VCI class that produced reference data
-#    # from openbabel import openbabel
-#    import VibTools as LocVib
-#    from numpy import linalg as LA
-#    # from matplotlib import pyplot
-#    import pickle
-#    import os
-#
-#    def localize_subset(modes,subset):
-#        # method that takes normal modes
-#        # and a range of modes, returns them
-#        # localized + the cmat
-#        tmpmodes = modes.get_subset(subset)
-#        tmploc = LocVib.LocVib(tmpmodes, 'PM')
-#        tmploc.localize()
-#        tmploc.sort_by_residue()
-#        tmploc.adjust_signs()
-#        tmpcmat = tmploc.get_couplingmat(hessian=True)
-#
-#        return tmploc.locmodes.modes_mw, tmploc.locmodes.freqs, tmpcmat
-#
-#    def localize_subsets(modes,subsets):
-#        # method that takes normal modes and list of lists (beginin and end)
-#        # of subsets and make one set of modes localized in subsets
-#
-#        # first get number of modes in total
-#        total = 0
-#        modes_mw = np.zeros((0, 3*modes.natoms))
-#        freqs = np.zeros((0,))
-#
-#        for subset in subsets:
-#            n = len(subset)
-#            total += n
-#
-#
-#        print('Modes localized: %i, modes in total: %i' %(total, modes.nmodes))
-#
-#        if total > modes.nmodes:
-#            raise Exception('Number of modes in the subsets is larger than the total number of modes')
-#        else:
-#            cmat = np.zeros((total, total))
-#            actpos = 0 #actual position in the cmat matrix
-#            for subset in subsets:
-#                tmp = localize_subset(modes, subset)
-#                modes_mw = np.concatenate((modes_mw, tmp[0]), axis = 0)
-#                freqs = np.concatenate((freqs, tmp[1]), axis = 0)
-#                cmat[actpos:actpos + tmp[2].shape[0],actpos:actpos + tmp[2].shape[0]] = tmp[2]
-#                actpos = actpos + tmp[2].shape[0] 
-#            localmodes = LocVib.VibModes(total, modes.mol)
-#            localmodes.set_modes_mw(modes_mw)
-#            localmodes.set_freqs(freqs)
-#
-#            return localmodes, cmat
-#
-#
-#    # path = os.path.join(os.getcwd(),'anharm')
-#
-#    res = LocVib.SNFResults(outname=os.path.join(path,'snf.out'),
-#                            restartname=os.path.join(path,'restart'),
-#                            coordfile=os.path.join(path,'coord'))
-#    res.read()
-#
-#    subsets = np.load(os.path.join(path,'subsets.npy'))
-#    localmodes,cmat = localize_subsets(res.modes,subsets)
-#
-#    ngrid = 16
-#    amp = 14
-#    grid = vib.Grid(res.mol,localmodes)
-#    grid.generate_grids(ngrid,amp)
-#
-#    dm1 = vib.Dipole(grid)
-#    dm1.read_np(os.path.join(path,'Dm1_g16.npy'))
-#
-#    dm2 = vib.Dipole(grid, order=2)
-#    dm2.read_np(os.path.join(path,'Dm2_g16.npy'))
-#    
-#    return dm1, dm2
-#    
-#
-#def test_calculate_transition_matrix(generate_dm1_dm2):
-#    # Arrange
-#    path = 'test_data/DAR/'
-#    ref_transm = np.load(path+'VCI_dipolemoments.npy')
-#    ref_inten = np.load(path+'VCI_frequencies.npy')
-#    ref_freqs = np.load(path+'VCI_intensities.npy')
-#    
-#    # Act
-#    dm1, dm2 = generate_dm1_dm2
-#    
-#    fileObj = open(path+'VCI.obj', 'rb')
-#    VCI2 = pickle.load(fileObj) 
-#    fileObj.close()
-#
-#    transm, inten, freqs = VCI2.calculate_transition_matrix([dm1],[dm2])
-#    
-#    # Assert
-#    np.testing.assert_almost_equal(transm, ref_transm) 
-#    np.testing.assert_almost_equal(inten,  ref_inten) 
-#    np.testing.assert_almost_equal(freqs,  ref_freqs) 
+    # Read in anharmonic 1-mode dipole moments
+    dm1 = vib.Dipole(grid)
+    dm1.read_np(path+'Dm1_g16.npy')
+   
+    # Readn in anharmonic 2-mode potentials
+    v2 = vib.Potential(grid, order=2)
+    v2.read_np(path+ 'V2_g16.npy')
+    #v2.generate_harmonic(cmat=cmat)
+
+
+    # Read in anharmonic 2-mode dipole moments    
+    dm2 = vib.Dipole(grid, order=2)
+    dm2.read_np(path+'Dm2_g16.npy')
+
+    # Run VSCF calculations for these potentials
+    # Here we solve only for the vibrational ground state
+    
+    dVSCF = vib.VSCF2D(v1,v2)
+    dVSCF.solve()
+
+    VCI2 = vib.VCI(dVSCF.get_groundstate_wfn(), v1,v2)
+    VCI2.generate_states(2) # singles only
+    VCI2.solve()
+    return VCI2, dm1, dm2
+
+@pytest.fixture()
+def DAR_comb_generator_c():
+    # for c in DAR_VCI2.combgenerator -> list
+    c = [(np.array([0]), np.array([0]), 0, 0), (np.array([0]), np.array([1]), 0, 1),
+              (np.array([0]), np.array([2]), 0, 2), (np.array([1]), np.array([1]), 1, 1),
+              (np.array([1]), np.array([2]), 1, 2), (np.array([2]), np.array([2]), 2, 2)]
+    return c
+
+def test_calculate_transition_moments(DAR_Set):
+    # Arrange
+    ## Input
+    VCI2, dm1, dm2 = DAR_Set
+    ## Reference
+    ### Attributes
+    refVCI2 = RefVCI2_DAR_solved()
+    filename = 'test_data/data_prod/VibCI/ref_dat_VCI2_DAR_calc_trans_moments.npz'
+    file = np.load(filename,allow_pickle=True)
+    refVCI2.integrals = file['integrals'].item()
+
+    Ref_SurfDipole = Ref_DAR_SurfaceDipole()
+    ### Returns
+    ref_transitions = [[], 
+                       [[-0.17192922, -0.33554002, -0.07779115]],
+                       [[-0.00918297, -0.01871297, -0.0046235 ]]]
+    # Act
+    transitions = VCI2.calculate_transition_moments([dm1],[dm2])
+    # Assert
+    ## Returns
+    assert len(transitions[0]) == 0
+    np.testing.assert_almost_equal(transitions[1][0], ref_transitions[1][0])
+    np.testing.assert_almost_equal(transitions[2][0], ref_transitions[2][0])
+    ## Attributes
+    ### VCI
+    assert_solved_vci_class(refVCI2,VCI2)
+    #### SurfaceDipole
+    print('\n\n========================\n')
+    assert_SurfaceDipoleClass(Ref_SurfDipole,VCI2.prop1[0])
+
+
+
+def test_calculate_transition_matrix(DAR_Set):
+    # Arrange
+    VCI2, dm1, dm2 = DAR_Set 
+    ## Reference
+    refVCI2 = RefVCI2_DAR_solved()
+    Ref_SurfDipole = Ref_DAR_SurfaceDipole()
+    ref_path = 'test_data/data_prod/VibCI/'
+    ref_transm = np.load(ref_path+'VCI_DAR_transm.npy')
+    ref_freqs = np.load(ref_path+ 'VCI_DAR_freqs.npy')
+    ref_inten = np.load(ref_path+ 'VCI_DAR_inten.npy') 
+    # Act
+    transm, inten, freqs = VCI2.calculate_transition_matrix([dm1],[dm2])
+    # Assert
+    ## Returns
+    np.testing.assert_almost_equal(transm, ref_transm) 
+    np.testing.assert_almost_equal(inten,  ref_inten) 
+    np.testing.assert_almost_equal(freqs,  ref_freqs) 
+    ## Attributes
+    ### VCU
+    assert_solved_vci_class(refVCI2,VCI2)
+    ### SurfaceDipole
+    assert_SurfaceDipoleClass(Ref_SurfDipole,VCI2.prop1[0])
+
+    Ref_SurfDipole.order = 2
+    Ref_SurfDipole.indices = [(0,1)]
+    data = np.load(ref_path+'Ref_DAR_calc_tran_matrix_prop2_data.npy')
+    Ref_SurfDipole.data = data 
+    assert_SurfaceDipoleClass(Ref_SurfDipole,VCI2.prop2[0])
+
+
+# = ========= JU ==== TEST ============================================= ENDE
 
 
 
@@ -703,24 +1007,27 @@ def test_calculate_IR(Potentials,dipole_1mode,Ref_solved_VCI):
     print('dm1_keys: ', list(dm1_dict.keys()))
     assert_SurfaceDipoleClass(ref_dm1,vci.dm1)
     assert vci.dm2 == None
-    #TODO: assert vci.prop1[0] == dm1 ?  
     assert_SurfaceDipoleClass(ref_dm1,vci.prop1[0])
 
     assert vci.prop2 == None
     assert vci.transitions == None 
 
 
-
-
-
-def test_calculate_intensities():
-    pass 
+def test_calculate_intensities(DAR_Set):
     # Arrange
+    VCI2, dm1, dm2 = DAR_Set 
+    ## Reference
+    refVCI2 = RefVCI2_DAR_solved()
+    Ref_SurfDipole = Ref_DAR_SurfaceDipole()
+    refVCI2.intensities = np.array([0., 773.07685725, 4.73254705])
     # Act
+    VCI2.calculate_intensities(dm1,dm2)
     # Assert
+    assert_solved_vci_class(refVCI2,VCI2,show=True)
 
 
 
+# TODO: input: polarizability surfaces needed - Datatype?
 def test_calculate_raman():
     pass 
     # Arrange
@@ -729,6 +1036,9 @@ def test_calculate_raman():
 
 
 
+
+# TODO: input is given by VibTools SNFResults/Ooutput ->
+# Does not work...
 def test_calculate_roa():
     pass 
     # Arrange
@@ -736,108 +1046,108 @@ def test_calculate_roa():
     # Assert
 
 
-
-def test__v1_integral(): 
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test__v2_integral():
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test_v2_integral():
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test__v3_integral():
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test__v4_integral():
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test__ovrlp_integral(): 
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test__kinetic_integral(): 
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test__dgs_kinetic_integral(): 
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test__dgs_ovrlp_integral(): 
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test__chi(): 
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test__calculate_coeff():
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test__calculate_kinetic_integrals():
-    pass 
-    # Arrange
-    # Act
-    # Assert
-
-
-
-def test__calculate_ovrlp_integrals():
-    pass 
-    # Arrange
-    # Act
-    # Assert
+#TODO: internal use functions:
+#def test__v1_integral(): 
+#    pass 
+#    # Arrange
+#    # Act
+#    # Assert
+#
+#
+#
+#def test__v2_integral():
+#    pass 
+#    # Arrange
+#    # Act
+#    # Assert
+#
+#
+#
+#def test_v2_integral():
+#    pass 
+#    # Arrange
+#    # Act
+#    # Assert
+#
+#
+#
+#def test__v3_integral():
+#    pass 
+#    # Arrange
+#    # Act
+#    # Assert
+#
+#
+#
+#def test__v4_integral():
+#    pass 
+#    # Arrange
+#    # Act
+#    # Assert
+#
+#
+#
+#def test__ovrlp_integral(): 
+#    pass 
+#    # Arrange
+#    # Act
+#    # Assert
+#
+#
+#
+#def test__kinetic_integral(): 
+#    pass 
+#    # Arrange
+#    # Act
+#    # Assert
+#
+#
+#
+#def test__dgs_kinetic_integral(): 
+#    pass 
+#    # Arrange
+#    # Act
+#    # Assert
+#
+#
+#
+#def test__dgs_ovrlp_integral(): 
+#    pass 
+#    # Arrange
+#    # Act
+#    # Assert
+#
+#
+#
+#def test__chi(): 
+#    pass 
+#    # Arrange
+#    # Act
+#    # Assert
+#
+#
+#
+#def test__calculate_coeff():
+#    pass 
+#    # Arrange
+#    # Act
+#    # Assert
+#
+#
+#
+#def test__calculate_kinetic_integrals():
+#    pass 
+#    # Arrange
+#    # Act
+#    # Assert
+#
+#
+#
+#def test__calculate_ovrlp_integrals():
+#    pass 
+#    # Arrange
+#    # Act
+#    # Assert
 
 
 def test_solve(Potentials,Ref_solved_VCI):
@@ -857,17 +1167,65 @@ def test_solve(Potentials,Ref_solved_VCI):
     assert_solved_vci_class(refvci,vci)
 
 
+@pytest.fixture
+def VCISaveLoadRef():
+    file = np.load('test_data/data_prod/VibCI/Ref_VCI_1_1_results.npz')
+    vec = file['vec']
+    enrcm = file['enrcm']
+    states = file['states']
+    return vec, enrcm, states
 
-def test_save_vectors():
-    pass 
+
+def test_save_vectors(Potentials, VCISaveLoadRef):
     # Arrange
-    # Act
+    fname = 'VCI_1_1_results.npz'
+    ## Reference
+    refvec, refenrcm, refstates = VCISaveLoadRef
+    ## Input
+    VSCF, v1,v2 = Potentials
+    gwfn =VSCF.get_groundstate_wfn()
+    vci = vib.VCI(gwfn, v1,v2)
+    vci.generate_states(1)
+    vci.solve()
+    # Act 
+    vci.save_vectors()
     # Assert
+    fileexist = os.path.exists(fname)
+    assert fileexist == True
+    ## Assert saved data
+    file = np.load(fname)
+    vec = file['vec']
+    enrcm = file['enrcm']
+    states = file['states']
+    np.testing.assert_almost_equal(abs(refvec),abs(vec))
+    np.testing.assert_almost_equal(refenrcm,enrcm)
+    np.testing.assert_almost_equal(refstates,states)
+    # clean up
+    os.remove(fname)
 
 
 
-def test_read_vectors():
-    pass 
+def test_read_vectors(Potentials, VCISaveLoadRef):
     # Arrange
-    # Act
+    path = 'test_data/data_prod/VibCI/'
+    fname = 'Ref_VCI_1_1_results.npz'
+    ## Reference
+    cm_in_au = 4.556335252760265e-06
+    refvec, refenrcm, refstates = VCISaveLoadRef
+    refenergies = refenrcm*cm_in_au
+    ## Input
+    VSCF, v1,v2 = Potentials
+    gwfn =VSCF.get_groundstate_wfn()
+    vci = vib.VCI(gwfn, v1,v2)
+    vci.generate_states(1)
+    vci.solve()
+    # Act 
+    vci.read_vectors(path+fname)
     # Assert
+    assert vci.solved == True
+    np.testing.assert_almost_equal(refvec,vci.vectors)
+    np.testing.assert_almost_equal(refenrcm,vci.energiesrcm)
+    np.testing.assert_almost_equal(refstates,vci.states)
+    np.testing.assert_almost_equal(refenergies,vci.energies)
+   
+
