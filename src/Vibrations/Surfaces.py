@@ -34,21 +34,34 @@ from . import Misc
 
 class Surface(object):
     """
-    Class containing and manipulating a generic property surface
+    Class containing and manipulating a generic property surface.
+    
+    An object is initialized with existing grids, the order of the surface (how many modes are involved), and
+    the shape of the property: (1,) for energy, (3,) for dipole moment, (6,) for polarizability.
+    
+    Parameters
+    ----------
+    grids : Vibrations grid object
+        Class containing and manipulating the grids. The grids are used for evaluation of the property surfaces, and for integrals in the VSCF/VCI calculations.
+    ngrid : int
+       number of grid points.
+    order : Int 
+        Order (or dimensionality) of the surface
+    prop : Tuple of Integer 
+        Shape of the property, e.g. (1,) for energy
+    empty : Bool
+        If it is set to False, the attributes data and indices are processed automatically for certain methods. 
+    indices : list
+        indices of the modes corresponding to the data stored in data.
+    data : list
+        Data consisting of e.g. potential, dipople moment, etc.
     """
 
     def __init__(self, grids=None, order=1, prop=(1,)):
         """
-        An object is initialized with existing grids, the order of the surface (how many modes are involved), and
-        the shape of the property: (1,) for energy, (3,) for dipole moment, (6,) for polarizability
-
-        @param grids: Vibrations grid object
-        @param order: Order (or dimensionality) of the surface
-        @type order: Integer
-        @param prop: Shape of the property, e.g. (1,) for energy
-        @type prop: Tuple of Integer
+        Surface constructor.
+        Further details in class description.
         """
-
         self.grids = grids
 
         if self.grids is None:  # an empty object
@@ -80,7 +93,10 @@ class Surface(object):
         """
         Deleting a surface of given index (ind)
         
-        @param lind: List of tuples of modes
+        Parameters
+        ----------
+        lind : list of tuples 
+           List of tuples of modes
         """
         for ind in lind:
             ind = list(ind)
@@ -94,7 +110,7 @@ class Surface(object):
 
     def zero(self):
         """
-        Zeroing all surfaces
+        Zeroing all surfaces.
         """
         for i,e in enumerate(self.data):
             self.data[i] *=0.0
@@ -102,8 +118,14 @@ class Surface(object):
     def __getitem__(self, item):
         """
         Gets a surface/element for given indices, Nindices == 2*Nmodes => for a given grid point
-        :param item: Indices of the modes
-        :return: Property for given indices
+
+        Parameters
+        ----------
+        item : Indices of the modes
+
+        Returns
+        -------
+        return : Property for given indices
         """
         if self.order == 1:
             if type(item) is int:
@@ -142,15 +164,24 @@ class Surface(object):
 
 
 class Potential(Surface):
+    """
+    Potential class 
+    Contains attributes inherited from Vibrations.Surface
+    """
 
     def __init__(self, grids=None, order=1):
+        """
+        Potential constructor.
+        """
         Surface.__init__(self, grids, order, prop=(1,))
         self.index = 0  # will be used for the iterator
 
     def __iter__(self):
+        """Returns Potential object."""
         return self
 
     def __next__(self):
+        """update Potential.index and returns tuple of Potential.indices."""
         try:
             self.index < len(self.indices)
         except IndexError:
@@ -163,10 +194,12 @@ class Potential(Surface):
 
     def read_np(self, fname):
         """
-        Reads in the existing potential energy surface from a NumPy formatted binary file *.npy
+        Reads in the existing potential energy surface from a NumPy formatted binary file `*.npy`.
 
-        @param fname: File name, without extension
-        @type fname: String
+        Parameters
+        ----------
+        fname : Str 
+           File name, without extension
         """
 
         tmparray = np.load(fname)
@@ -224,7 +257,7 @@ class Potential(Surface):
 
     def save(self, fname='pot.npy'):
         """
-        Saves the PES to NumPy formatted binary file *.npy
+        Saves the PES to NumPy formatted binary file `*.npy`.
         """
 
         shape = [self.grids.nmodes] * self.order + [self.ngrid] * self.order
@@ -242,8 +275,12 @@ class Potential(Surface):
         Generates the harmonic PES, for localized modes
         also the harmonic 2-mode potentials can be generated.
         In this case cmat corresponds to coupling matrix given in Hartree.
-        """
 
+        Parameters
+        ----------
+        cmat : ndarray
+            coupling matrix.
+        """
         if not self.empty:
             if cmat is None:
                 if self.order == 1:
@@ -281,14 +318,14 @@ class Potential(Surface):
         arrays) as its second argument.
 
         Example for 1D:
-        def func(i, qi) :
-            return (qi ** 2 * freq[i]) / 2.0
+        >>> def func(i, qi) :
+        >>>     return (qi ** 2 * freq[i]) / 2.0
 
         Example for 2D:
-        def func(ij, qij) :
-            pot = .
+        >>> def func(ij, qij) :
+        >>>     pot = .
         """
-
+        # UNITTEST IS MISSING: gi? gij?
         if not self.empty:
             if self.order == 1:
                 for i in range(self.grids.nmodes):
@@ -314,6 +351,10 @@ class Polarizability(Surface):
     The polarizability tensors. 
     """
     def __init__(self, grids=None, gauge='len', order=1):
+        """
+        Polariyability constructor.
+        Further details in class description.
+        """
         Surface.__init__(self, grids, order, prop=(6,))
         self.gauge = gauge
 
@@ -343,6 +384,10 @@ class Gtensor(Surface):
     """
     
     def __init__(self,grids=None, gauge='vel', order=1):
+        """
+        Gtensor constructor.
+        Further details in class description.
+        """
         Surface.__init__(self, grids, order, prop=(9,))
         self.gauge = gauge
 
@@ -366,6 +411,10 @@ class Atensor(Surface):
     """
     
     def __init__(self,grids=None, order=1):
+        """
+        Atensor constructor.
+        Further details in class description.
+        """
         Surface.__init__(self, grids, order, prop=(27,))
 
     def generate_harmonic(self, res):
@@ -385,6 +434,10 @@ class Atensor(Surface):
 class Dipole(Surface):
 
     def __init__(self, grids=None, order=1):
+        """
+        Dipole constructor.
+        Further details in class description.
+        """
         Surface.__init__(self, grids, order, prop=(3,))
 
     def generate_harmonic(self,res):
@@ -411,8 +464,10 @@ class Dipole(Surface):
         """
         Reads in the existing dipole moment surface from a NumPy formatted binary file *.npy
 
-        @param fname: File name
-        @type fname: String
+        Parameters
+        ----------
+        fname : Str 
+           File name
         """
 
         tmparray = np.load(fname)

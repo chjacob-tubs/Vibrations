@@ -30,15 +30,28 @@ import numpy as np
 
 class Wavefunction(object):
     """
-    The class containing and manipulating the vibrational wave functions
+    The class containing and manipulating the vibrational wave functions.
+
+    The class can be initialized with the grids. If none are given, an empty object is created, which can be used
+    to read in an existing wave function.
+
+    Parameters
+    ----------
+    nmodes : int
+       number of modes.
+    grids : Vibrations/Grid 
+       The grids (Vibrations.Grid).
+    ngrid : int
+       number of grid points.
+    nstates : int 
+       number of states.
+    wfns : ndarray
+       wavefunctions.
     """
     def __init__(self, grids=None):
         """
-        The class can be initialized with the grids. If none are given, an empty object is created, which can be used
-        to read in an existing wave function.
-
-        @param grids: The grids
-        @type grids: Vibrations/Grid
+        Wavefunction constructor.
+        Further details in class description.
         """
         if grids is None:
             self.nmodes = 0
@@ -54,10 +67,12 @@ class Wavefunction(object):
 
     def save_wavefunctions(self, fname='wavefunctions'):
         """
-        Saves the wave function to a NumPy formatted binary file *.npy.
+        Saves the wave function to a NumPy formatted binary file `*.npy`.
 
-        @param fname: File Name
-        @type fname: String
+        Parameters
+        ----------
+        fname : Str 
+           File Name
         """
         from time import strftime
         fname = fname + '_' + strftime('%Y%m%d%H%M') + '.npy'
@@ -65,10 +80,12 @@ class Wavefunction(object):
 
     def read_wavefunctions(self, fname='wavefunctions.npy'):
         """
-        Reads in existing vibrational wave functions from a NumPy formatted binary file *.npy.
+        Reads in existing vibrational wave functions from a NumPy formatted binary file `*.npy`.
 
-        @param fname: File Name
-        @type fname: String
+        Parameters
+        ----------
+        fname : Str 
+           File Name
         """
         tmpwfns = np.load(fname)
         self.nmodes = tmpwfns.shape[0]

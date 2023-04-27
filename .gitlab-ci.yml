@@ -105,7 +105,14 @@ unittest-VCI:
         - pytest -v test_VCI.py
         - cd ../
 
-
+unittest-Misc:
+    tags:
+        - nodes
+    stage: test
+    script:
+        - cd unittests/
+        - pytest -v test_Misc.py
+        - cd ../
 
 
 

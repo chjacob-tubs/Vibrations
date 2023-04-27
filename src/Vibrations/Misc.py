@@ -48,6 +48,11 @@ Module containing more or less useful functions and constants.
 def fancy_box(s):  # doing a fancy box around a string
     """
     Just printing a box around a string.
+
+    Parameters
+    ----------
+    s : all data types
+        all data types are allowed.
     """
 
     s = str(s)
@@ -68,6 +73,21 @@ import cProfile
 def do_cprofile(func):
     """
     Profiler decorator
+
+    cProfile provides deterministic profiling of Python programs. 
+    A profile is a set of statistics that describes how often and 
+    for how long various parts of the program executed.
+    
+    Example:
+    
+    @vibrations.do_cprofile
+    def example_function():  
+        return 1
+
+    Parameters
+    ----------
+    func : arbitrary function
+       You can use an arbitrary function. 
     """
     def profiled_func(*args, **kwargs):
         profile = cProfile.Profile()
@@ -83,6 +103,17 @@ def do_cprofile(func):
 def timefunc(f):
     """
     Timing decorator
+
+    Shows the elapsed time to execute a function.
+
+    @vibrations.timefunc
+    def example_function():  
+        return 1
+
+    Parameters
+    ----------
+    func : arbitrary function
+       You can use an arbitrary function. 
     """
     def f_timer(*args, **kwargs):
         start = time.time()
