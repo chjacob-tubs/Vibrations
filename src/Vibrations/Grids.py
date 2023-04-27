@@ -34,17 +34,32 @@ class Grid(object):
     """
     Class containing and manipulating the grids. The grids are used for evaluation of the property
     surfaces, and for integrals in the VSCF/VCI calculations.
+    
+    The class can be initialized with objects referring to the molecular structure and the normal modes. By default,
+    an empty grid is created, this may be used to read in an existing grid from `*.npy` file, see read_np method.
+    
+    Parameters
+    ----------
+    mol : molecule object
+        PyADF/VibTools Molecule
+    modes : vibrational modes object
+        VibTools Modes
+    ngrid : int
+        number of grid points
+    amp : float,Real+
+        grid amplitude.
+    grids : ndarray
+        the grid itself.
+    natoms : int
+        number of atoms in molecule.
+    nmodes : int
+        number of modes.
     """
 
     def __init__(self, mol=None, modes=None):
         """
-        The class can be initialized with objects referring to the molecular structure and the normal modes. By default,
-        an empty grid is created, this may be used to read in an existing grid from *.npy file, see read_np method
-
-        @param mol: molecule object
-        @type mol: PyADF/VibTools Molecule
-        @param modes: vibrational modes object
-        @type modes: VibTools Modes
+        Grid constructor.
+        Further details in class description.
         """
         import copy 
         self.modes = copy.copy(modes)
@@ -65,7 +80,7 @@ class Grid(object):
 
     def __str__(self):
         """
-        Just printing the grids' properties and the grids themself
+        Just printing the grids' properties and the grids themself.
         """
 
         s = ''
@@ -89,11 +104,14 @@ class Grid(object):
         """
         Generate the grids with a ngrid number of grid points
         and amp grid's amplitude, see ChemPhysChem 15 (2014) 3365 for
-        the details
-        @param ngrid: number of grid points
-        @type ngrid: Integer
-        @param amp: grid amplitude
-        @type amp: Real+
+        the details.
+        
+        Parameters
+        ----------
+        ngrid : int
+            number of grid points.
+        amp :  float, Real+
+            grid amplitude.
         """
         if ngrid < 1:
             raise Exception('Some positive number of grid points should be given')
@@ -119,18 +137,25 @@ class Grid(object):
         """
         Obtain the structure for the given point(s) of the given mode(s).
         Returns atomic numbers and coordinates.
-
+        
         Example usage:
         >>> get_grid_structure([0,1],[10,11]) 
         
         returns the structure
         displaced along modes 0 and 1 to the grid points 10 and 11,
         repsectively.
-
-        @param modes: list of modes of a given order
-        @type modes: List of Integer
-        @param points: list of points for given modes
-        @type points: List of Integer
+        
+        Parameters
+        ----------
+        modes : List of ints
+            list of modes of a given order
+        points: List of ints
+            list of points for given modes
+        
+        Returns
+        -------
+        (self.mol.get_atnums(), newcoords) : (list of ints, ndarray)
+        Tuple of atomic numbers and their corresponding coordinates.
         """
         if self.mol is None:
             raise Exception('No molecule defined!')
@@ -155,6 +180,13 @@ class Grid(object):
     def get_molecule(self, modes, points):
         """
         Same as L{get_grid_structure} but returns VibTools molecule object.
+    
+        Parameters
+        ----------
+        modes : List of ints
+            list of modes of a given order
+        points: List of ints
+            list of points for given modes
         """
         import VibTools
 
@@ -167,6 +199,13 @@ class Grid(object):
     def get_pyadf_molecule(self, modes, points):
         """
         Same as L{get_grid_structure} but returns PyADF molecule object.
+       
+        Parameters
+        ----------
+        modes : List of ints
+            list of modes of a given order
+        points: List of ints
+            list of points for given modes   
         """
         import pyadf
 
@@ -179,10 +218,12 @@ class Grid(object):
 
     def read_np(self, fname):
         """
-        Read in an existing grid from NumPy formatted binary file *.npy
-
-        @param fname: file name
-        @type fname: String
+        Read in an existing grid from NumPy formatted binary file `*.npy`.
+        
+        Parameters
+        ----------
+        fname : str
+            file name.
         """
         tmparray = np.load(fname)
         self.grids = tmparray.copy()
@@ -197,10 +238,12 @@ class Grid(object):
 
     def save_grids(self, fname='grids'):
         """
-        Save the grid to a NumPy formatted binary file *.npy
-
-        @param fname: file name, without extension
-        @type fname: String
+        Save the grid to a NumPy formatted binary file `*.npy`.
+        
+        Parameters
+        ---------- 
+        fname : Str 
+            file name, without extension
         """
         fname = fname + '_' + str(self.nmodes) + '_' + str(self.ngrid) + '.npy'
         np.save(fname, self.grids)
