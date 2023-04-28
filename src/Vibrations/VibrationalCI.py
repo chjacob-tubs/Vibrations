@@ -67,9 +67,11 @@ def multichoose(n, k):
             [[val[0]+1]+val[1:] for val in multichoose(n, k-1)]
 
 
+# TODO: This class is very bulky and unhandy.... too many attritbues.
 class VCI(object):
     """
     The class performing and storing VCI calculations.
+    The class must be initialized with grids, some, e.g. VSCF, wave functions, and potentials.
 
     Parameters
     ----------
@@ -78,11 +80,72 @@ class VCI(object):
     potentials : Vibrations/Potential
        The potentials.
 
-    
+    (Attributes)
+    Parameters
+    ----------
+    grids : Vibrations.Grid.grids - numpy.ndarray
+       The grid itself.
+    wfns : Wavefunctions.wavefunctions - numpy.ndarray
+       wavefunctions.
+    ngrid : int
+       number of grid points.
+    nmodes : int
+       number of modes.
+    states : numpy.ndarray 
+       list of states for which it is solved, at first only gs considered.
+    combinations : list
+        combinations (transitions).
+    solved : Bool
+       True means system is already solved.
+    dx : numpy.ndarray
+       integration measure.
+    a : numpy.ndarray
+       internal attribute for integrations related to grids.
+    coefficients : np.ndarray
+       basis set coefficients.
+    sij : numpy.array
+       array((nmodes, ngrid, ngrid)) - related to overlap integral.
+    tij : numpy.ndarray
+        array((nmodes, ngrid, ngrid)) - related to kinetic integral.
+    store_ints : bool
+       prescreen the precomputed 1-mode integrals
+    integrals : dict
+       dictionary storing the precomputed parts of the  1-mode integrals, {(mode,lstate,rstate):val}.
+    store_pot_ints : bool
+       store 1-,2-,3-, 4-mode integrals
+    int1-4d : dict
+       1 to 4-d integrals involving potentials.
+    fortran : (bool)
+       checks if fortran is used.
+    energies : numpy.ndarray
+       energies/eigenvalues of the Hessian.
+    energiesrcm : numpy.ndarray
+       is equal to energies/cm_in_au.    
+    H : scipy.sparse.csr.csr_matrix
+       Hessian_matrix.
+    vectors : numpy.ndarray
+       eigenvectors of the hessian.
+    intensities : numpy.ndarray
+       itensities.
+    maxpot : int
+       dimension of the given potential.
+    v1_indices : list
+       Vibrations.Surface attritbute:indices of the modes corresponding to the data stored in data.
+    v1_data : list
+       Vibrations.Surface attritbute: Data consisting e.g. potential, dipole moment, etc. 
+    v2_indices : list
+       Vibrations.Surface attritbute:indices of the modes corresponding to the data stored in data.
+    v2_data :list
+       Vibrations.Surface attritbute: Data consisting e.g. potential, dipole moment, etc. 
     """
+
     def __init__(self, wavefunctions, *potentials):
         """
         The class must be initialized with grids, some, e.g. VSCF, wave functions, and potentials.
+        VCI constructor.
+
+        Parameters
+        ----------
         @param wavefunctions: The object containing the reference wave function, e.g. VSCF wfn
         @type wavefunctions: Vibrations/Wavefunction
         @param potentials: The potentials
@@ -161,8 +224,22 @@ class VCI(object):
    
 
     def calculate_transition(self,c):
+        """
+        Calculates transitions.
+        (Elements of the VCI matrix.)
+
+        Parameters
+        ----------
+        c : (np.ndarray, numpy.ndarray, int, int)
+           Configuration.
+
+        Returns
+        -------
+        tmp : (int,int,float)
+        (index of vector1,index of vector2, Value of the diagonal element, in a.u.)
+        """
         order = self.order_of_transition(c)
-        #print 'Solving the transition: ',c
+        print('Solving the transition: ',c)
         if order == 0:
             tmp = self.calculate_diagonal(c)
         elif order == 1:
@@ -175,7 +252,6 @@ class VCI(object):
             tmp = self.calculate_quadriple(c)
         else:
             tmp = 0.0
-
         if abs(tmp) < 1e-8: 
             tmp = 0.0
 
@@ -185,6 +261,7 @@ class VCI(object):
         return (nind,mind,tmp)
 
     def __call__(self,c):
+        """internal function to run calculate_transitions."""
         tmp = self.calculate_transition(c)
         return tmp
 
@@ -192,9 +269,17 @@ class VCI(object):
     #@do_cprofile
     def calculate_diagonal(self, c):
         """
-        Calculates a diagonal element of the VCI matrix
-        :param c: Configuration
-        :return: Value of the diagonal element, in a.u.
+        Calculates a diagonal element of the VCI matrix.
+
+        Parameters
+        ----------
+        c : (np.ndarray, numpy.ndarray, int, int)
+           Configuration.
+
+        Returns
+        -------
+        tmp : float
+        Value of the diagonal element, in a.u.
         """
         tmp = 0.0
         n = c[0]
@@ -243,9 +328,17 @@ class VCI(object):
     #@do_cprofile
     def calculate_single(self, c):
         """
-        Calculates an element corresponding to a single transition
-        :param c: Configuration
-        :return: Value of the element, a.u.
+        Calculates an element corresponding to a single transition.
+
+        Parameters
+        ----------
+        c : (np.ndarray, numpy.ndarray, int, int)
+           Configuration.
+
+        Returns
+        -------
+        tmp : float
+        Value of the element, a.u.
         """
         tmp = 0.0
         n = c[0]
@@ -290,8 +383,16 @@ class VCI(object):
     def calculate_double(self, c):
         """
         Calculates an element corresponding to a double transition
-        :param c: Configuration
-        :return: Value of the element, a.u.
+
+        Parameters
+        ----------
+        c : (np.ndarray, numpy.ndarray, int, int)
+           Configuration.
+
+        Returns
+        -------
+        tmp : float
+        Value of the element, a.u.
         """
         tmp = 0.0
         n = c[0]
@@ -327,8 +428,16 @@ class VCI(object):
     def calculate_triple(self, c):
         """
         Calculates an element corresponding to a triple transition
-        :param c: Configuration
-        :return: Value of the element, a.u.
+
+        Parameters
+        ----------
+        c : (np.ndarray, numpy.ndarray, int, int)
+           Configuration.
+
+        Returns
+        -------
+        tmp : float
+        Value of the element, a.u.
         """
         tmp = 0.0
         n = c[0]
@@ -354,8 +463,16 @@ class VCI(object):
     def calculate_quadriple(self, c):
         """
         Calculates an element corresponding to a quadriple transition
-        :param c: Configuration
-        :return: Value of the element, a.u.
+
+        Parameters
+        ----------
+        c : (np.ndarray, numpy.ndarray, int, int)
+           Configuration.
+
+        Returns
+        -------
+        tmp : float
+        Value of the element, a.u.
         """
         tmp = 0.0
         n = c[0]
@@ -375,16 +492,34 @@ class VCI(object):
     @staticmethod
     def order_of_transition(c):
         """
-        Gives the order of the transition (how many modes are changed upon the transition)
-        :param c: combination, a tuple of two vectors, left and right, representing the transition
-        :return: order of the transition, 1 for singles, 2 for doubles etc.
+        Gives the order of the transition (how many modes are changed upon the transition).
+
+        Parameters
+        ----------
+        c: int 
+           combination, a tuple of two vectors, left and right, representing the transition.
+
+        Returns
+        -------
+        return : int
+        order of the transition, 1 for singles, 2 for doubles etc.
         """
         return np.count_nonzero(c[0]-c[1])
+
 
     def nex_state(self, vci_state):
         """
         Returns the contributions of different types of states (0 - ground state,
         1 - fundamentals, 2 - doubly excited etc.) for a given VCI state.
+
+        Parameters
+        ----------
+        vci_state : Vibrations.VCI.states - numpy.ndarray
+            see VCI class attributes.
+        Returns
+        -------
+        nexcontrib : (int, numpy.array)
+        Returns contributions.
         """
         nex_contrib = [0.0] * (self.smax+1)
         for j, s in enumerate(self.states):
@@ -392,11 +527,33 @@ class VCI(object):
         return nex_contrib
 
     def nexmax_state(self, vci_state):
+        """
+        Returns the (maximal) contributions of different types of states (0 - ground state,
+        1 - fundamentals, 2 - doubly excited etc.) for a given VCI state.
+
+        Parameters
+        ----------
+        vci_state : Vibrations.VCI.states - numpy.ndarray
+            see VCI class attributes.
+        Returns
+        -------
+        nexcontrib : (int, numpy.array)
+        Returns contributions.
+        """
         nex_contrib = self.nex_state(vci_state)
-        nex_contrib_max = max(enumerate(nex_contrib), key=lambda x: x[1][0])
+#        nex_contrib_max = max(enumerate(nex_contrib), key=lambda x: x[1])[0]
+        nex_contrib_max = max(enumerate(nex_contrib), key=lambda x: x[1][0]) # Bugfix?
         return nex_contrib_max
 
     def idx_fundamentals(self):
+        """
+        calculates idx fundamentals.
+  
+        Returns
+        -------
+        idx : list
+        list of contributions.
+        """
         if self.solved :
             idx = []
 
@@ -415,9 +572,16 @@ class VCI(object):
         """
         Prints VCI results, can be limited to the states mostly contributed from given type of transitions (1 - singles,
         etc.), and to the maximal energy (usually 4000cm^-1 is the range of interest)
-        :param which: transitions to which states should be included, 1 for singles, 2 for SD, etc.
-        :param maxfreq: frequency threshold
-        :return: void
+
+        Parameters
+        ----------
+        which : float 
+           transitions to which states should be included, 1 for singles, 2 for SD, etc.
+        maxfreq : float
+           frequency threshold
+        Returns
+        -------
+        void
         """
         if self.solved:
             print(Misc.fancy_box('Results of the VCI'))
@@ -440,14 +604,16 @@ class VCI(object):
             print(Misc.fancy_box('Solve the VCI first'))
         print()
 
+
+    # TODO: rename all print_short_state to _print_short_state
     def print_short_state(self,state):
+        """internal function, print states"""
         s = ''
         ds = [list(state).index(x) for x in state if x]
         s += str(len(ds))
         s += ': '
         for d in ds:
             s += str(d)+ '(' + str(state[d]) + ')' + ' '
-
         return s
 
 
@@ -455,10 +621,19 @@ class VCI(object):
         """
         Prints VCI results, can be limited to the states mostly contributed from given type of transitions (1 - singles,
         etc.), and to the maximal energy (usually 4000cm^-1 is the range of interest)
-        :param mincon: contribution threshold, 0.1 by default
-        :param which: transitions to which states should be included, 1 for singles, 2 for SD, etc.
-        :param maxfreq: frequency threshold
-        :return: void
+
+        Parameters
+        ----------
+        mincon : float
+           contribution threshold, 0.1 by default
+        which : float
+           transitions to which states should be included, 1 for singles, 2 for SD, etc.
+        :maxfreq : float
+           frequency threshold
+
+        Returns
+        -------
+        void
         """
         if self.solved:
             print(Misc.fancy_box('Results of the VCI'))
@@ -486,7 +661,7 @@ class VCI(object):
                                 
     def print_states(self):
         """
-        Prints the vibrational states used in the VCI calculations
+        Prints the vibrational states used in the VCI calculations.
         """
         print('')
         print(Misc.fancy_box('VCI Space'))
@@ -502,11 +677,13 @@ class VCI(object):
         excitation state nmax. For combination states VCI[2] etc. 
         all the states where sum of exc. quanta is smaller than nmax 
         are included.
-        
-        @param nexc: Maximal number of modes excited simultaneously
-        @type nexc: Integer
-        @param smax: Maximal sum of excitation quanta
-        @type smax: Integer
+
+        Parameters
+        ----------        
+        nexc : int 
+            Maximal number of modes excited simultaneously
+        smax : int 
+            Maximal sum of excitation quanta
         """
         import itertools
 
@@ -527,17 +704,27 @@ class VCI(object):
         self.smax = smax
 
     def generate_states(self, maxexc=1):
+        """
+        generate states for VCI calculations.
+
+        Parameters
+        ----------
+        maxexc : int
+            Maximal sum of exiciations quanta.
+        """
         self.generate_states_nmax(maxexc, maxexc)
         self.nmax = maxexc
         self.smax = maxexc
 
+    # TODO: internal function???
     def filter_states(self, func):
+        """ restructures the states associated to a given function. """
         self.states = np.array(list(filter(func, self.states)))
+
 
     def filter_combinations(self):
         """
-        Filters out the combinations (transitions) that do not contribute due to the max potential dimensionality
-
+        Filters out the combinations (transitions) that do not contribute due to the max potential dimensionality.
         """
         if self.combinations:
             res = [c for c in self.combinations if sum([x != y for (x, y) in zip(c[0], c[1])]) < self.maxpot+1]
@@ -545,7 +732,7 @@ class VCI(object):
 
     def combgenerator(self):
         """
-        Generator returning combinations of states that contribute due to available potentials
+        Generator returning combinations of states that contribute due to available potentials.
         """
         nstates = len(self.states)
         for i in range(nstates):
@@ -554,24 +741,40 @@ class VCI(object):
             sdiff = np.count_nonzero(self.states[i:,:] - self.states[i,:], axis=1)
             for j in np.nonzero(sdiff < self.maxpot+1)[0] :
                  yield (self.states[i], self.states[j+i], i, j+i)
+
     
     def combgenerator_nofilter(self):
         """
-        Generates combinations of states without prescreening
+        Generates combinations of states without prescreening.
         """
         nstates = len(self.states)
         for i in range(nstates):
             for j in range(i, nstates):
                 yield (self.states[i], self.states[j], i, j)
 
+    #TODO: restructure this function with internal functions etc. - too many tasks are done at once.
+    # difficult to maintain 
     #@Misc.do_cprofile
     def calculate_transition_moments(self, *properties):
         """
-        Calculates VCI transition moments for given properties
+        Calculates VCI transition moments for given properties.
+  
+        dm1,dm2 = Vibrations.Surface.Dipole moments.
+        Example:
+            >>> vci.calculate_transition_moments([dm1],[dm2])
+
+        Parameters
+        ----------
+        properties : list
+            list of Surface.Dipole class. Several classes can be used at the same time.
+
+        Returns
+        -------
+        transitions : list
+           example: [[],array,array,] 
         """
         if not self.solved:
             raise Exception('Solve the VCI first')
-
         maxprop = len(properties)
         self.prop1 = None
         self.prop2 = None
@@ -713,6 +916,8 @@ class VCI(object):
             transitions[i]=totaltens
         return transitions
 
+    #TODO: restructure this function with internal functions etc. - too many tasks are done at once.
+    # difficult to maintain 
     #@Misc.do_cprofile
     def calculate_transition_matrix(self, *properties):
         r"""
@@ -720,7 +925,20 @@ class VCI(object):
         Properties: IR spectroscopy uses density matrices dm1 and/or dm2
         Calculations according to formula from SI from "Anharmonic Theoretical Vibrational Spectroscopy of Polypeptides"
         P_{0 -> J} = \sum_{ij} c_i^0 c_j^J * < \prod_k \phi_k^{0,n_k^0} | \hat{\boldsymbol{P}} | \prod_l \phi_l^{0,n_l^J} >
-        
+       
+        dm1,dm2 = Vibrations.Surface.Dipole moments.
+        Example:
+            >>> vci.calculate_transition_matrix([dm1],[dm2])
+
+        Parameters
+        ----------
+        properties : list
+            list of Surface.Dipole class. Several classes can be used at the same time. 
+
+        Returns
+        -------
+        transitions : list
+           example: [[],array,array,] 
         """
         if not self.solved:
             raise Exception('Solve the VCI first')
@@ -866,10 +1084,20 @@ class VCI(object):
         for n in range(tensors[0].prop[0]):
             transitions[:,:,n] = np.dot(self.vectors.T, np.dot(tmptransitions[:,:,n], self.vectors))
         return transitions 
-    
+
+
+   
     #@Misc.do_cprofile
     def calculate_IR(self, *dipolemoments):
+        """
+        calculates IR.  
+        Adds attributes to VCI class.
         
+        Parameters
+        ----------
+        dipolemoments : Vibrations.Surface.Dipole
+            list of Surface.Dipole class. Several classes can be used at the same time. 
+        """
         print(Misc.fancy_box('VCI IR Intensities'))
 
         self.dm1 = None
@@ -907,12 +1135,16 @@ class VCI(object):
             print('%7.1f %12.6f' % (self.energiesrcm[i] - self.energiesrcm[0], intens))
         
 
+    #TODO: restructure this function with internal functions etc. - too many tasks are done at once.
+    # difficult to maintain 
     def calculate_intensities(self, *dipolemoments):
         """
-        Calculates VCI intensities using the dipole moment surfaces
-
-        @param dipolemoments: dipole moment surfaces, so far only 1- and 2-mode DMS supported
-        @type dipolemoments: Surfaces.Dipole
+        Calculates VCI intensities using the dipole moment surfaces.
+        
+        Parameters
+        ----------
+        dipolemoments : Surfaces.Dipole
+            dipole moment surfaces, so far only 1- and 2-mode DMS supported
         """
 
         if not self.solved:
@@ -1020,12 +1252,11 @@ class VCI(object):
             self.intensities[i] = intens
             print('%7.1f %12.6f' % (self.energiesrcm[i] - self.energiesrcm[0], intens))
 
-
+    #TODO: pols? data type? - no unittest
     def calculate_raman(self, *pols):
         """
-        Calculates VCI Raman activities using the polarizability surfaces
+        Calculates VCI Raman activities using the polarizability surfaces.
         """
-
         if not self.solved:
             raise Exception('Solve the VCI first')
         self.pol1 = None
@@ -1109,6 +1340,8 @@ class VCI(object):
             self.intensities[i] = intens
             print('%7.1f %12.6f' % (self.energiesrcm[i] - self.energiesrcm[0], intens))
 
+    #TODO:  resonable test data?
+    # pollen,polvel,gtenvel,aten,lwl --> results from VibTools.PySNF
     #@do_cprofile
     def calculate_roa(self, pollen,polvel,gtenvel, aten, lwl):
         """
@@ -1217,7 +1450,8 @@ class VCI(object):
             self.intensities[i]=roa
 
 
-    def _v1_integral(self, mode, lstate, rstate):  # calculate integral of type < mode(lstate) | V1 | mode(rstate) >
+    def _v1_integral(self, mode, lstate, rstate):  
+        """internal function: calculate integral of type < mode(lstate) | V1 | mode(rstate) >"""
         ind = self.v1_indices.index(mode)
 
         try:
@@ -1242,10 +1476,15 @@ class VCI(object):
             return s
    
     def v1_integral(self,mode,lstate,rstate):
+        """
+        public function to call internal function: 
+        calculate integral of type < mode(lstate) | V1 | mode(rstate) >"
+        """
         return self._v1_integral(mode,lstate,rstate)
 
 
     def _v2_integral(self, mode1, mode2, lstate1, lstate2, rstate1, rstate2):
+        """internal function: calculate integral of type < mode(lstate_i) | V_i | mode(rstate_i) >"""
         s = 0.0
 
         if (mode1, mode2) in self.v2_indices or (mode2, mode1) in self.v2_indices:
@@ -1305,11 +1544,16 @@ class VCI(object):
 
 
     def v2_integral(self, mode1, mode2, lstate1, lstate2, rstate1, rstate2):
+        """
+        public function to call internal function: 
+        calculate v2 integral
+        """
         return self._v2_integral(mode1, mode2, lstate1, lstate2, rstate1, rstate2)
     
     #@do_cprofile
     def _v3_integral(self, mode1, mode2, mode3, lstate1, lstate2, lstate3,
                      rstate1, rstate2, rstate3):
+        """internal function: calculate integral of type < mode(lstate_i) | V_i | mode(rstate_i) >"""
         s = 0.0
         modes = list((mode1,mode2,mode3))
         lstates = list((lstate1,lstate2,lstate3))
@@ -1364,7 +1608,7 @@ class VCI(object):
 
     def _v4_integral(self, mode1, mode2, mode3, mode4, lstate1, lstate2, lstate3,
                      lstate4, rstate1, rstate2, rstate3, rstate4):
-
+        """internal function: calculate integral of type < mode(lstate) | V1 | mode(rstate) >"""
         modes = list((mode1,mode2,mode3,mode4))
         lstates = list((lstate1,lstate2,lstate3,lstate4))
         rstates = list((rstate1,rstate2,rstate3,rstate4))
@@ -1425,13 +1669,14 @@ class VCI(object):
             return s
 
 
-    def _ovrlp_integral(self, mode, lstate, rstate):    # overlap integral < mode(lstates) | mode(rstate) >
-
+    def _ovrlp_integral(self, mode, lstate, rstate):
+        """ internal function: overlap integral < mode(lstates) | mode(rstate) > """
         s = (self.dx[mode] * self.wfns[mode, lstate] * self.wfns[mode, rstate] * 1.0).sum()
 
         return s
 
-    def _kinetic_integral(self, mode, lstate, rstate):  # kinetic energy integral < mode(lstate) | T | mode(rstate) >
+    def _kinetic_integral(self, mode, lstate, rstate):
+        """internal function: kinetic energy integral < mode(lstate) | T | mode(rstate) > """
 
         t = 0.0
         return np.einsum('i,j,ij', self.coefficients[mode, lstate],
@@ -1442,7 +1687,8 @@ class VCI(object):
 
         return t
 
-    def _dgs_kinetic_integral(self, mode, i, j):  # integral between two DGs of the same modal centered at qi and qj
+    def _dgs_kinetic_integral(self, mode, i, j):
+        """integral between two DGs of the same modal centered at qi and qj"""
 
         a = self.a[mode]
         qi = self.grids[mode, i]
@@ -1453,8 +1699,8 @@ class VCI(object):
 
         return ovrlp * (a*a/(bij**2.0)) * (1.0-2.0*cij)
 
-    def _dgs_ovrlp_integral(self, mode, i, j):  # overlap integral between two DGs of the same modal
-
+    def _dgs_ovrlp_integral(self, mode, i, j):
+        """overlap integral between two DGs of the same modal"""
         a = self.a[mode]
         qi = self.grids[mode, i]
         qj = self.grids[mode, j]
@@ -1464,12 +1710,12 @@ class VCI(object):
         return np.sqrt(np.pi)*(aij/bij)*np.exp(-cij)
 
     @staticmethod
-    def _chi(q, a, qi):  # definition of a basis set function
-
+    def _chi(q, a, qi):
+        """definition of a basis set function"""
         return ((2.0*a)/np.pi)**0.25*np.exp(-a*(q-qi)**2.0)
 
-    def _calculate_coeff(self):  # calculates basis set coefficients, using grid and wave function values
-
+    def _calculate_coeff(self):  
+        """calculates basis set coefficients, using grid and wave function values"""
         for i in range(self.nmodes):  # for each mode
 
             for j in range(self.ngrid):  # for each state
@@ -1483,7 +1729,7 @@ class VCI(object):
                 self.coefficients[i, j] = np.copy(c)
 
     def _calculate_kinetic_integrals(self):
-
+        """ calculates kinetic integrals using _dgs_kinetic_integral"""
         for i in range(self.nmodes):  # for each mode
 
             for j in range(self.ngrid):
@@ -1492,7 +1738,7 @@ class VCI(object):
                     self.tij[i, j, k] = self._dgs_kinetic_integral(i, j, k)
 
     def _calculate_ovrlp_integrals(self):
-
+        """calculaters overlap integrals using _dgs_ovrlp_integral. """
         for i in range(self.nmodes):  # for each mode
 
             for j in range(self.ngrid):

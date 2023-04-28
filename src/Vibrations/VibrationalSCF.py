@@ -35,14 +35,35 @@ class VSCF(object):
     """
     The parent class for VSCF.
     G{classtree}
+    The class must be initialized with grids and potentials
+
+    Parameters
+    ----------
+    potentials : Vibrations.Potential Object
+       The potentials.
+    nmodes : int
+       number of modes.
+    ngrid : int
+       number of grid points.
+    nstates : int
+       number of states.
+    wavefunction : object
+       Vibrations.Wavefunctions.Wavefunction object.
+    eigv : ndarray
+       matrix of eigenvectors
+    grids : object
+       Vibrations.Grid object
+    dx : array
+       integration measure.
+    solve : bool
+       check of VSCF was already solved.
+    maxpot : int
+       array size of potential array.
     """
 
     def __init__(self, *potentials):  # always initialized with (some) potentials, grids are stored in the potentials
         """
         The class must be initialized with grids and potentials
-
-        @param potentials: The potentials
-        @type potentials: Vibrations/Potential
         """
         if len(potentials) > 0:
             self.nmodes = potentials[0].grids.nmodes
@@ -61,6 +82,22 @@ class VSCF(object):
     def _collocation(self, grid, potential):
         """
         The collocation method, see Chem. Phys. Lett., 153(1988), 98. for details.
+
+        Parameters
+        ----------
+        grid : Vibrations.Grid Object
+            Grid.
+        potential : ndarray
+           Array from the Attribute data of the Vibrations.Potential object.
+           Example: 
+           >>> vscf._collaction(grid,v1.data[0])
+ 
+        Returns
+        -------
+        eigval : array
+        Eigenvalue of the hamiltonian.
+        phi : ndarray
+        phi = (eigenvector of hamiltonian) times wavefunctions - normalized.
         """
         # some basis set parameters
         c = 0.7
@@ -127,9 +164,21 @@ class VSCF(object):
         
     def _norm(self, phi, dx):
         """
-        Norms the wavefunction
-        """
+        Norms the wavefunction.
 
+        Parameters
+        ----------
+        phi : ndarray
+        phi = (eigenvector of hamiltonian) times wavefunctions. - Normalized
+        dx : array
+           Integration measure dx.
+
+        Returns
+        -------
+        phi : ndarray
+        normalized phi = (eigenvector of hamiltonian) times wavefunctions.
+        """
+ 
         wnorm = 0.0
 
         for i in range(self.ngrid):
@@ -145,26 +194,41 @@ class VSCF(object):
         #    raise Exception('Something went wrong with wave function normalization')
 
         return normphi
-    
+   
+ 
     def get_wave_functions(self):
         """
         Returns the wave functions as numpy.array
+        
+        Returns
+        -------
+        wavefunction.wfns : ndarray
+            wavefunctions of the Vibrations.Wavefunction object.
         """
 
         return self.wavefunction.wfns
 
+
     def get_wave_function_object(self):
         """
         Returns the wave functions as Vibrations/Wavefunction object
+
+        Returns
+        -------
+        wavefunction : Vibrations.Wavefunction object
+            Wavefunction object.
         """
         return self.wavefunction
 
+
     def save_wave_functions(self, fname='wavefunctions'):
         """
-        Saves the wave functions to a NumPy formatted binary file *.npy
+        Saves the wave functions to a NumPy formatted binary file `*.npy`.
 
-        @param fname: File name, without extension, time stamp is added
-        @type fname: String
+        Parameters
+        ----------
+        fname : str 
+            File name without extension and a time stamp is added.
         """
         from time import strftime
         fname = fname + '_' + strftime('%Y%m%d%H%M') + '.npy'
@@ -173,11 +237,16 @@ class VSCF(object):
 
 class VSCFDiag(VSCF):
     """
-    The class for the diagonal VSCF -- using only 1-mode potentials
+    The class for the diagonal VSCF -- using only 1-mode potentials.
+
+    VSCF - Attributes.
     """
 
     def __init__(self,*potentials):
-
+        """
+        VSCFDiag constructor.
+        Further details in class description.
+        """
         
         if len(potentials) == 0:
             raise Exception('No potential given')
@@ -192,7 +261,7 @@ class VSCFDiag(VSCF):
 
     def solve(self):
         """
-        Solves the diagonal VSCF
+        Solves the diagonal VSCF.
         """
         if self.solved:
             print('Already solved, nothing to do. See results with print_results() method')
@@ -212,7 +281,7 @@ class VSCFDiag(VSCF):
 
     def print_results(self):
         """
-        Prints the results
+        Prints the results.
         """
         if self.solved:
 
@@ -228,7 +297,7 @@ class VSCFDiag(VSCF):
 
     def print_eigenvalues(self):
         """
-        Prints the eigenvalues
+        Prints the eigenvalues.
         """
         for i in range(self.nmodes):
             print('Mode %i' % i)
@@ -238,10 +307,12 @@ class VSCFDiag(VSCF):
 
     def save_wave_functions(self, fname='1D_wavefunctions'):
         """
-        Saves the wave function to a NumPy formatted binary file *.npy
+        Saves the wave function to a NumPy formatted binary file `*.npy`.
 
-        @param fname: File name, without extension, time stamp added
-        @type fname: String
+        Parameters
+        ----------
+        fname : str
+           File name, without extension, time stamp added.
         """
         from time import strftime
         fname = fname + '_' + strftime('%Y%m%d%H%M') + '.npy'
@@ -250,10 +321,16 @@ class VSCFDiag(VSCF):
 
 class VSCF2D(VSCF):
     """
-    The class for the 2-dimensional VSCF -- containing the mean-field potential for modes coupling
+    The class for the 2-dimensional VSCF 
+    -- containing the mean-field potential for modes coupling.
+
+    VSCF - Attributes.
     """
     def __init__(self, *potentials):
-
+        """
+        VSCF2D constructor.
+        Further details in class description.
+        """
 
         if len(potentials) == 0:
             raise Exception('No potentials given')
@@ -286,8 +363,10 @@ class VSCF2D(VSCF):
         """
         Calculates VSCF intensities with dipole moment surfaces
 
-        @param dipolemoments: dipole moment surfaces
-        @type dipolemoments: numpy.array
+        Parameters
+        ----------
+        dipolemoments : ndarray
+           dipole moment surfaces(object).
         """
 
 
@@ -396,19 +475,22 @@ class VSCF2D(VSCF):
 
     def get_groundstate_wfn(self):
         """
-        Returns the ground state wave function, which can be used for VCI calculations
+        Returns the ground state wave function, which can be used for VCI calculations.
         """
         if self.states[0] == [0]*self.nmodes and self.solved:
             return self.vscf_wavefunctions[0]
         else:
             raise Exception('Ground state not solved')
 
+#TODO: vscf_wfns???
     def save_wave_functions(self, fname='2D_wavefunctions'):
         """
-        Saves the wave functions to a NumPy formatted binary file *.npy
+        Saves the wave functions to a NumPy formatted binary file `*.npy`.
 
-        @param fname: File name
-        @type fname: String
+        Parameters
+        ----------
+        fname : Str 
+           File name
         """
         from time import strftime
         fname = fname + '_' + strftime('%Y%m%d%H%M') + '.npy'
@@ -418,7 +500,7 @@ class VSCF2D(VSCF):
 
     def solve_singles(self):
         """
-        Solves the VSCF for the ground state and all singly-excited states
+        Solves the VSCF for the ground state and all singly-excited states.
         """
         gs = [0]*self.nmodes
         states = [gs]
@@ -432,10 +514,12 @@ class VSCF2D(VSCF):
 
     def solve(self, *states):
         """
-        Solves the VSCF for given states
+        Solves the VSCF for given states.
 
-        @param states: considered states, the first given is assumed to be the ground state
-        @type states: List of Integer
+        Parameters
+        ----------
+        states : List of Lists of Ints
+           considered states, the first given is assumed to be the ground state.
         """
         if len(states) == 0:
             states = [[0]*self.nmodes]  # if no states defined, only gs considered
@@ -466,7 +550,7 @@ class VSCF2D(VSCF):
 
     def print_results(self):
         """
-        Prints the results
+        Prints the results.
         """
         if self.solved:
             print('')
@@ -485,8 +569,7 @@ class VSCF2D(VSCF):
             print('VSCF not solved yet. Use solve() method first')
 
     def _solve_state(self, state):
-
-        # solving 2D VSCF for a given state
+        """internal function - solving 2D VSCF for a given state"""
         maxiter = 100
         eps = 1e-8
         etot = 0.0
@@ -538,7 +621,7 @@ class VSCF2D(VSCF):
         return etot / Misc.cm_in_au, actualwfns.copy(), eigenvalues
 
     def _scfcorr(self,state,wfns):
-
+        """internal function - calculate scfcorr."""
         scfcorr = 0.0
         for i in range(self.nmodes):
             s1 = (self.dx[i]*wfns[i,state[i]]**2)
@@ -551,13 +634,11 @@ class VSCF2D(VSCF):
                 else:
                     s = np.einsum('i,j,ij',s1,s2,v2)
                     scfcorr += s
-
-
-
         return scfcorr
 
-    def _veffective(self, mode, state, wfns):
 
+    def _veffective(self, mode, state, wfns):
+        """internal function - calculates veff"""
         veff = np.zeros(self.ngrid)
        
         for j in range(self.nmodes):
@@ -587,12 +668,16 @@ class VSCF2D(VSCF):
 class VSCF3D(VSCF2D):
 
     def __init__(self, *potentials):
+        """
+        VSCF3D constructor.
+        Further details in class description.
+        """
         VSCF2D.__init__(self,*potentials)
         import copy
         self.v3 = copy.copy(potentials[2])
 
     def _scfcorr(self,state,wfns):
-
+        """internal function - calculates scfcorr."""
         scfcorr = 0.0
         for i in range(self.nmodes):
             s1 = (self.dx[i]*wfns[i,state[i]]**2)
@@ -618,7 +703,7 @@ class VSCF3D(VSCF2D):
         return scfcorr
 
     def _veffective(self, mode, state, wfns):
-
+        """internal function - calculates veff."""
         veff = np.zeros(self.ngrid)
         for j in range(self.nmodes):
             sj = (self.dx[j]*wfns[j,state[j]]**2)
@@ -646,12 +731,16 @@ class VSCF3D(VSCF2D):
 class VSCF4D(VSCF3D):
     
     def __init__(self, *potentials):
+        """
+        VSCF4D constructor.
+        Further details in class description.
+        """
         VSCF3D.__init__(self, *potentials)
         import copy
         self.v4 = copy.copy(potentials[3])
 
     def _scfcorr(self,state,wfns):
-
+        """internal function - calcualtes scfcorr"""
         scfcorr = 0.0
         for i in range(self.nmodes):
             s1 = (self.dx[i]*wfns[i,state[i]]**2)
@@ -689,7 +778,7 @@ class VSCF4D(VSCF3D):
         return scfcorr
 
     def _veffective(self, mode, state, wfns):
-
+        """internal function - calculates veff."""
         veff = np.zeros(self.ngrid)
         
 
