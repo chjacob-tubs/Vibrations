@@ -574,15 +574,11 @@ def test_print_results(vciCalcIR):
 def test_print_short_state(vciCalcIR):
     # Arrange
     vci = vciCalcIR
+    ref = '0: '
     # Act
-    try:
-        vci.print_results()
-        test = True
-    except:
-        test = False
+    s = vci.print_short_state(vci.states[0])
     # Assert
-    assert test == True
-
+    assert s == ref
 
 
 
