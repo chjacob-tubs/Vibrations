@@ -2,3 +2,5 @@
 *.log
 fints.so
 fints.so.dSYM/
+
+*.html
