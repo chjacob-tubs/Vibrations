@@ -126,11 +126,11 @@ test-vibrations-Pawel:
         - cd ../
 
  
-#test-sphinx:
-#    tags:
-#        - nodes
-#    stage: test
-#    script:
-#        - cd doc/
-#        - sphinx-build . _build/
-#        - cd ../
+test-sphinx:
+    tags:
+        - nodes
+    stage: test
+    script:
+        - cd doc/
+        - sphinx-build . _build/
+        - cd ../
