@@ -55,14 +55,7 @@ and run the tests in `tests` directory.
 Documentation
 -------------
 
-In order to compile the documentation [epydoc](http://epydoc.sourceforge.net) is
-needed. In the main directory run:
-
-`epydoc *.py`
-
-This generates the documentation in HTML format. For other formats see epydoc's
-documentation.*
-
+Documentation can be built using Sphinx in the `doc` directory.
 
 
 

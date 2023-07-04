@@ -25,10 +25,11 @@ The import from the package produces an output:
      
      ***************************************************************************
      *
-     *  Vibrations v0.9
+     *  Vibrations v0.96
      *
      *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-     *  Copyright (C) 2014-2018 by Pawel T. Panek, and Christoph R. Jacob.
+     *  Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
+     *  Michael Welzel, and Christoph R. Jacob.
      *
      *     Vibrations is free software: you can redistribute it and/or modify
      *     it under the terms of the GNU General Public License as published by

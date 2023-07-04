@@ -1,7 +1,7 @@
 # This file is a part of 
 # Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-# Copyright (C) 2014-2022 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
-# and Christoph R. Jacob.
+# Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
+# Michael Welzel, and Christoph R. Jacob.
 #
 #    Vibrations is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by

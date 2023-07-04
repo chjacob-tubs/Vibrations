@@ -1,7 +1,7 @@
 # This file is a part of 
 # Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-# Copyright (C) 2014-2022 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
-# and Christoph R. Jacob.
+# Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
+# Michael Welzel, and Christoph R. Jacob.
 #
 #    Vibrations is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -65,10 +65,11 @@ from .VibrationalCI import *
 print()
 print(' '+75*'*')
 print(' *')
-print(' *  Vibrations v0.9')
+print(' *  Vibrations v0.96')
 print(' *')                        
 print(' *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy') 
-print(' *  Copyright (C) 2014-2018 by Pawel T. Panek, and Christoph R. Jacob.')
+print(' *  Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,')
+print(' *  Michael Welzel, and Christoph R. Jacob.')
 print(' *')
 print(' *     Vibrations is free software: you can redistribute it and/or modify')
 print(' *     it under the terms of the GNU General Public License as published by')
