@@ -3,4 +3,10 @@
 fints.so
 fints.so.dSYM/
 
+# Doc
 *.html
+doc/_build/
+doc/Build/
+ doc/build/
+
+.DS_Store
