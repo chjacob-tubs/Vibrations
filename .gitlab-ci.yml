@@ -2,11 +2,15 @@ variables:
   SCHEDULER_PARAMETERS: "-n 1 -p nitrogen"
   USER: legit
   VIBRA_HOME: $CI_BUILDS_DIR/$CI_PROJECT_PATH
+  GIT_SUBMODULE_STRATEGY: recursive
+  #GIT_SUBMODULE_FORCE_HTTPS: "true"
+  #GIT_SUBMODULE_PATHS: src/_VibTools
 
 
 stages:
     - build
     - test
+
 
 before_script:
         - hostname
@@ -14,31 +18,37 @@ before_script:
         - . /usr/share/modules/init/bash
         - . /usr/share/modules/init/setup 
         - export PYTHONPATH=$PYTHONPATH:$VIBRA_HOME/src
+        - export PYTHONPATH=$PYTHONPATH:$VIBRA_HOME/src/_VibTools/src/
+        - git submodule update --recursive
         - module load python/anaconda3-2021.11
         - source activate base
         - conda init bash
-        - conda activate ci_vibrations
         - module load pyadf/master-20220201
         - module list 
         - pip list
         
         
-check-requirements:
+build-environment:
     tags:
         - nodes
     stage: build
     script:
-        - hostname
-        - module load module_include_dir
-        - . /usr/share/modules/init/bash
-        - . /usr/share/modules/init/setup 
-        - export PYTHONPATH=$PYTHONPATH:$VIBRA_HOME/src
-        - module load python/anaconda3-2021.11
-        - source activate base
-        - conda activate ci_vibrations
-        - conda env list
+        - cd requirements/
+        - conda env create -f environment_human_readable.yml --force # create conda env from human readable requirements
+        - cd ../
+        - conda activate NewVib #VT_CI: maschine readable VibTools conda CI-environment
+        - conda env list # Show some environment details for debugging
         - conda list
-        - module load pyadf/master-20220201
+        - conda list -n NewVib python
+        - conda list -n NewVib matplotlib
+        - conda list -n NewVib numpy
+        - conda list -n NewVib scipy
+        - conda list -n NewVib openbabel
+        - conda list -n NewVib pytest
+#        - conda list -n NewVib sphinx
+#        - conda list -n NewVib sphinx_rtd_theme
+
+
 
 
 unittest-Grids-Pawel:
@@ -46,6 +56,7 @@ unittest-Grids-Pawel:
         - nodes
     stage: test
     script:
+        - conda activate NewVib
         - cd unittests/
         - pytest -v test_Grids_unittest.py
         - cd ../
@@ -55,6 +66,7 @@ unittest-Surface-Pawel:
         - nodes
     stage: test
     script:
+        - conda activate NewVib
         - cd unittests/
         - pytest -v test_Surfaces_unittest.py
         - cd ../
@@ -64,6 +76,7 @@ unittest-Grids:
         - nodes
     stage: test
     script:
+        - conda activate NewVib
         - cd unittests/
         - pytest -v test_Grids.py
         - cd ../
@@ -73,6 +86,7 @@ unittest-Surface:
         - nodes
     stage: test
     script:
+        - conda activate NewVib
         - cd unittests/
         - pytest -v test_Surface.py
         - cd ../
@@ -83,6 +97,7 @@ unittest-Wavefunctions:
         - nodes
     stage: test
     script:
+        - conda activate NewVib
         - cd unittests/
         - pytest -v test_Wavefunction.py
         - cd ../
@@ -92,6 +107,7 @@ unittest-VSCF:
         - nodes
     stage: test
     script:
+        - conda activate NewVib
         - cd unittests/
         - pytest -v test_VSCF.py
         - cd ../
@@ -101,6 +117,7 @@ unittest-VCI:
         - nodes
     stage: test
     script:
+        - conda activate NewVib
         - cd unittests/
         - pytest -v test_VCI.py
         - cd ../
@@ -110,6 +127,7 @@ unittest-Misc:
         - nodes
     stage: test
     script:
+        - conda activate NewVib
         - cd unittests/
         - pytest -v test_Misc.py
         - cd ../
@@ -121,6 +139,7 @@ test-vibrations-Pawel:
         - nodes
     stage: test
     script:
+        - conda activate NewVib
         - cd unittests/
         - pytest -v test_Surfaces_unittest.py
         - cd ../
@@ -131,6 +150,9 @@ test-sphinx:
         - nodes
     stage: test
     script:
+        - conda activate VT_CI
+        - conda list -n VT_CI sphinx
+        - conda list -n VT_CI sphinx_rtd_theme
         - cd doc/
         - sphinx-build . _build/
         - cd ../
