@@ -22,7 +22,7 @@ copyright = '2022, Pawel T. Panek, Christoph R. Jacob and Michael O. Welzel'
 author = 'Pawel T. Panek, Christoph R. Jacob and Michael O. Welzel'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+release = '1.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -33,11 +33,11 @@ release = '0.1'
 extensions = [
 'sphinx.ext.autodoc',
 'sphinx.ext.napoleon',
-'sphinx.ext.coverage'
+#'sphinx.ext.coverage'
 ]
-
+autodoc_member_order = 'bysource'
 # Add any paths that contain templates here, relative to this directory.
-#templates_path = ['_templates']
+templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -55,8 +55,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+html_static_path = []#['_static']
 
-import sphinx_theme
-html_theme = 'stanford_theme'
-html_theme_path = [sphinx_theme.get_html_theme_path('stanford-theme')]
+import sphinx_rtd_theme
+html_theme = 'sphinx_rtd_theme'
+#html_theme_path = [sphinx_theme.get_html_theme_path('stanford-theme')]

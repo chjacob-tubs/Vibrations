@@ -423,14 +423,14 @@ for test in tests:
 
 logfile.finish()
 
-print
-print '-'*100
-print
-print "TESTSUITE PROCESSED"
-print
-print "Total tests:   {0:4}".format(total_tests)
-print "Passed tests:  {0:4} ({1:7.2%})".format(passed_tests,  float(passed_tests)  / float(total_tests))
-print "Failed tests:  {0:4} ({1:7.2%})".format(failed_tests,  float(failed_tests)  / float(total_tests))
-print "Skipped tests: {0:4} ({1:7.2%})".format(skipped_tests, float(skipped_tests) / float(total_tests))
-print
+print()
+print('-'*100)
+print()
+print("TESTSUITE PROCESSED")
+print()
+print("Total tests:   {0:4}".format(total_tests))
+print("Passed tests:  {0:4} ({1:7.2%})".format(passed_tests, float(passed_tests) / float(total_tests)))
+print("Failed tests:  {0:4} ({1:7.2%})".format(failed_tests, float(failed_tests) / float(total_tests)))
+print("Skipped tests: {0:4} ({1:7.2%})".format(skipped_tests, float(skipped_tests) / float(total_tests)))
+print()
 logfile.present()

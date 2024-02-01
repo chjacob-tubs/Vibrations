@@ -8,151 +8,239 @@ variables:
 
 
 stages:
+    - update
     - build
-    - test
-
+    - unittest
+    - autodoc
+    - deploy
+    - cleanup
 
 before_script:
         - hostname
-        - module load module_include_dir
-        - . /usr/share/modules/init/bash
-        - . /usr/share/modules/init/setup 
-        - export PYTHONPATH=$PYTHONPATH:$VIBRA_HOME/src
-        - export PYTHONPATH=$PYTHONPATH:$VIBRA_HOME/src/_VibTools/src/
-        - git submodule update --recursive
-        - module load python/anaconda3-2021.11
-        - source activate base
-        - conda init bash
-        - module load pyadf/master-20220201
-        - module list 
-        - pip list
-        
-        
-build-environment:
+
+######################
+#### IMAGE BUILDS #########################################################
+######################
+
+update-submodule:
     tags:
-        - nodes
+       - local
+       - shell
     stage: build
     script:
-        - cd requirements/
-        - conda env create -f environment_human_readable.yml --force # create conda env from human readable requirements
-        - cd ../
-        - conda activate NewVib #VT_CI: maschine readable VibTools conda CI-environment
-        - conda env list # Show some environment details for debugging
-        - conda list
-        - conda list -n NewVib python
-        - conda list -n NewVib matplotlib
-        - conda list -n NewVib numpy
-        - conda list -n NewVib scipy
-        - conda list -n NewVib openbabel
-        - conda list -n NewVib pytest
-#        - conda list -n NewVib sphinx
-#        - conda list -n NewVib sphinx_rtd_theme
+       - git submodule update --remote
 
-
-
-
-unittest-Grids-Pawel:
+build-docker-test-image:
     tags:
-        - nodes
-    stage: test
+       - local
+       - shell
+    stage: build
+    needs: [update-submodule]
     script:
-        - conda activate NewVib
-        - cd unittests/
-        - pytest -v test_Grids_unittest.py
-        - cd ../
+       - git submodule update --remote
+       - docker build --no-cache -t vib_unittest -f Dockerfile.unittests . 
+
+
+build-docker-autodoc-image:
+    tags:
+       - local
+       - shell
+    stage: build
+    needs: [update-submodule]
+    script:
+       - docker build --no-cache -t vib_sphinxdoc -f Dockerfile.sphinx_doc .
+
+
+###################
+#### UNITTESTS ###########################################################
+###################
+
+##### VibTools #####
+unittests-VibTools:
+    tags:
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image]
+    script:
+        - docker run --workdir /app/src/_VibTools/tests vib_unittest pytest -v
+
+
+#### Vibrations #####
+
+unittest-Grid-Pawel:
+    tags:
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image,unittests-VibTools]
+    script:
+        - docker run --workdir /app/unittests vib_unittest pytest -v test_Grids_unittest.py
+
 
 unittest-Surface-Pawel:
     tags:
-        - nodes
-    stage: test
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image,unittests-VibTools]
     script:
-        - conda activate NewVib
-        - cd unittests/
-        - pytest -v test_Surfaces_unittest.py
-        - cd ../
+        - docker run --workdir /app/unittests vib_unittest pytest -v test_Surfaces_unittest.py
+
 
 unittest-Grids:
     tags:
-        - nodes
-    stage: test
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image,unittests-VibTools]
     script:
-        - conda activate NewVib
-        - cd unittests/
-        - pytest -v test_Grids.py
-        - cd ../
+        - docker run --workdir /app/unittests vib_unittest pytest -v test_Grids.py
+
 
 unittest-Surface:
     tags:
-        - nodes
-    stage: test
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image,unittests-VibTools]
     script:
-        - conda activate NewVib
-        - cd unittests/
-        - pytest -v test_Surface.py
-        - cd ../
+        - docker run --workdir /app/unittests vib_unittest pytest -v test_Surface.py
 
 
 unittest-Wavefunctions:
     tags:
-        - nodes
-    stage: test
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image]
     script:
-        - conda activate NewVib
-        - cd unittests/
-        - pytest -v test_Wavefunction.py
-        - cd ../
+        - docker run --workdir /app/unittests vib_unittest pytest -v test_Wavefunction.py
+
 
 unittest-VSCF:
     tags:
-        - nodes
-    stage: test
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image]
     script:
-        - conda activate NewVib
-        - cd unittests/
-        - pytest -v test_VSCF.py
-        - cd ../
+        - docker run --workdir /app/unittests vib_unittest pytest -v test_VSCF.py
+
 
 unittest-VCI:
     tags:
-        - nodes
-    stage: test
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image,unittests-VibTools]
     script:
-        - conda activate NewVib
-        - cd unittests/
-        - pytest -v test_VCI.py
-        - cd ../
+        - docker run --workdir /app/unittests vib_unittest pytest -v test_VCI.py
+
 
 unittest-Misc:
     tags:
-        - nodes
-    stage: test
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image]
     script:
-        - conda activate NewVib
-        - cd unittests/
-        - pytest -v test_Misc.py
-        - cd ../
+        - docker run --workdir /app/unittests vib_unittest pytest -v test_Misc.py
 
+#######################
+#### INTEGRATIONTEST ###########################################################
+#######################
 
-
-test-vibrations-Pawel:
+integrationtest-Vibrations:
     tags:
-        - nodes
-    stage: test
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image]
     script:
-        - conda activate NewVib
-        - cd unittests/
-        - pytest -v test_Surfaces_unittest.py
-        - cd ../
+        - docker run --workdir /app/tests vib_unittest python tests.py
 
- 
-test-sphinx:
+#######################
+#### DOCUMENTATION #############################################################
+#######################
+
+build-sphinx-doc:
     tags:
-        - nodes
-    stage: test
+        - local
+        - shell
+    stage: autodoc
+    needs: [build-docker-autodoc-image ]
     script:
-        - conda activate VT_CI
-        - conda list -n VT_CI sphinx
-        - conda list -n VT_CI sphinx_rtd_theme
-        - cd doc/
-        - sphinx-build . _build/
-        - cd ../
+        - docker run --workdir /app/doc --name sphinxdoc_vib_container vib_sphinxdoc sphinx-build . build
+
+
+pages:
+    tags:
+        - local
+        - shell
+    stage: deploy
+    needs: [build-sphinx-doc]
+    script:
+        - docker cp sphinxdoc_vib_container:/app/doc/build/. public/
+    artifacts:
+        paths:
+         - public
+
+
+################################################
+#alternative installation/environment via Conda#
+################################################
+
+build-docker-conda-test-image:
+    tags:
+       - local
+       - shell
+    stage: build
+    needs: [update-submodule]
+    script:
+       - docker build --no-cache -t vib_condock -f Dockerfile.Conda .
+
+
+unittest-Conda-Env-all_tests:
+    tags:
+        - local
+        - shell
+    stage: unittest
+    needs:
+        - build-docker-conda-test-image
+    script:
+        - docker run --workdir /app/unittests vib_condock conda run -n VibrationsCondaENV pytest -v
+
+
+
+##################
+#### CLEAN UP ##################################################################
+##################
+
+cleanup-docker:
+    stage: cleanup
+    tags: [local, shell]
+    needs:
+        - build-docker-test-image
+        - unittest-Grid-Pawel
+        - unittest-Surface-Pawel
+        - unittest-Grids
+        - unittest-Surface
+        - unittest-Wavefunctions
+        - unittest-VSCF
+        - unittest-VCI
+        - unittest-Misc
+        - build-docker-autodoc-image
+        - build-sphinx-doc
+        - pages
+        - build-docker-conda-test-image
+        - unittest-Conda-Env-all_tests
+        - unittests-VibTools
+        - integrationtest-Vibrations
+    script:
+        - docker rmi -f vib_unittest:latest
+        - docker rmi -f vib_sphinxdoc:latest
+        - docker rmi -f vib_condock
+        - docker rm $(docker ps --filter status=exited -q)
+        - docker system df
+    when: always 
