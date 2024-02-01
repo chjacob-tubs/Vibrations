@@ -52,6 +52,8 @@ and run the tests in `tests` directory.
     cd tests
     pyton tests.py
 
+Or just clone this repository and run `pip install .` in the Vibrations dictionary.
+
 Documentation
 -------------
 
