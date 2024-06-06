@@ -1,4 +1,4 @@
-name: VibrationsCondaENV
+name: VibENV
 channels:
   - conda-forge
   - defaults

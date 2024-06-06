@@ -2,14 +2,14 @@ import VibTools
 import Vibrations as vib
 import numpy as np
 
-print vib.Misc.fancy_box('Example 2:')
-print 'Localization of modes in subsets, harmonic L-VCI-S'
-print 'provides initial normal modes\' frequencies and intensities'
-print 
-print ' See Section VI A of  J. Phys. Chem. 144 (2016) 164111'
-print ' for a description of a similar example.'
-print
-print
+print(vib.Misc.fancy_box('Example 2:'))
+print('Localization of modes in subsets, harmonic L-VCI-S')
+print('provides initial normal modes\' frequencies and intensities')
+print()
+print(' See Section VI A of  J. Phys. Chem. 144 (2016) 164111')
+print(' for a description of a similar example.')
+print()
+print()
 # Functions below are used to localize modes in subsets
 
 def localize_subset(modes,subset):
@@ -39,7 +39,7 @@ def localize_subsets(modes,subsets):
         total += n
 
 
-    print 'Modes localized: %i, modes in total: %i' %(total, modes.nmodes)
+    print('Modes localized: %i, modes in total: %i' %(total, modes.nmodes))
 
     if total > modes.nmodes:
         raise Exception('Number of modes in the subsets is larger than the total number of modes')
@@ -116,18 +116,16 @@ VCI.calculate_IR(dmh) # calculate intensities
 irints = res.get_ir_intensity(modes=localmodes)
 nirints = res.get_ir_intensity(modes=res.modes)
 
-print 
-print
-print vib.Misc.fancy_box('Results')
-print '%16s %19s %16s' %('Normal','Localized','L-VCI-S')
-print '%2s %10s %6s %10s %6s %10s %6s' %('No','Freq.','Int','Freq.','Int','Freq.','Int')
-print '-'*56
+print()
+print()
+print(vib.Misc.fancy_box('Results'))
+print('%16s %19s %16s' %('Normal','Localized','L-VCI-S'))
+print('%2s %10s %6s %10s %6s %10s %6s' %('No','Freq.','Int','Freq.','Int','Freq.','Int'))
+print('-'*56)
 for i,f in enumerate(localmodes.freqs):
-    print '%2i %10.1f %6.1f %10.1f %6.1f %10.1f %6.1f' %(i+1,res.modes.freqs[i],nirints[i],f,irints[i],VCI.energiesrcm[i+1]-VCI.energiesrcm[0],VCI.intensities[i+1])
+    print('%2i %10.1f %6.1f %10.1f %6.1f %10.1f %6.1f' %(i+1,res.modes.freqs[i],nirints[i],f,irints[i],VCI.energiesrcm[i+1]-VCI.energiesrcm[0],VCI.intensities[i+1]))
 
 
-print 
-print 
-print vib.Misc.fancy_box('http://www.christophjacob.eu')
-
-
+print()
+print()
+print(vib.Misc.fancy_box('http://www.christophjacob.eu'))

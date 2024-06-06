@@ -1,10 +1,10 @@
 import Vibrations as vib
 
-print vib.Misc.fancy_box('Example 1:')
-print 'Use of existing grids and potentials.'
-print 
-print '  Data taken from: http://pes-database.theochem.uni-stuttgart.de/surfaces/index.php'
-print '  By Guntram Rauhut and co-workers'
+print(vib.Misc.fancy_box('Example 1:'))
+print('Use of existing grids and potentials.')
+print()
+print('  Data taken from: http://pes-database.theochem.uni-stuttgart.de/surfaces/index.php')
+print('  By Guntram Rauhut and co-workers')
 
 # Create an empty grid
 grid = vib.Grid()
@@ -37,6 +37,6 @@ VCI.generate_states_nmax(1,1)
 # Solve the VCI
 VCI.solve()
 
-print 
-print 
-print vib.Misc.fancy_box('http://www.christophjacob.eu')
+print()
+print()
+print(vib.Misc.fancy_box('http://www.christophjacob.eu'))

@@ -33,6 +33,8 @@ release = '1.0'
 extensions = [
 'sphinx.ext.autodoc',
 'sphinx.ext.napoleon',
+'sphinx_mdinclude',
+'sphinx_rtd_theme'
 #'sphinx.ext.coverage'
 ]
 autodoc_member_order = 'bysource'
@@ -43,7 +45,7 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
+source_suffix = ['.rst', '.md']
 
 # -- Options for HTML output -------------------------------------------------
 

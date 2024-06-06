@@ -10,12 +10,12 @@ shouldbe = nmodes * ngrid
 with open('energies/E0.dat') as f:
     lines = f.readlines()
 
-print lines[0].split()
+print(lines[0].split())
 pot = float(lines[0].split()[0])
 dmx = float(lines[0].split()[1])
 dmy = float(lines[0].split()[2])
 dmz = float(lines[0].split()[3])
-print 'Energy and dipole moment',pot,dmx,dmy,dmz
+print('Energy and dipole moment',pot,dmx,dmy,dmz)
 
 
 E0 = pot
@@ -32,22 +32,22 @@ for fname in glob('./energies/v1*.dat'):
     mode = fname.split('_')[1]
     mode = int(mode)
     gp   = int(fname.split('_')[2])
-    print 'Mode : %i %i' %(mode,gp)
+    print('Mode : %i %i' %(mode,gp))
     lines = f.readlines()
-    print lines[0].split()
+    print(lines[0].split())
     pot = float(lines[0].split()[0])
     dmx = float(lines[0].split()[1])
     dmy = float(lines[0].split()[2])
     dmz = float(lines[0].split()[3])
-    print 'Energy and dipole moment',pot,dmx,dmy,dmz
+    print('Energy and dipole moment',pot,dmx,dmy,dmz)
     v1[mode,gp] = pot - E0
     dm1[mode,gp,0] = dmx - d0[0]
     dm1[mode,gp,1] = dmy - d0[1]
     dm1[mode,gp,2] = dmz - d0[2]
     was +=1
 
-print '%i files found, should be %i' %(was,shouldbe)
-print 'Saving potential to file'
+print('%i files found, should be %i' %(was,shouldbe))
+print('Saving potential to file')
 np.save('V1_g16.npy',v1)
 np.save('Dm1_g16.npy',dm1)
 
@@ -68,12 +68,12 @@ for fname in glob('energies/v2*.dat'):
     gpr   = int(fname.split('_')[4])
     print 'Modes : %i (%i) %i (%i) ' %(model,gpl,moder,gpr)
     lines = f.readlines()
-    print lines[0].split()
+    print(lines[0].split())
     pot = float(lines[0].split()[0])
     dmx = float(lines[0].split()[1])
     dmy = float(lines[0].split()[2])
     dmz = float(lines[0].split()[3])
-    print 'Energy and dipole moment',pot,dmx,dmy,dmz
+    print('Energy and dipole moment',pot,dmx,dmy,dmz)
     v2[model,moder,gpl,gpr] = pot - v1[model,gpl] - v1[moder,gpr] - E0
     v2[moder,model,gpr,gpl] = pot - v1[model,gpl] - v1[moder,gpr] - E0
     dm2[model,moder,gpl,gpr,0] = dmx - dm1[model,gpl,0] - dm1[moder,gpr,0] - d0[0]
@@ -85,7 +85,7 @@ for fname in glob('energies/v2*.dat'):
     f.close()
     was += 1
 
-print '%i files found, should be %i' %(was,shouldbe)
-print 'Saving potentials to file'
+print('%i files found, should be %i' %(was,shouldbe))
+print('Saving potentials to file')
 np.save('V2_g16.npy',v2)
 np.save('Dm2_g16.npy',dm2)
