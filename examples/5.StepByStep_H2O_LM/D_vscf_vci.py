@@ -30,7 +30,7 @@ def localize_subsets(modes,subsets):
         n = len(subset)
         total += n
 
-    print 'Modes localized: %i, modes in total: %i' %(total, modes.nmodes)
+    print('Modes localized: %i, modes in total: %i' %(total, modes.nmodes))
 
     if total > modes.nmodes:
         raise Exception('Number of modes in the subsets is larger than the total number of modes')
@@ -61,8 +61,8 @@ modes = res.modes
 
 modelist = [[0,1,2]]
 
-print '\n\n'
-print '*** Localization: '
+print('\n\n')
+print('*** Localization: ')
 
 localmodes,cmat = localize_subsets(modes,modelist)
 
