@@ -377,7 +377,10 @@ tests = [
          #test_VCI4_int
          ]
 
-testdata = ['data','ala6_amideI']
+#finding path to test data:
+install_path = os.path.dirname(vib.__file__)
+path = os.path.join(install_path,"tests")
+testdata = [os.path.join(path,'data'),os.path.join(path,'ala6_amideI')]
 
 logfile = LogFile('tests_of_tests')
 total_tests = 0

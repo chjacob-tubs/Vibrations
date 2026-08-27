@@ -4,10 +4,13 @@ import numpy as np
 import pytest
 import os 
 
+vib_install_path = os.path.dirname(vib.__file__)
+data_path = os.path.join(vib_install_path,"unittests/test_data")
+
 ## Pre-tests for Grid class
 ## TEST extended VibTools functions for data production
 import sys # added!
-sys.path.append("test_data/data_prod/") # added!
+sys.path.append(os.path.join(data_path,"data_prod/")) # added!
 import data_prod_funcs_VibTools as datprod
 # Prepare Grid input Data:
 
@@ -15,10 +18,10 @@ import data_prod_funcs_VibTools as datprod
 def VT_SNFResults():
     # VT = VibTools, Vib_Grid = Vibrations.Grid
     # Load SNF-Results via VT
-    path = 'test_data/'
-    res = VibTools.SNFResults(outname = path+'snf.out',
-                              restartname=path+'restart',
-                              coordfile=path+'coord')
+    path = data_path
+    res = VibTools.SNFResults(outname = os.path.join(path,'snf.out'),
+                              restartname=os.path.join(path,'restart'),
+                              coordfile=os.path.join(path,'coord'))
     res.read()
     return res
 
@@ -38,15 +41,15 @@ def VT_SNFResults_Vib_Grid(VT_SNFResults):
 
 @pytest.fixture
 def VT_SNFResults_Potentials(VT_SNFResults_Vib_Grid):
-    path = 'test_data/'
+    path = data_path
     grid = VT_SNFResults_Vib_Grid
     # Create 1-mode potentials
     v1 = vib.Potential(grid, order=1)
     # Read in 1-mode potentials
-    v1.read_np(path+'1D.npy')
+    v1.read_np(os.path.join(path,'1D.npy'))
     
     v2 = vib.Potential(grid, order=2)
-    v2.read_np(path+'2D.npy')
+    v2.read_np(os.path.join(path,'2D.npy'))
     return v1, v2
 
 

@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=42","wheel","numpy"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = 'Vibrations'
+version = "1.0"
+description = 'Vibrations is a Python code for vibrational calculations with user-defined vibrational modes'
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.11.4"
+license = {text = "GPLv3"}
+authors = [
+    {name = "Pawel T. Panek"},
+    {name = "Christoph Jacob"},
+    {name = "Julia Brueggemann"},
+    {name = "Mario Wolter"},
+    {name = "Michael Welzel and others"},
+]
+classifiers = [
+"Programming Language :: Python :: 3",
+"Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "openbabel",
+    "scipy",
+]
+
+
+[project.urls]
+Homepage = "https://www.tu-braunschweig.de/pci/agjacob/software"
+#TODO add Documentation
+
+[tool.setuptools]
+include-package-data = true
+
+
+[tool.setuptools.packages.find]
+where = ["src",]
+
+
+[tool.setuptools.package-data]
+"Vibrations" = [
+    "tests/**/*",
+    "_VibTools/**/**/**/*", #e.g. tests/test_data/H20/
+    "unittests/test_data/**/*"
+]
+

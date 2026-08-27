@@ -677,9 +677,9 @@ class VCI(object):
         which : float
            transitions to which states should be included,
            1 for singles, 2 for SD, etc.
-        :maxfreq : float
+        maxfreq : float
            frequency threshold
-
+           
         Returns
         -------
         void
