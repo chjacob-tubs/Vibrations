@@ -1,5 +1,5 @@
 # load: basic Docker image
-FROM continuumio/miniconda3
+FROM condaforge/miniforge3
 
 # Create a "work folder"
 WORKDIR /app
