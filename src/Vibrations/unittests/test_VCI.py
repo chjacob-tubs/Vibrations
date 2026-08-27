@@ -8,6 +8,11 @@ import pickle
 import scipy
 
 
+
+vib_install_path = os.path.dirname(vib.__file__)
+data_path = os.path.join(vib_install_path,"unittests/test_data")
+
+
 #TODO: Tests are created by trial and error.
 #      Summarize redundant test arrangements into pytest.fixtures
 
@@ -50,11 +55,11 @@ def test_multichoose():
 def Grid():
 #    @blockPrinting
 #    def innerfunc():
-    path = 'test_data/'
+    path = os.path.join(data_path, "grids.npy")
     # Create an empty grid
     grid = vib.Grid()
     # Read in an existing grid
-    grid.read_np(path+'grids.npy')
+    grid.read_np(path)
     return grid
     #grid = innerfunc()
     return grid
@@ -62,15 +67,16 @@ def Grid():
 
 @pytest.fixture
 def Potentials(Grid):    
-    path = 'test_data/'
+    fname1D = os.path.join(data_path,"1D.npy")
+    fname2D = os.path.join(data_path, "2D.npy")
     # Create grid
     grid = Grid
     # Create 1-mode potentials
     v1 = vib.Potential(grid, order=1)
     # Read in 1-mode potentials
-    v1.read_np(path+'1D.npy')
+    v1.read_np(fname1D)
     v2 = vib.Potential(grid, order=2)
-    v2.read_np(path+'2D.npy')
+    v2.read_np(fname2D)
     # Perform VSCF with 2-mode potentials
     @blockPrinting
     def VSCF_func(v1,v2):
@@ -84,10 +90,12 @@ def Potentials(Grid):
 def SNFResults():
     # Read in normal modes from SNF results
     # using VibTools (LocVib package)
-    path = 'test_data/'
-    res = vt.SNFResults(outname=path+'snf.out',
-                        restartname=path+'restart',
-                         coordfile=path+'coord')
+    snfout_path = os.path.join(data_path,"snf.out")
+    restart_path = os.path.join(data_path,"restart")
+    coord_path = os.path.join(data_path, "coord")
+    res = vt.SNFResults(outname=snfout_path,
+                        restartname=restart_path,
+                         coordfile=coord_path)
     res.read()
     return res
 
@@ -109,7 +117,8 @@ def dipole_1mode(SNFResults,Grid):
 class RefGrid(object):
     # VibTools.Grid
     def __init__(self):
-        grids = np.load('test_data/data_prod/VibCI/grid_grids_vci_ref.npy')
+        grids_path = os.path.join(data_path, 'data_prod/VibCI/grid_grids_vci_ref.npy')
+        grids = np.load(grids_path)
         self.modes = None
         self.mol = None
         self.ngrid = 16
@@ -171,7 +180,8 @@ class RefSurfaceDipole(object):
         self.order = 1
         self.prop = (3,)
         self.indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-        data = np.load('test_data/data_prod/VibCI/Ref_VT_SurfaceDipole_Class_data.npy')
+        path = os.path.join(data_path,'data_prod/VibCI/Ref_VT_SurfaceDipole_Class_data.npy')
+        data = np.load(path)
         self.data = data
 
 
@@ -189,13 +199,15 @@ def assert_SurfaceDipoleClass(refSD,testSD):
 
 @pytest.fixture
 def RefDatVCI():
-    file = np.load('test_data/data_prod/VibCI/ref_dat_VCI.npz')
+    path = os.path.join(data_path,'data_prod/VibCI/ref_dat_VCI.npz')
+    file = np.load(path)
     return file
 
 
 class RefVCI(object):
     def __init__(self):
-        file = np.load('test_data/data_prod/VibCI/ref_dat_VCI.npz')
+        path = os.path.join(data_path,'data_prod/VibCI/ref_dat_VCI.npz')
+        file = np.load(path)
         # Attributes
         self.grids   = file['grids']            
         self.wfns    = file['wfns']
@@ -240,7 +252,7 @@ def Ref_solved_VCI():
     # Create standard class
     refsolvedVCI = RefVCI()
     # update to solved vci class
-    filename = 'test_data/data_prod/VibCI/solved_vib_module_VCI_ref_dat.npz'
+    filename = os.path.join(data_path,'data_prod/VibCI/solved_vib_module_VCI_ref_dat.npz')
     file = np.load(filename,allow_pickle=True)
     refsolvedVCI.states      = file['states']
     integrals                = file['integrals']
@@ -672,7 +684,7 @@ def test_generate_states(Potentials,Ref_VCI):
 
 def test_filter_states(Potentials,Ref_solved_VCI):
     # Arrange
-    filename = 'test_data/data_prod/VibCI/Ref_input_VCI_filter_states.npz'
+    filename = os.path.join(data_path,'data_prod/VibCI/Ref_input_VCI_filter_states.npz')
     file = np.load(filename)
     ## Input
     VSCF, v1,v2 = Potentials
@@ -760,7 +772,7 @@ def test_combgenerator_nofilter(DAR_Set,DAR_comb_generator_c):
 # = ========= JU ==== TEST ============================================= START
 class RefVCI2_DAR_solved(object):
     def __init__(self):
-        filename = 'test_data/data_prod/VibCI/ref_dat_VCI2_DAR.npz'
+        filename = os.path.join(data_path,'data_prod/VibCI/ref_dat_VCI2_DAR.npz')
         file = np.load(filename, allow_pickle=True)
         # Attributes
         self.grids   = file['grids']
@@ -800,7 +812,7 @@ class RefVCI2_DAR_solved(object):
 class Ref_DAR_Molecule():
      # VibTools.Molecule
      def __init__(self):
-         filename = 'test_data/data_prod/VibCI/Ref_DAR_VibToolsMolecule.npz'
+         filename = os.path.join(data_path, 'data_prod/VibCI/Ref_DAR_VibToolsMolecule.npz')
          file = np.load(filename,allow_pickle=True)
          self.natoms =      file['natoms']
          self.atmasses =    file['atmasses']
@@ -811,7 +823,8 @@ class Ref_DAR_Molecule():
 
 class Ref_DAR_Modes(object):
     def __init__(self):
-        file = np.load('test_data/data_prod/VibCI/Ref_DAR_VibToolsModes.npz')
+        filename = os.path.join(data_path,'data_prod/VibCI/Ref_DAR_VibToolsModes.npz')
+        file = np.load(filename)
         self.nmodes = 1
         self.mol = None
         self.natoms = 19
@@ -825,7 +838,8 @@ class Ref_DAR_Modes(object):
 class Ref_DAR_Grid(object):
     # VibTools.Grid
     def __init__(self):
-        grids = np.load('test_data/data_prod/VibCI/Ref_DAR_VibrationsGrids_grids.npy')
+        filename = os.path.join(data_path,'data_prod/VibCI/Ref_DAR_VibrationsGrids_grids.npy')
+        grids = np.load(filename)
         self.modes = Ref_DAR_Modes()
         self.mol = Ref_DAR_Molecule()
         self.ngrid = 16
@@ -845,24 +859,29 @@ class Ref_DAR_SurfaceDipole(object):
         self.order = 1
         self.prop = (3,)
         self.indices = [0, 1]
-        data = np.load('test_data/data_prod/VibCI/Ref_DAR_VibrationsSurfaceDipole_data.npy',allow_pickle=True)
+        filename = os.path.join(data_path,'data_prod/VibCI/Ref_DAR_VibrationsSurfaceDipole_data.npy')
+        data = np.load(filename,allow_pickle=True)
         self.data = data
 
 
 
 @pytest.fixture
 def DAR_Set(): 
+    path = os.path.join(data_path, "DAR")
     # Read SNF-Results
-    path = 'test_data/DAR/'
-    res = vt.SNFResults(outname=path+'snf.out',
-                        restartname=path+'restart',
-                         coordfile=path+'coord')
+    snfout_path = os.path.join(data_path,'DAR/snf.out')
+    restart_path = os.path.join(data_path, "DAR/restart")
+    coord_path = os.path.join(data_path, "DAR/coord")
+    res = vt.SNFResults(outname=snfout_path,
+                        restartname=restart_path,
+                         coordfile=coord_path)
     res.read()
-    subsets = np.load(path+'subsets.npy')
+    subsets_path = os.path.join(data_path, "DAR", "subsets.npy")
+    subsets = np.load(subsets_path)
 
     ## TEST extended VibTools functions for data production
     import sys # added!
-    sys.path.append("test_data/data_prod/") # added!
+    sys.path.append(os.path.join(data_path,"data_prod/")) # added!
     import data_prod_funcs_VibTools as datprod 
     localmodes,cmat = datprod.localize_subsets(res.modes,subsets)
     #localmodes,cmat = localize_subsets(res.modes,subsets)
@@ -874,22 +893,22 @@ def DAR_Set():
     # Read ub  anharmonic 1-mode potentials
     
     v1 = vib.Potential(grid, order=1)
-    v1.read_np(path+'V1_g16.npy')
+    v1.read_np(os.path.join(path,'V1_g16.npy'))
     #v1.generate_harmonic(cmat=cmat)
 
     # Read in anharmonic 1-mode dipole moments
     dm1 = vib.Dipole(grid)
-    dm1.read_np(path+'Dm1_g16.npy')
+    dm1.read_np(os.path.join(path,'Dm1_g16.npy'))
    
     # Readn in anharmonic 2-mode potentials
     v2 = vib.Potential(grid, order=2)
-    v2.read_np(path+ 'V2_g16.npy')
+    v2.read_np(os.path.join(path,'V2_g16.npy'))
     #v2.generate_harmonic(cmat=cmat)
 
 
     # Read in anharmonic 2-mode dipole moments    
     dm2 = vib.Dipole(grid, order=2)
-    dm2.read_np(path+'Dm2_g16.npy')
+    dm2.read_np(os.path.join(path,'Dm2_g16.npy'))
 
     # Run VSCF calculations for these potentials
     # Here we solve only for the vibrational ground state
@@ -917,7 +936,7 @@ def test_calculate_transition_moments(DAR_Set):
     ## Reference
     ### Attributes
     refVCI2 = RefVCI2_DAR_solved()
-    filename = 'test_data/data_prod/VibCI/ref_dat_VCI2_DAR_calc_trans_moments.npz'
+    filename = os.path.join(data_path,'data_prod/VibCI/ref_dat_VCI2_DAR_calc_trans_moments.npz')
     file = np.load(filename,allow_pickle=True)
     refVCI2.integrals = file['integrals'].item()
 
@@ -948,10 +967,10 @@ def test_calculate_transition_matrix(DAR_Set):
     ## Reference
     refVCI2 = RefVCI2_DAR_solved()
     Ref_SurfDipole = Ref_DAR_SurfaceDipole()
-    ref_path = 'test_data/data_prod/VibCI/'
-    ref_transm = np.load(ref_path+'VCI_DAR_transm.npy')
-    ref_freqs = np.load(ref_path+ 'VCI_DAR_freqs.npy')
-    ref_inten = np.load(ref_path+ 'VCI_DAR_inten.npy') 
+    ref_path = os.path.join(data_path,'data_prod/VibCI/')
+    ref_transm = np.load(os.path.join(ref_path,'VCI_DAR_transm.npy'))
+    ref_freqs = np.load(os.path.join(ref_path,'VCI_DAR_freqs.npy'))
+    ref_inten = np.load(os.path.join(ref_path,'VCI_DAR_inten.npy'))
     # Act
     transm, inten, freqs = VCI2.calculate_transition_matrix([dm1],[dm2])
     # Assert
@@ -967,7 +986,7 @@ def test_calculate_transition_matrix(DAR_Set):
 
     Ref_SurfDipole.order = 2
     Ref_SurfDipole.indices = [(0,1)]
-    data = np.load(ref_path+'Ref_DAR_calc_tran_matrix_prop2_data.npy')
+    data = np.load(os.path.join(ref_path,'Ref_DAR_calc_tran_matrix_prop2_data.npy'))
     Ref_SurfDipole.data = data 
     assert_SurfaceDipoleClass(Ref_SurfDipole,VCI2.prop2[0])
 
@@ -1165,7 +1184,8 @@ def test_solve(Potentials,Ref_solved_VCI):
 
 @pytest.fixture
 def VCISaveLoadRef():
-    file = np.load('test_data/data_prod/VibCI/Ref_VCI_1_1_results.npz')
+    filename = os.path.join(data_path, 'data_prod/VibCI/Ref_VCI_1_1_results.npz')
+    file = np.load(filename)
     vec = file['vec']
     enrcm = file['enrcm']
     states = file['states']
@@ -1203,7 +1223,7 @@ def test_save_vectors(Potentials, VCISaveLoadRef):
 
 def test_read_vectors(Potentials, VCISaveLoadRef):
     # Arrange
-    path = 'test_data/data_prod/VibCI/'
+    path = os.path.join(data_path,'data_prod/VibCI/')
     fname = 'Ref_VCI_1_1_results.npz'
     ## Reference
     cm_in_au = 4.556335252760265e-06
@@ -1216,7 +1236,7 @@ def test_read_vectors(Potentials, VCISaveLoadRef):
     vci.generate_states(1)
     vci.solve()
     # Act 
-    vci.read_vectors(path+fname)
+    vci.read_vectors(os.path.join(path,fname))
     # Assert
     assert vci.solved == True
     np.testing.assert_almost_equal(refvec,vci.vectors)

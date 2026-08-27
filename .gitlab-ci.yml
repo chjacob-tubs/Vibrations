@@ -1,14 +1,38 @@
 variables:
-  SCHEDULER_PARAMETERS: "-n 1 -p nitrogen"
   USER: legit
   VIBRA_HOME: $CI_BUILDS_DIR/$CI_PROJECT_PATH
   GIT_SUBMODULE_STRATEGY: recursive
-  #GIT_SUBMODULE_FORCE_HTTPS: "true"
-  #GIT_SUBMODULE_PATHS: src/_VibTools
+  CONDA_MODULE_LOAD: python/miniforge3-25.3.0
+  CONDA_ENV: "pipeline_${CI_PIPELINE_ID}"
+  CONDA_ENV_BASE: ci_vibrations
 
+workflow:
+    rules: # these are the rules for any pipelines to start
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        - if: '$CI_PIPELINE_SOURCE == "web"'
+        - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
+default:
+    id_tokens: # mandatory to authenticate with runner, see issue #75 in pyadf
+        SITE_ID_TOKEN:
+            aud: https://gitlab.pyadf.org
+    tags:
+      - local
+      - shell
+    before_script:
+        - hostname
+        - . /usr/share/modules/init/bash
+        - . /usr/share/modules/init/setup
+        - module load $CONDA_MODULE_LOAD
+        - conda activate $CONDA_ENV
+        - cd $CI_PROJECT_DIR
+        - git submodule update --init --recursive
+        - export TMPDIR=/scratch/$USER/ci-pipeline_${CI_PIPELINE_ID}/${CI_JOB_ID}
+        - mkdir -p $TMPDIR
+        - cd $TMPDIR
+        - echo "Running in directory $TMPDIR "
 
 stages:
-    - update
     - build
     - unittest
     - quality
@@ -16,39 +40,39 @@ stages:
     - deploy
     - cleanup
 
-before_script:
+install_vibrations:
+  tags:
+    - local
+    - shell
+  rules:
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        - if: '$CI_PIPELINE_SOURCE == "web"'
+        - if: '$CI_PIPELINE_SOURCE == "schedule"' # schedules can be created via the web interface
+  before_script:
         - hostname
+        - . /usr/share/modules/init/bash
+        - . /usr/share/modules/init/setup
+        - module load $CONDA_MODULE_LOAD
+        - |-
+            if conda env list | grep -q $CONDA_ENV; then
+                conda env remove --name $CONDA_ENV --yes
+            fi
+        - conda create --name $CONDA_ENV numpy matplotlib openbabel scipy xcfun 
+        - conda activate $CONDA_ENV
+        #pyadf installation
+        - git clone https://github.com/chjacob-tubs/pyadf-releases.git 
+        - cd pyadf-releases 
+        - pip install .
+        - cd $CI_PROJECT_DIR
+        #for unittests and documentation
+        - conda install -c conda-forge pytest pytest-cov pylint sphinx  
+        - pip install docstr-coverage sphinx-mdinclude sphinx-rtd-theme
+  stage: build
+  script:
+    - git submodule update --init --recursive
+    - pip install -e .
 
-######################
-#### IMAGE BUILDS #########################################################
-######################
-
-update-submodule:
-    tags:
-       - local
-       - shell
-    stage: build
-    script:
-       - git submodule update --remote
-
-build-docker-test-image:
-    tags:
-       - local
-       - shell
-    stage: build
-    needs: [update-submodule]
-    script:
-       - git submodule update --remote
-       - docker build --no-cache -t vib_unittest -f Dockerfile . 
-
-build-docker-autodoc-image:
-    tags:
-       - local
-       - shell
-    stage: build
-    needs: [update-submodule]
-    script:
-       - docker build --no-cache -t vib_sphinxdoc -f doc/Dockerfile.sphinx_doc .
+       
 
 ###################
 #### UNITTESTS ###########################################################
@@ -56,163 +80,111 @@ build-docker-autodoc-image:
 
 ##### VibTools #####
 unittests-VibTools:
-    tags:
-        - local
-        - shell
     stage: unittest
-    needs: [build-docker-test-image]
     script:
-        - docker run --workdir /app/src/_VibTools/tests vib_unittest pytest -v
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/_VibTools/src/VibTools/tests
 
 
-#### Vibrations #####
+### Vibrations #####
 
 unittest-Grid-Pawel:
-    tags:
-        - local
-        - shell
     stage: unittest
-    needs: [build-docker-test-image,unittests-VibTools]
     script:
-        - docker run --workdir /app/unittests vib_unittest pytest -v test_Grids_unittest.py
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_Grids_unittest.py
 
 
 unittest-Surface-Pawel:
-    tags:
-        - local
-        - shell
     stage: unittest
-    needs: [build-docker-test-image,unittests-VibTools]
     script:
-        - docker run --workdir /app/unittests vib_unittest pytest -v test_Surfaces_unittest.py
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_Surfaces_unittest.py
 
 
 unittest-Grids:
-    tags:
-        - local
-        - shell
     stage: unittest
-    needs: [build-docker-test-image,unittests-VibTools]
     script:
-        - docker run --workdir /app/unittests vib_unittest pytest -v test_Grids.py
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_Grids.py
 
 
 unittest-Surface:
-    tags:
-        - local
-        - shell
     stage: unittest
-    needs: [build-docker-test-image,unittests-VibTools]
     script:
-        - docker run --workdir /app/unittests vib_unittest pytest -v test_Surface.py
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_Surface.py
 
 
 unittest-Wavefunctions:
-    tags:
-        - local
-        - shell
     stage: unittest
-    needs: [build-docker-test-image]
     script:
-        - docker run --workdir /app/unittests vib_unittest pytest -v test_Wavefunction.py
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_Wavefunction.py
 
 
 unittest-VSCF:
-    tags:
-        - local
-        - shell
     stage: unittest
-    needs: [build-docker-test-image]
     script:
-        - docker run --workdir /app/unittests vib_unittest pytest -v test_VSCF.py
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_VSCF.py
 
 
 unittest-VCI:
-    tags:
-        - local
-        - shell
     stage: unittest
-    needs: [build-docker-test-image,unittests-VibTools]
     script:
-        - docker run --workdir /app/unittests vib_unittest pytest -v test_VCI.py
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_VCI.py
 
 
 unittest-Misc:
-    tags:
-        - local
-        - shell
     stage: unittest
-    needs: [build-docker-test-image]
     script:
-        - docker run --workdir /app/unittests vib_unittest pytest -v test_Misc.py
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_Misc.py
 
 ################
 # CODE QUALITY ####################################################################
 ################
 
 unittest-Coverage:
+    stage: quality
     tags:
         - local
         - shell
-    stage: quality
-    needs:
-        - build-docker-test-image
     script:
-        - docker run --workdir /app/unittests --name vib_test_coverage vib_unittest pytest --cov=Vibrations --cov-report term --cov-report xml:coverage.xml
-        - docker cp vib_test_coverage:/app/unittests/coverage.xml coverage.xml
+        - pytest --cov=Vibrations --cov-report term --cov-report xml:$CI_PROJECT_DIR/coverage.xml $CI_PROJECT_DIR/src/Vibrations/unittests/
     coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
     artifacts:
       reports:
         coverage_report:
           coverage_format: cobertura
-          path: coverage.xml
+          path: $CI_PROJECT_DIR/coverage.xml
 
 unittest-Report:
+    stage: quality
     tags:
         - local
         - shell
-    stage: quality
-    needs: [build-docker-test-image]
     script:
-        - docker run --workdir /app/unittests --name vib_test_report vib_unittest pytest --junitxml=report.xml
-        - docker cp vib_test_report:/app/unittests/report.xml report.xml
+        - pytest --junitxml=$CI_PROJECT_DIR/report.xml $CI_PROJECT_DIR/src/Vibrations/unittests/
     artifacts:
       when: always
       reports:
-        junit: report.xml
+        junit: $CI_PROJECT_DIR/report.xml
 
 unittest-Min-Coverage:
-    tags:
-        - local
-        - shell
     stage: quality
-    needs: [build-docker-test-image]
     script:
-        - docker run --workdir /app/unittests vib_unittest pytest --cov=Vibrations --cov-fail-under=56
+        - pytest --cov=Vibrations --cov-fail-under=56 $CI_PROJECT_DIR/src/Vibrations/unittests/
 
 
 docstr-Min-Coverage:
+    stage: quality
     tags:
         - local
         - shell
-    stage: quality
-    needs:
-        - build-docker-test-image
     script:
-        - docker run --workdir /app/src --name vib_docstr vib_unittest docstr-coverage --fail-under=88 -b . Vibrations
-        - docker cp vib_docstr:/app/src/docstr_coverage_badge.svg docstr_coverage_badge.svg
+        - docstr-coverage --fail-under=88 -b $CI_PROJECT_DIR $CI_PROJECT_DIR/src/Vibrations/*.py
     artifacts:
       paths:
-        - docstr_coverage_badge.svg
+        - $CI_PROJECT_DIR/docstr_coverage_badge.svg
 
 Style-Check-Min:
-    tags:
-        - local
-        - shell
     stage: quality
-    needs: [build-docker-test-image]
     script:
-        - docker run --workdir /app/src vib_unittest pylint --fail-under=8.1 Vibrations
+        - pylint --fail-under=8.1 $CI_PROJECT_DIR/src/Vibrations
 
 
 #######################
@@ -220,95 +192,48 @@ Style-Check-Min:
 #######################
 
 integrationtest-Vibrations:
-    tags:
-        - local
-        - shell
     stage: unittest
-    needs: [build-docker-test-image]
     script:
-        - docker run --workdir /app/tests vib_unittest python tests.py
+        - python $CI_PROJECT_DIR/src/Vibrations/tests/tests.py
 
 #######################
 #### DOCUMENTATION #############################################################
 #######################
 
 build-sphinx-doc:
-    tags:
-        - local
-        - shell
     stage: autodoc
-    needs: [build-docker-autodoc-image ]
     script:
-        - docker run --workdir /app/doc --name sphinxdoc_vib_container vib_sphinxdoc sphinx-build . build
+        - sphinx-build $CI_PROJECT_DIR/doc/ $TMPDIR/build
 
 
 pages:
-    tags:
-        - local
-        - shell
     stage: deploy
-    needs: [build-sphinx-doc]
+    tags:
+      - local
+      - shell
     script:
-        - docker cp sphinxdoc_vib_container:/app/doc/build/. public/
+        - sphinx-build $CI_PROJECT_DIR/doc/ $TMPDIR/build
+        - mkdir $CI_PROJECT_DIR/public
+        - cp -r $TMPDIR/build/* $CI_PROJECT_DIR/public/
     artifacts:
         paths:
-         - public
-
-
-################################################
-#alternative installation/environment via Conda#
-################################################
-
-build-docker-conda-test-image:
-    tags:
-       - local
-       - shell
-    stage: build
-    needs: [update-submodule]
-    script:
-       - docker build --no-cache -t vib_condock -f unittests/Dockerfile.Conda .
-
-
-unittest-Conda-Env-all_tests:
-    tags:
-        - local
-        - shell
-    stage: unittest
-    needs:
-        - build-docker-conda-test-image
-    script:
-        - docker run --workdir /app/unittests vib_condock conda run -n VibENV pytest -v
+         - $CI_PROJECT_DIR/public
 
 
 ##################
 #### CLEAN UP ##################################################################
 ##################
 
-cleanup-docker:
+cleanup_conda:
+    tags:
+      - local
+      - shell
+    before_script:
+        - hostname
+        - . /usr/share/modules/init/bash
+        - . /usr/share/modules/init/setup
+        - module load $CONDA_MODULE_LOAD
     stage: cleanup
-    tags: [local, shell]
-    needs:
-        - build-docker-test-image
-        - unittest-Grid-Pawel
-        - unittest-Surface-Pawel
-        - unittest-Grids
-        - unittest-Surface
-        - unittest-Wavefunctions
-        - unittest-VSCF
-        - unittest-VCI
-        - unittest-Misc
-        - build-docker-autodoc-image
-        - build-sphinx-doc
-        - pages
-        - build-docker-conda-test-image
-        - unittest-Conda-Env-all_tests
-        - unittests-VibTools
-        - integrationtest-Vibrations
-        - unittest-Coverage
+    when: always
     script:
-        - docker rmi -f vib_unittest:latest
-        - docker rmi -f vib_sphinxdoc:latest
-        - docker rmi -f vib_condock
-        - docker rm $(docker ps --filter status=exited -q)
-        - docker system df
-    when: always 
+        - conda env remove --name $CONDA_ENV --yes

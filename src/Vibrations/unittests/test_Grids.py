@@ -2,22 +2,28 @@ import VibTools
 import Vibrations as vib
 import numpy as np
 import pytest 
+import os
 
+
+vib_install_path = os.path.dirname(vib.__file__)
+data_path = os.path.join(vib_install_path,"unittests/test_data")
+print(data_path)
 # Pre-tests for Grid class
 # TEST extended VibTools functions for data production
 import sys # added!
-sys.path.append("test_data/data_prod/") # added!
+sys.path.append(os.path.join(data_path,"data_prod/")) # added!
 import data_prod_funcs_VibTools as datprod
+
 
 def test_localize_subsets():
     # Arrange 
-    path = 'test_data/'
-    res = VibTools.SNFResults(outname = path+'snf.out',
-                              restartname=path+'restart',
-                              coordfile=path+'coord')
+    path = data_path
+    res = VibTools.SNFResults(outname = os.path.join(path,'snf.out'),
+                              restartname=os.path.join(path,'restart'),
+                              coordfile=os.path.join(path,'coord'))
     res.read()
     subsets = [[0,4], [4,8], [8,12]]
-    locmod_cmat = np.load('test_data/data_prod/input_Grid_data_localmodes.npz')
+    locmod_cmat = np.load(os.path.join(data_path,'data_prod/input_Grid_data_localmodes.npz'))
     #locmod_cmat = np.load('test_data/data_prod/input_Grid_data_localmodes_cmat.npz')
     ref_modes_mw = locmod_cmat['modes_mw']
     ref_freqs = locmod_cmat['freqs']
@@ -31,10 +37,10 @@ def test_localize_subsets():
 
 @pytest.fixture
 def VibTools_SNFResults_C2H4():
-    path = 'test_data/'
-    res = VibTools.SNFResults(outname = path+'snf.out',
-                              restartname=path+'restart',
-                              coordfile=path+'coord')
+    path = data_path
+    res = VibTools.SNFResults(outname = os.path.join(path,'snf.out'),
+                              restartname=os.path.join(path,'restart'),
+                              coordfile=os.path.join(path,'coord'))
     res.read()
     return res
 
@@ -53,7 +59,7 @@ def Grid_input_data(VibTools_SNFResults_C2H4,Vibration_locvibs_C2H4):
 
 @pytest.fixture
 def Grid_ref_data():
-    Grid_ref = np.load('test_data/data_prod/ref_Grid_data_localmodes.npz')
+    Grid_ref = np.load(os.path.join(data_path,'data_prod/ref_Grid_data_localmodes.npz'))
     return Grid_ref
 
 @pytest.fixture
@@ -176,10 +182,10 @@ def test_Grid_read_np(Grid_ref_data):
     # Arrange
     grids_ref = Grid_ref_data
     np_grids_ref = grids_ref['np_grids']
-    path = 'test_data/'
+    path = data_path
     # Act
     grid = vib.Grid()
-    grid.read_np(path+'grids.npy')
+    grid.read_np(os.path.join(path,'grids.npy'))
     # Assert
     assert grid.modes  == None
     assert grid.mol    == None
