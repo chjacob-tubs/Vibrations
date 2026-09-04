@@ -4,10 +4,13 @@ import numpy as np
 import pytest
 import os 
 
+vib_install_path = os.path.dirname(vib.__file__)
+data_path = os.path.join(vib_install_path,"unittests/test_data")
+
 ## Pre-tests for Grid class
 ## TEST extended VibTools functions for data production
 import sys # added!
-sys.path.append("test_data/data_prod/") # added!
+sys.path.append(os.path.join(data_path,"data_prod/")) # added!
 import data_prod_funcs_VibTools as datprod
 # Prepare Grid input Data:
 
@@ -15,10 +18,10 @@ import data_prod_funcs_VibTools as datprod
 def VT_SNFResults():
     # VT = VibTools, Vib_Grid = Vibrations.Grid
     # Load SNF-Results via VT
-    path = 'test_data/'
-    res = VibTools.SNFResults(outname = path+'snf.out',
-                              restartname=path+'restart',
-                              coordfile=path+'coord')
+    path = data_path
+    res = VibTools.SNFResults(outname = os.path.join(path,'snf.out'),
+                              restartname=os.path.join(path,'restart'),
+                              coordfile=os.path.join(path,'coord'))
     res.read()
     return res
 
@@ -100,7 +103,7 @@ def test_Wavefunction_read(VT_SNFResults_Vib_Grid):
     from time import strftime
     grid = VT_SNFResults_Vib_Grid
     wf = vib.Wavefunction(grids=grid)
-    ref_wf = 'test_data/ref_wavefunction.npy'
+    ref_wf = os.path.join(data_path,'ref_wavefunction.npy')
     # Act
     wf_test = vib.Wavefunction()
     wf_test.read_wavefunctions(fname=ref_wf)

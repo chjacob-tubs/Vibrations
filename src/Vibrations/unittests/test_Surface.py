@@ -4,11 +4,15 @@ import numpy as np
 import pytest
 import os 
 
+vib_install_path = os.path.dirname(vib.__file__)
+data_path = os.path.join(vib_install_path,"unittests/test_data")
+
 ## Pre-tests for Grid class
 ## TEST extended VibTools functions for data production
 import sys # added!
-sys.path.append("test_data/data_prod/") # added!
+sys.path.append(os.path.join(data_path,"data_prod/")) # added!
 import data_prod_funcs_VibTools as datprod
+
 
 def test_Surface_init_empty():
     # Arrange
@@ -30,10 +34,10 @@ def test_Surface_init_empty():
 def VT_SNFResults():
     # VT = VibTools, Vib_Grid = Vibrations.Grid
     # Load SNF-Results via VT
-    path = 'test_data/'
-    res = VibTools.SNFResults(outname = path+'snf.out',
-                              restartname=path+'restart',
-                              coordfile=path+'coord')
+    path = data_path
+    res = VibTools.SNFResults(outname = os.path.join(path,'snf.out'),
+                              restartname=os.path.join(path,'restart'),
+                              coordfile=os.path.join(path,'coord'))
     res.read()
     return res
 
@@ -123,9 +127,9 @@ def test_Surface_zero(test_Surf_SNFRes):
 
 @pytest.fixture
 def potential_grid_input():
-    path = 'test_data/'
+    path = data_path
     grid = vib.Grid()  # Create an empty grid  
-    grid.read_np(path+'grids.npy') # Read in an existing grid
+    grid.read_np(os.path.join(path,'grids.npy')) # Read in an existing grid
     return grid
 
 @pytest.fixture
@@ -133,8 +137,8 @@ def potential_1D_2D(potential_grid_input):
     grid = potential_grid_input
     v1 = vib.Potential(grid, order=1)
     v2 = vib.Potential(grid, order=2)
-    v1.read_np('test_data/1D.npy')
-    v2.read_np('test_data/2D.npy')
+    v1.read_np(os.path.join(data_path,'1D.npy'))
+    v2.read_np(os.path.join(data_path,'2D.npy'))
     return v1, v2
 
 
@@ -187,8 +191,8 @@ def test_Potential_class_read_np(potential_grid_input,potential_1D_2D):
     v1 = vib.Potential(grid, order=1)
     v2 = vib.Potential(grid, order=2)
     # Act 
-    v1.read_np('test_data/1D.npy')
-    v2.read_np('test_data/2D.npy')
+    v1.read_np(os.path.join(data_path,'1D.npy'))
+    v2.read_np(os.path.join(data_path,'2D.npy'))
     # Assert 1D:
     assert v1.grids  != None
     assert v1.empty  == False
@@ -213,7 +217,7 @@ def test_Potential_save(potential_grid_input):
     grid = potential_grid_input
     # Create 1-mode potentials
     v1 = vib.Potential(grid, order=1)
-    v1.read_np('test_data/1D.npy')
+    v1.read_np(os.path.join(data_path,'1D.npy'))
     # Act
     v1.save(fname=name)
     test = np.load(name)
@@ -228,7 +232,7 @@ def test_Potential_save(potential_grid_input):
 def test_Potential_generate_harmonic(potential_1D_2D):
     # Arrange
     v1,v2 = potential_1D_2D
-    file = np.load('test_data/data_prod/ref_Surface_Potential_data.npz')
+    file = np.load(os.path.join(data_path,'data_prod/ref_Surface_Potential_data.npz'))
     cmat = file['cmat']
     v1_ref = file['v1_data']
     v2_ref = file['v2_data']
@@ -457,7 +461,7 @@ def test_Dipole_read_np(VT_SNFResults_Vib_Grid):
     grid=VT_SNFResults_Vib_Grid
     dip = vib.Dipole(grids=grid)
     # Act
-    dip.read_np('test_data/Dm1_g16.npy')
+    dip.read_np(os.path.join(data_path,'Dm1_g16.npy'))
     # Assert
     assert dip.grids  != None
     assert dip.empty  == False
