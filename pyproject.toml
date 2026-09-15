@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vibtools"
-version = "1.5"
+version = "1.4"
 description = "LocVib/VibTools: Python tools for localizing normal modes"
 authors = [
   { name="Christoph Jacob, Tobias Bergmann, Julia Brueggemann, Maria Chekmeneva, Michael Welzel, Mario Wolter, and others" }
