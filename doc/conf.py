@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'LocVib 1.4'
-copyright = '2009 - 2023 by Christoph Jacob and others'
-author = 'C. Jacob, M. Wolter, M. Welzel, J. Brueggemann and others.'
+copyright = '2009 - 2026 by Christoph Jacob and others'
+author = 'Christoph Jacob, Tobias Bergmann, Julia Brueggemann, Maria Chekmeneva, Michael Welzel, Mario Wolter, and others'
 
 # The full version, including alpha/beta/rc tags
 release = '1.4'
