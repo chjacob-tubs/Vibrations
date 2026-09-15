@@ -1,14 +1,3 @@
-[![pipeline status](https://gitlab.pyadf.org/vib/LocVib/badges/master/pipeline.svg)](https://gitlab.pyadf.org/vib/LocVib/-/commits/master)
-[![Custom Badge](https://gitlab.pyadf.org/vib/LocVib/badges/master/coverage.svg?min_medium=30&min_acceptable=50&min_good=75&key_text=Unittest+Coverage&key_width=130)](https://gitlab.pyadf.org/vib/LocVib/-/commits/master)
-
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
-[![Numpy 1.23.4](https://img.shields.io/badge/numpy-1.23.4-blue.svg)](https://numpy.org/devdocs/release/1.23.4-notes.html)
-[![Matplotlib 3.6.1](https://img.shields.io/badge/matplotlib-3.6.1-blue.svg)](https://matplotlib.org/stable/users/installing/index.html)
-[![conda - Openbabel 3.1.1.16](https://img.shields.io/badge/openbabel--wheel-3.1.1.16-blueviolet.svg)](https://pypi.org/project/openbabel-wheel/3.1.1.16/)
-
-
-
-
 # LocVib/VibTools
 
 Python tools for localizing normal modes.
@@ -35,16 +24,36 @@ More details are in the documentation.
 ## Installation
 
 Just clone this repository and update `$PYTHONPATH` environment variable accordingly.
-Or install it using pip and run 
+Or install it using pip install in the folder where pyproject.toml is located.
 
-`pip install . ` 
+There are different predefined setup variants depending on your use case and prefered openbabel package:
 
-in the folder where pyproject.toml is located.
+If you want to use openbabel package install with
+```bash
+pip install ".[openbabel]"
+```
+
+If you want to use openbabel-wheel package install with
+```bash
+pip install ".[openbabel-wheel]"
+```
+
+If you want to run the tests and/or build the documentation it is recommended to do a full installation
+```bash
+pip install ".[full-openbabel]"
+```
+or
+```bash
+pip install ".[full-openbabel-wheel]"
+```
+
 More details are in the documentation.
 
-Verify the installation with running pytest (must be installed before):
+Verify the installation with running pytest (works in testing and full installations only):
 
-`src/VibTools/tests % pytest - v`
+```bash
+src/VibTools/tests % pytest - v
+```
 
 Other installation options can be found in the further documentation.
 
@@ -54,13 +63,17 @@ You can find the documentation, as mentioned above,
 on the Homepage (https://vib.gitlab-pages.pyadf.org/LocVib/) 
 or you can generate the HTML documentation yourself with Sphinx.
 
-Build documentation via Sphinx and extension packages (must be installed before)
+Build documentation via Sphinx and extension packages (works in docs installations only):
 
-`doc/ % sphinx-build . Build`.
+```bash
+doc/ % sphinx-build . build
+```
 
 Opening the index.html file takes you to the home directory of the code documentation:
 
-`doc/Build/ % open index.html`
+```bash
+doc/build/ % open index.html
+```
 
 ## Usage
 

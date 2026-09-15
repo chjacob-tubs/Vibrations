@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+title: VibTools/LocVib
+message: Python tools for localizing normal modes
+type: software
+authors:
+  - given-names: Christoph R.
+    family-names: Jacob
+    email: c.jacob@tu-braunschweig.de
+    affiliation: Technische Universität Braunschweig
+    orcid: 'https://orcid.org/0000-0002-6227-8476'
+  - given-names: Tobias
+    family-names: Bergmann
+    affiliation: Technische Universität Braunschweig
+  - given-names: Julia
+    family-names: Brüggemann
+    affiliation: Technische Universität Braunschweig
+    orcid: 'https://orcid.org/0000-0003-4252-4980'
+  - given-names: Maria
+    family-names: Chekmeneva
+    affiliation: Technische Universität Braunschweig
+    orcid: 'https://orcid.org/0009-0008-6520-8407'
+  - given-names: Michael
+    family-names: Welzel
+    affiliation: Technische Universität Braunschweig
+    orcid: 'http://orcid.org/0000-0002-9996-9254'
+  - given-names: Mario
+    family-names: Wolter
+    affiliation: Technische Universität Braunschweig
+    orcid: 'https://orcid.org/0000-0001-6948-6801'
+identifiers:
+  - type: doi
+    value: https://doi.org/10.5281/zenodo.8115103
+repository-code: 'https://github.com/chjacob-tubs/LocVib'
+url: 'http://www.pyadf.org'
+repository: 'https://gitlab.pyadf.org/vib/LocVib/'
+abstract: >-
+  VibTools/LocVib - Python tools for localizing normal modes
+keywords:
+  - quantum chemistry
+  - scripting
+  - theoretical spectroscopy
+  - vibrational spectroscopy
+  - normal modes
+license: GPL-3.0
+version: 1.4
