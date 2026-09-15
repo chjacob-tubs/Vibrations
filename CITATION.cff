@@ -29,7 +29,7 @@ authors:
     orcid: 'https://orcid.org/0000-0001-6948-6801'
 identifiers:
   - type: doi
-    value: https://doi.org/10.5281/zenodo.8115103
+    value: https://doi.org/10.5281/zenodo.1652494
 repository-code: 'https://github.com/chjacob-tubs/LocVib'
 url: 'http://www.pyadf.org'
 repository: 'https://gitlab.pyadf.org/vib/LocVib/'
