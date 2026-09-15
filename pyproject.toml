@@ -10,7 +10,7 @@ name = "vibtools"
 version = "1.5"
 description = "LocVib/VibTools: Python tools for localizing normal modes"
 authors = [
-  { name="Christoph Jacob, Julia Brueggemann, Mario Wolter, Michael Welzel and others" }
+  { name="Christoph Jacob, Tobias Bergmann, Julia Brueggemann, Maria Chekmeneva, Michael Welzel, Mario Wolter, and others" }
 ]
 readme = "README.md"
 #license = { file="LICENSE" }   # Or "MIT" etc.
