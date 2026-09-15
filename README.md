@@ -9,7 +9,7 @@ In scientific publications using the LocVib tools, please cite:
 
 We can find the documentation for LocVib/VibTools on the website
 
-https://vib.gitlab-pages.pyadf.org/LocVib/ 
+https://locvibvibtools.readthedocs.io/en/latest/
 
 Download-Link:
 
