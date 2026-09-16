@@ -1,5 +1,9 @@
 *.pyc
 
+*.egg-info/
+.idea
+.vscode
+
 # __pycache__
 unittests/__pycache__
 unittests/.coverage

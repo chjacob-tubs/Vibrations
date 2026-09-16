@@ -43,7 +43,6 @@ where = ["src",]
 [tool.setuptools.package-data]
 "Vibrations" = [
     "tests/**/*",
-    "_VibTools/**/**/**/*", #e.g. tests/test_data/H20/
     "unittests/test_data/**/*"
 ]
 
