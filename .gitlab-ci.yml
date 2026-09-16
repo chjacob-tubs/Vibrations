@@ -26,7 +26,7 @@ default:
         - module load $CONDA_MODULE_LOAD
         - conda activate $CONDA_ENV
         - cd $CI_PROJECT_DIR
-        - git submodule update --init --recursive
+        #- git submodule update --init --recursive
         - export TMPDIR=/scratch/$USER/ci-pipeline_${CI_PIPELINE_ID}/${CI_JOB_ID}
         - mkdir -p $TMPDIR
         - cd $TMPDIR
@@ -69,7 +69,7 @@ install_vibrations:
         - pip install docstr-coverage sphinx-mdinclude sphinx-rtd-theme
   stage: build
   script:
-    - git submodule update --init --recursive
+    #- git submodule update --init --recursive
     - pip install -e .
 
        
@@ -82,7 +82,7 @@ install_vibrations:
 unittests-VibTools:
     stage: unittest
     script:
-        - pytest -v $CI_PROJECT_DIR/src/Vibrations/_VibTools/src/VibTools/tests
+        - pytest -v $CI_PROJECT_DIR/src/VibTools/tests
 
 
 ### Vibrations #####

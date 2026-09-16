@@ -1,6 +1,0 @@
-[submodule "src/Vibrations/_VibTools"]
-	path = src/Vibrations/_VibTools
-	url = ../LocVib.git
-	branch = newpipeline
-#        url = https://gitlab.pyadf.org/vib/LocVib.git
-#        url = git@gitlab.pyadf.org:vib/LocVib.git
