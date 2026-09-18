@@ -1,4 +1,0 @@
-pytest
-pytest-cov
-docstr-coverage
-pylint

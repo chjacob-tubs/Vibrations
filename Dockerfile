@@ -18,7 +18,7 @@ COPY . /app
 # Git Clone of PyADF
 # Install pyadf requierements
 RUN pip install . \
-    && python -m pip install -r /app/requirements/requirements_unittests.txt \
+    && python -m pip install  ".[full-openbabel]" \
     && git clone https://github.com/chjacob-tubs/pyadf-releases.git \
     && conda install -c conda-forge numpy scipy xcfun pyscf openbabel rdkit  
 # Install pyadf

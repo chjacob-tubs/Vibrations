@@ -11,7 +11,7 @@ COPY . /app
 # Installation of dependencies
 # Installation of local package
 # Git Clone of PyADF
-RUN  python -m pip install -r /app/requirements/requirements_unittests.txt \
+RUN  python -m pip install  ".[full-openbabel]"\
      && pip install /app/ \
      && git clone https://github.com/chjacob-tubs/pyadf-releases.git
 
