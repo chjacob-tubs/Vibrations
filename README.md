@@ -52,7 +52,7 @@ More details are in the documentation.
 Verify the installation with running pytest (works in testing and full installations only):
 
 ```bash
-src/VibTools/tests % pytest - v
+src/VibTools/tests % pytest -v
 ```
 
 Other installation options can be found in the further documentation.
@@ -60,7 +60,7 @@ Other installation options can be found in the further documentation.
 ## Documentation
 
 You can find the documentation, as mentioned above,
-on the Homepage (https://vib.gitlab-pages.pyadf.org/LocVib/) 
+on the Homepage (https://locvibvibtools.readthedocs.io/en/latest/) 
 or you can generate the HTML documentation yourself with Sphinx.
 
 Build documentation via Sphinx and extension packages (works in docs installations only):

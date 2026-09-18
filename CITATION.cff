@@ -31,7 +31,7 @@ identifiers:
   - type: doi
     value: https://doi.org/10.5281/zenodo.1652494
 repository-code: 'https://github.com/chjacob-tubs/LocVib'
-url: 'http://www.pyadf.org'
+url: 'https://www.tu-braunschweig.de/pci/agjacob/software'
 repository: 'https://gitlab.pyadf.org/vib/LocVib/'
 abstract: >-
   VibTools/LocVib - Python tools for localizing normal modes
