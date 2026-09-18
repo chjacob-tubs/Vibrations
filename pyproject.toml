@@ -3,18 +3,26 @@ requires = ["setuptools>=62.6", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project.urls]
-"Homepage" = "https://github.com/chjacob-tubs/LocVib"
+homepage = "https://www.tu-braunschweig.de/pci/agjacob/software"
+source = "https://github.com/chjacob-tubs/LocVib"
+documentation = "https://locvibvibtools.readthedocs.io/en/latest/"
 
 [project]
 name = "vibtools"
 version = "1.4"
 description = "LocVib/VibTools: Python tools for localizing normal modes"
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.11.4"
+license = {text = "GPLv3"}
 authors = [
-  { name="Christoph Jacob, Tobias Bergmann, Julia Brueggemann, Maria Chekmeneva, Michael Welzel, Mario Wolter, and others" }
+    {name = "Christoph Jacob"},
+    {name = "Tobias Bergmann"},
+    {name = "Julia Brueggemann"},
+    {name = "Maria Checkmeneva"},
+    {name = "Michael Welzel"},
+    {name = "Mario Wolter"},
+    {name = "others"},
 ]
-readme = "README.md"
-#license = { file="LICENSE" }   # Or "MIT" etc.
-requires-python = ">=3.8"
 
 # Base runtime dependencies (no openbabel)
 dependencies = [
@@ -27,7 +35,7 @@ dependencies = [
 [project.optional-dependencies]
 # Usage with openbabel
 openbabel = [
-    "openbabel",
+    "openbabel>=3.21",
 ]
 
 # Usage with openbabel-wheel
@@ -74,13 +82,13 @@ docs-openbabel-wheel = [
 # Full install with openbabel
 full-openbabel = [
     "vibtools[testing-openbabel]",
-    "vibtools[docs]",
+    "vibtools[docs-openbabel]",
 ]
 
 # Full install with openbabel-wheel
 full-openbabel-wheel = [
     "vibtools[testing-openbabel-wheel]",
-    "vibtools[docs]",
+    "vibtools[docs-openbabel-wheel]",
 ]
 [tool.setuptools]
 include-package-data = true

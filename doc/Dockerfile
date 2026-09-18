@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . /app
 
 # RUN: Installation of dependencies and package itself
-RUN python -m pip install -r /app/requirements/requirements_documentation.txt \
+RUN python -m pip install  ".[full-openbabel]" \
     && pip install /app/
 
 # Create example output files
