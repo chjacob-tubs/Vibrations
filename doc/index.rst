@@ -3,20 +3,44 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Vibrations's documentation!
-======================================
+========
+Overview
+========
 
-Vibrations is a Python code for vibrational calculations with
-user-defined vibrational modes. For an overview of the capabilities
-of the code, see the following articles 
+.. mdinclude:: ../README.md
 
-* [ChemPhysChem 15 (2014) 3365] (http://dx.doi.org/10.1002/cphc.201402251),
+==================
+User Documentation
+==================
 
-* [J. Chem. Phys. 144 (2016) 164111](http://dx.doi.org/10.1063/1.4947213),
+Here we find installation instructions and examples of use.
 
-* [J. Phys. Chem. Lett. 7 (2016) 3084] (http://dx.doi.org/10.1021/acs.jpclett.6b01451).
+.. toctree::
+   :maxdepth: 2
+   :caption: Getting Started
 
+   installation
+   verify_installation
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Examples
+
+   examples
+   example1
+   example2
+   example3
+   example4
+   example5
+
+==================
+Code Documentation
+==================
+
+.. image:: Vibrations_archi.png
+   :alt: Code architecture of Vibrations
+
+Here we find the code documentation.
 
 .. toctree::
    :maxdepth: 2
@@ -27,55 +51,3 @@ of the code, see the following articles
    Wavefunctions
    VibrationalSCF
    VibrationalCI
-
-
-Requirements
-------------
-
-Vibrations is an independent code that for running needs only Python standard
-packages, extended with NumPy and SciPy. However, for typical usage, when normal
-modes from previous calculations are read in, and/or the potential energy surfaces
-are calculated with QM programs, additional packages are needed
-
-* [LocVib package](http://www.christophjacob.eu/) for reading in normal modes,
-   localizing them, etc. (**needed also for running the tests**)
-
-* [PyADF suite](http://pyadf.org) as an interface to QM codes, for calculating
-   potential energy and property surfaces
-
-Installation
-------------
-
-Just clone this repository, update $PYTHONPATH environment variable accordinly,
-and run the tests in `tests` directory.
-
-    cd tests
-    pyton tests.py
-
-Documentation
--------------
-
-Documentation can be built using Sphinx in the `doc` directory.
-
-
-
-Usage
------
-
-See `examples` directory for some examples of typical runs.
-
-Vibrations can be run using Python's interpreter, or interactively with
-some of the interactive Python consoles.
-
-Any suggestions and improvements are welcome.
-
-
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

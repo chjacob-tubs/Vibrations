@@ -1,0 +1,39 @@
+
+ *************************************************************
+ *                                                           *
+ *                            SNF                            *
+ *                                                           *
+ *                   VERSION: SNF V 5.0.2                    *
+ *                                                           *
+ *  VROA DEVELOPMENT VERSION V1.0, Florian Krausbeck, 2015   *
+ *                                                           *
+ *                                                           *
+ *                 Copyright (C) 1999 -- 2015                *
+ *                                                           *
+ *    Carmen Herrmann, Bernd A. Hess, Christoph R. Jacob,    *
+ *     Carsten Kind, Sandra Luber, Johannes Neugebauer,      *
+ *       Markus Reiher, Stephan Schenk, Thomas Weymuth       *
+ *                                                           *
+ *              Laboratory of Physical Chemistry             *
+ *                         ETH Zurich                        *
+ *                                                           *
+ *      This program comes with ABSOLUTELY NO WARRANTY.      *
+ *      This is free software: you can redistribute it       *
+ *      and/or modify it under the terms of the GNU          *
+ *      General Public License.                              *
+ *                                                           *
+ *************************************************************
+
+
+
+Cite this work as: 
+
+T. Weymuth, M. P. Haag, K. Kiewisch, S. Luber,
+S. Schenk, Ch. R. Jacob, C. Herrmann, J. Neu-
+gebauer, M. Reiher,
+J. Comput. Chem., 2012, 33, 2186.
+
+Based on original work in
+
+J. Neugebauer, M. Reiher, C. Kind, B. A. Hess,
+J. Comput. Chem., 2002, 23, 895.

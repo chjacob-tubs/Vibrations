@@ -1,7 +1,8 @@
-# This file is a part of 
-# Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-# Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
-# Michael Welzel, and Christoph R. Jacob.
+# This file is a part of Vibrations:
+# A Python Code for Anharmonic Theoretical Vibrational Spectroscopy
+# Copyright (C) 2014-2026 by Pawel T. Panek, Christoph R. Jacob,
+# Julia Brüggemann, Maria Chekmeneva, Adrian A. Hoeske, Michael Welzel
+# and Mario Wolter
 #
 #    Vibrations is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -19,11 +20,11 @@
 # In scientific publications using Vibrations please cite:
 #   P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.
 #   P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.
-# 
+#
 # The most recent version of Vibrations is available at
 #   http://www.christophjacob.eu/software
 """
-Module related to the vibrational wave functions class
+Module related to the vibrational wave functions class.
 """
 import numpy as np
 
@@ -32,18 +33,19 @@ class Wavefunction(object):
     """
     The class containing and manipulating the vibrational wave functions.
 
-    The class can be initialized with the grids. If none are given, an empty object is created, which can be used
+    The class can be initialized with the grids. If none are given,
+    an empty object is created, which can be used
     to read in an existing wave function.
 
     Parameters
     ----------
     nmodes : int
        number of modes.
-    grids : Vibrations/Grid 
+    grids : Vibrations/Grid
        The grids (Vibrations.Grid).
     ngrid : int
        number of grid points.
-    nstates : int 
+    nstates : int
        number of states.
     wfns : ndarray
        wavefunctions.
@@ -71,7 +73,7 @@ class Wavefunction(object):
 
         Parameters
         ----------
-        fname : Str 
+        fname : Str
            File Name
         """
         from time import strftime
@@ -80,11 +82,12 @@ class Wavefunction(object):
 
     def read_wavefunctions(self, fname='wavefunctions.npy'):
         """
-        Reads in existing vibrational wave functions from a NumPy formatted binary file `*.npy`.
+        Reads in existing vibrational wave functions from
+        a NumPy formatted binary file `*.npy`.
 
         Parameters
         ----------
-        fname : Str 
+        fname : Str
            File Name
         """
         tmpwfns = np.load(fname)

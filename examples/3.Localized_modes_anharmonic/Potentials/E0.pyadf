@@ -14,17 +14,17 @@ V2 = True
 
 ### PATH TO ENERGY FILES
 
-print 'Energy files will be stored in: '
+print('Energy files will be stored in: ')
 #enpath = "/home/pawel/VSCF/ROA/Ala20/Alpha/Potentials/V1/energies" # where the energies are stored
 enpath = os.path.join(pyadfenv.outdir,'energies')
-print enpath
+print(enpath)
 
 
 
-print
-print
-print 'Calculating the reference energy E0'
-print
+print()
+print()
+print('Calculating the reference energy E0')
+print()
 
 mol = molecule(os.path.join(pyadfenv.outdir,'coord'),inputformat='tmol')
 sett = TurbomoleSinglePointSettings(verbose_level=2)

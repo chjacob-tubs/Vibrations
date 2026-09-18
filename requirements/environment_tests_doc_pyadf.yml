@@ -1,0 +1,22 @@
+name: VibENV
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - numpy
+  - matplotlib
+  - openbabel
+  - scipy
+  - pytest
+  - pytest-cov
+  - pylint
+# not available on conda forge, please install via pip
+#  - docstr-coverage
+  - sphinx
+  - sphinx_rtd_theme
+  - sphinx-design
+# not available on conda forge, please install via pip
+#  - sphinx_mdinclude
+# only for pyadf
+  - h5py
+  - xcfun

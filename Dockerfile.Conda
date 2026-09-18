@@ -1,0 +1,30 @@
+# load: basic Docker image
+FROM condaforge/miniforge3
+
+# Create a "work folder"
+WORKDIR /app
+
+# Copy project in this work folder
+COPY . /app
+
+# RUN:
+# Git clone  PyADF
+# Build environment
+RUN git clone https://github.com/chjacob-tubs/pyadf-releases.git \
+    && conda env create -f /app/requirements/environment.yml
+
+# Make RUN commands use the new environment:
+SHELL ["conda", "run", "-n", "VibrationsCondaENV", "/bin/bash", "-c"]
+
+# RUN:
+# Install conda build for package installation and pytest
+# Install local package (editable) via conda develop
+# Activate corresponding Conda environment in container
+
+
+RUN conda install -c conda-forge conda-build \
+    && conda install -c conda-forge pytest \
+    && pip install --no-build-isolation --no-deps -e . \
+    && echo "source activate VibrationsCondaENV" > ~/.bashrc
+
+ENV PYTHONPATH="/app/pyadf-releases/src"

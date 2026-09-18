@@ -4,53 +4,6 @@ import numpy as np
 
 import os
 
-def localize_subset(modes,subset):
-    # method that takes normal modes
-    # and a range of modes, returns them
-    # localized + the cmat
-    tmpmodes = modes.get_subset(subset)
-    tmploc = VibTools.LocVib(tmpmodes, 'PM')
-    tmploc.localize()
-    tmploc.sort_by_residue()
-    tmploc.adjust_signs()
-    tmpcmat = tmploc.get_couplingmat(hessian=True)
-
-    return tmploc.locmodes.modes_mw, tmploc.locmodes.freqs, tmpcmat
-
-def localize_subsets(modes,subsets):
-    # method that takes normal modes and list of lists (beginin and end)
-    # of subsets and make one set of modes localized in subsets
-
-    # first get number of modes in total
-    total = 0
-    modes_mw = np.zeros((0, 3*modes.natoms))
-    freqs = np.zeros((0,))
-
-    for subset in subsets:
-        n = len(subset)
-        total += n
-
-    print 'Modes localized: %i, modes in total: %i' %(total, modes.nmodes)
-
-    if total > modes.nmodes:
-        raise Exception('Number of modes in the subsets is larger than the total number of modes')
-    else:
-        cmat = np.zeros((total, total))
-        actpos = 0 #actual position in the cmat matrix
-        for subset in subsets:
-            tmp = localize_subset(modes, subset)
-            modes_mw = np.concatenate((modes_mw, tmp[0]), axis = 0)
-            freqs = np.concatenate((freqs, tmp[1]), axis = 0)
-            cmat[actpos:actpos + tmp[2].shape[0],actpos:actpos + tmp[2].shape[0]] = tmp[2]
-            actpos = actpos + tmp[2].shape[0] 
-        localmodes = VibTools.VibModes(total, modes.mol)
-        localmodes.set_modes_mw(modes_mw)
-        localmodes.set_freqs(freqs)
-
-        return localmodes, cmat
-
-########## END OF DEFINITIONS ###########
-
 res = VibTools.SNFResults(outname='snf_h2o/snf.out', 
                           restartname='snf_h2o/restart', 
                           coordfile='snf_h2o/coord')
@@ -61,10 +14,10 @@ modes = res.modes
 
 modelist = [[0,1,2]]
 
-print '\n\n'
-print '*** Localization: '
+print('\n\n')
+print('*** Localization: ')
 
-localmodes,cmat = localize_subsets(modes,modelist)
+localmodes,cmat = VibTools.LocVib.localize_subsets(modelist,res.modes, hessian=True, printing=True, loctype="PM") 
 
 # Define the grid
  

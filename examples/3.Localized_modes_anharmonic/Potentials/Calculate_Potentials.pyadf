@@ -14,9 +14,9 @@ V2 = True
 
 ### PATH TO ENERGY FILES
 
-print 'Energy files will be stored in: '
+print('Energy files will be stored in: ')
 enpath = 
-print enpath
+print(enpath)
 
 ### USED CORES; CHANGED AUTOMATICALLY WITH distribute_on_cores.py
 
@@ -46,23 +46,23 @@ def run_single_point(mol,modes,points):
     for p in points:
         fname += str(p) + '_'
     fname = fname[:-1]+'.dat'
-    print 'Energy point: <modes> <grid points> ',modes,points
-    print ' Looking for file: %s' %(os.path.join(enpath,fname))
+    print('Energy point: <modes> <grid points> ',modes,points)
+    print(' Looking for file: %s' %(os.path.join(enpath,fname)))
     try:
         with open(os.path.join(enpath,fname)) as f:
-            print ' -File %s found!' %(os.path.join(enpath,fname))
+            print(' -File %s found!' %(os.path.join(enpath,fname)))
             lines = f.readlines()
             if len(lines) == 1:
-                print '  -the file contains one line'
-                print '  -and following data: ',lines[0].split()
+                print('  -the file contains one line')
+                print('  -and following data: ',lines[0].split())
                 if len(lines[0].split()) == 4:
-                    print '  *Everything seems to be ok, nothing to do'
+                    print('  *Everything seems to be ok, nothing to do')
                 else:
                     raise Exception('The amount of data is wrong')
             else:
                 raise Exception('Too few or too many lines')
     except:
-        print ' !File not found or job not finished, running the job...'
+        print(' !File not found or job not finished, running the job...')
         sett = TurbomoleSinglePointSettings(verbose_level=2)
         job = TurbomoleSinglePointJob(mol,method='dft',settings=sett)
         sett.set_dft_functional('bp86')
@@ -83,7 +83,7 @@ def run_single_point(mol,modes,points):
         with open(os.path.join(enpath,fname),'w+') as f:
             outline = str(en)+' '+str(dm[0])+' '+str(dm[1])+' '+str(dm[2])
             f.write(outline)
-    print "****** DONE ***** "
+    print("****** DONE ***** ")
 
 
     
@@ -115,7 +115,7 @@ def localize_subsets(modes,subsets):
         total += n
 
 
-    print 'Modes localized: %i, modes in total: %i' %(total, modes.nmodes)
+    print('Modes localized: %i, modes in total: %i' %(total, modes.nmodes))
 
     if total > modes.nmodes:
         raise Exception('Number of modes in the subsets is larger than the total number of modes')
@@ -152,8 +152,8 @@ modes = res.modes
 
 modelist = [[0,1,2]]
 
-print '\n\n'
-print '*** Localization: '
+print('\n\n')
+print('*** Localization: ')
 
 
 
@@ -165,7 +165,7 @@ grid.generate_grids(ngrid,amp)
 nmodes = localmodes.nmodes
 counter = 0
 
-print 'Core: %i' %(actcore)
+print('Core: %i' %(actcore))
 
 
 #myfiles.import_resultsdir('/home/pawel/VSCF/ROA/310-disub/Ala10/Potentials/1D/pyadf_results.126609')
@@ -186,7 +186,7 @@ if V1:
         for j in range(ngrid):
             dest = counter%totcores + 1
             if dest == actcore:
-                print ' *** Calculating point: ',i,',',j
+                print(' *** Calculating point: ',i,',',j)
                 mol = grid.get_pyadf_molecule([i],[j])
                 run_single_point(mol,[i],[j])
             counter += 1
@@ -198,12 +198,12 @@ if V2:
                 for l in range(ngrid):
                     dest = counter%totcores + 1
                     if dest == actcore:
-                        print ' *** Calculating point: Mode=',i,' Point=',k,' Mode=',j,' Point=',l
+                        print(' *** Calculating point: Mode=',i,' Point=',k,' Mode=',j,' Point=',l)
                         mol = grid.get_pyadf_molecule([i,j],[k,l])
                         run_single_point(mol,[i,j],[k,l])
                     counter += 1
 
-print
-print '*** Calculations done!'
+print()
+print('*** Calculations done!')
 
 

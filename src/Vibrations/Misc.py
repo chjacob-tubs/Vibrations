@@ -1,7 +1,8 @@
-# This file is a part of 
-# Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-# Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
-# Michael Welzel, and Christoph R. Jacob.
+# This file is a part of Vibrations:
+# A Python Code for Anharmonic Theoretical Vibrational Spectroscopy
+# Copyright (C) 2014-2026 by Pawel T. Panek, Christoph R. Jacob,
+# Julia Brüggemann, Maria Chekmeneva, Adrian A. Hoeske, Michael Welzel
+# and Mario Wolter
 #
 #    Vibrations is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -19,7 +20,7 @@
 # In scientific publications using Vibrations please cite:
 #   P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.
 #   P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.
-# 
+#
 # The most recent version of Vibrations is available at
 #   http://www.christophjacob.eu/software
 """
@@ -44,6 +45,9 @@ Module containing more or less useful functions and constants.
 @var intfactor: Infrared integral absorption prefactor
 """
 
+import time
+import cProfile
+
 
 def fancy_box(s):  # doing a fancy box around a string
     """
@@ -57,37 +61,33 @@ def fancy_box(s):  # doing a fancy box around a string
 
     s = str(s)
     s = s.strip()
-    l = len(s)
-    l += 10
+    L = len(s)
+    L += 10
 
-    s1 = '+'+(l-2)*'-'+'+\n'
-    s2 = '|'+3*'-'+' '+s+' '+3*'-'+'|\n'
+    s1 = '+'+(L-2)*'-'+'+\n'
+    s2 = '|' + 3 * '-' + ' ' + s + ' ' + 3 * '-' + '|\n'
 
-    return s1+s2+s1
+    return s1 + s2 + s1
 
-
-import time
-
-import cProfile
 
 def do_cprofile(func):
     """
     Profiler decorator
 
-    cProfile provides deterministic profiling of Python programs. 
-    A profile is a set of statistics that describes how often and 
+    cProfile provides deterministic profiling of Python programs.
+    A profile is a set of statistics that describes how often and
     for how long various parts of the program executed.
-    
+
     Example:
-    
+
     @vibrations.do_cprofile
-    def example_function():  
+    def example_function():
         return 1
 
     Parameters
     ----------
     func : arbitrary function
-       You can use an arbitrary function. 
+       You can use an arbitrary function.
     """
     def profiled_func(*args, **kwargs):
         profile = cProfile.Profile()
@@ -100,6 +100,7 @@ def do_cprofile(func):
             profile.print_stats()
     return profiled_func
 
+
 def timefunc(f):
     """
     Timing decorator
@@ -107,13 +108,13 @@ def timefunc(f):
     Shows the elapsed time to execute a function.
 
     @vibrations.timefunc
-    def example_function():  
+    def example_function():
         return 1
 
     Parameters
     ----------
     func : arbitrary function
-       You can use an arbitrary function. 
+       You can use an arbitrary function.
     """
     def f_timer(*args, **kwargs):
         start = time.time()
@@ -123,11 +124,13 @@ def timefunc(f):
         return result
     return f_timer
 
+
 def _pickle_method(method):
     func_name = method.__func__.__name__
     obj = method.__self__
     cls = method.__self__.__class__
     return _unpickle_method, (func_name, obj, cls)
+
 
 def _unpickle_method(func_name, obj, cls):
     for cls in cls.mro():
@@ -138,6 +141,7 @@ def _unpickle_method(func_name, obj, cls):
         else:
             break
     return func.__get__(obj, cls)
+
 
 pi = 3.141592653589793
 cvel = 137.0359895
@@ -166,4 +170,6 @@ atu_in_s = 2.41888432650516e-17  # atomic time unit in seconds
 
 cm_in_au = atu_in_s * (2.0*pi*1e2*cvel_ms)   # cm-1 -> au
 
-intfactor = 2.5066413842056297  # factor to calculate integral absorption coefficient having  [cm-1]  and  [Debye]
+# factor to calculate integral absorption
+# coefficient having  [cm-1]  and  [Debye]
+intfactor = 2.5066413842056297
