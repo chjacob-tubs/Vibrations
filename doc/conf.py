@@ -19,7 +19,7 @@
 
 project = 'Vibrations'
 copyright = '2009 - 2026 by Christoph Jacob and others'
-author = 'Pawel T. Panek, Christoph Jacob, Julia Brueggemann, Maria Chekmeneva, Michael Welzel, Mario Wolter, and others'
+author = 'Pawel T. Panek, Christoph Jacob, Julia Brueggemann, Adrian A. Hoeske, Maria Chekmeneva, Michael Welzel, Mario Wolter, and others'
 
 # The full version, including alpha/beta/rc tags
 release = '1.0'
