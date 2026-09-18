@@ -26,7 +26,6 @@ default:
         - module load $CONDA_MODULE_LOAD
         - conda activate $CONDA_ENV
         - cd $CI_PROJECT_DIR
-        #- git submodule update --init --recursive
         - export TMPDIR=/scratch/$USER/ci-pipeline_${CI_PIPELINE_ID}/${CI_JOB_ID}
         - mkdir -p $TMPDIR
         - cd $TMPDIR
@@ -57,20 +56,24 @@ install_vibrations:
             if conda env list | grep -q $CONDA_ENV; then
                 conda env remove --name $CONDA_ENV --yes
             fi
-        - conda create --name $CONDA_ENV numpy matplotlib openbabel scipy xcfun 
-        - conda activate $CONDA_ENV
+        #packages from environment.yml files, special file needed as long as pyADF fails to declare its dependencies correctly
+        - conda env create -n $CONDA_ENV -f $CI_PROJECT_DIR/requirements/environment_tests_doc_pyadf.yml -y
+        - conda activate $CONDA_ENV #needed as long as pyADF fails to declare this as a dependency
+        - pip install docstr-coverage sphinx-mdinclude # not available on conda-forge
         #pyadf installation
         - git clone https://github.com/chjacob-tubs/pyadf-releases.git 
         - cd pyadf-releases 
         - pip install .
         - cd $CI_PROJECT_DIR
-        #for unittests and documentation
-        - conda install -c conda-forge pytest pytest-cov pylint sphinx  
-        - pip install docstr-coverage sphinx-mdinclude sphinx-rtd-theme
+
   stage: build
   script:
-    #- git submodule update --init --recursive
-    - pip install -e .
+    - pip install --no-deps -e .
+ #   - pip install --no-deps -e ".[fints]"
+ # artifacts:
+ #   paths:
+ #     - src/Vibrations/fints.so
+ #   expire_in: 1 day
 
        
 
@@ -83,6 +86,13 @@ unittests-VibTools:
     stage: unittest
     script:
         - pytest -v $CI_PROJECT_DIR/src/VibTools/tests
+
+#unittests-VibTools-fints:
+#    stage: unittest
+#    dependencies:
+#      - install_vibrations
+#    script:
+#        - pytest -v $CI_PROJECT_DIR/src/VibTools/tests
 
 
 ### Vibrations #####
@@ -128,6 +138,12 @@ unittest-VCI:
     script:
         - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_VCI.py
 
+#unittest-VCI-fints:
+#    stage: unittest
+#    dependencies:
+#      - install_vibrations
+#    script:
+#        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_VCI.py
 
 unittest-Misc:
     stage: unittest

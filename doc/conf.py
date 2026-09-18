@@ -18,8 +18,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Vibrations'
-copyright = '2022, Pawel T. Panek, Christoph R. Jacob and Michael O. Welzel'
-author = 'Pawel T. Panek, Christoph R. Jacob and Michael O. Welzel'
+copyright = '2009 - 2026 by Christoph Jacob and others'
+author = 'Pawel T. Panek, Christoph Jacob, Julia Brueggemann, Maria Chekmeneva, Michael Welzel, Mario Wolter, and others'
 
 # The full version, including alpha/beta/rc tags
 release = '1.0'

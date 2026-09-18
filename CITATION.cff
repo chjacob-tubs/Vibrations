@@ -1,0 +1,49 @@
+cff-version: 1.2.0
+title: Vibrations
+message: Vibrations is a Python code for vibrational calculations with user-defined vibrational modes
+type: software
+authors:
+  - given-names: Pawel T.
+    family-names: Panek
+    affiliation: Technische Universität Braunschweig
+  - given-names: Christoph R.
+    family-names: Jacob
+    email: c.jacob@tu-braunschweig.de
+    affiliation: Technische Universität Braunschweig
+    orcid: 'https://orcid.org/0000-0002-6227-8476'
+  - given-names: Julia
+    family-names: Brüggemann
+    affiliation: Technische Universität Braunschweig
+    orcid: 'https://orcid.org/0000-0003-4252-4980'
+  - given-names: Maria
+    family-names: Chekmeneva
+    affiliation: Technische Universität Braunschweig
+    orcid: 'https://orcid.org/0009-0008-6520-8407'
+  - given-names: Adrian A.
+    family-names: Hoeske
+    affiliation: Technische Universität Braunschweig
+    orcid: 'https://orcid.org/0000-0002-9061-254X'
+  - given-names: Michael
+    family-names: Welzel
+    affiliation: Technische Universität Braunschweig
+    orcid: 'http://orcid.org/0000-0002-9996-9254'
+  - given-names: Mario
+    family-names: Wolter
+    affiliation: Technische Universität Braunschweig
+    orcid: 'https://orcid.org/0000-0001-6948-6801'
+identifiers:
+  - type: doi
+    value: https://doi.org/10.5281/zenodo.1653200
+repository-code: 'https://github.com/chjacob-tubs/Vibrations'
+url: 'https://www.tu-braunschweig.de/pci/agjacob/software'
+repository: 'https://gitlab.pyadf.org/vib/vibrations'
+abstract: >-
+  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
+keywords:
+  - quantum chemistry
+  - scripting
+  - theoretical spectroscopy
+  - vibrational spectroscopy
+  - normal modes
+license: GPL-3.0
+version: 1.0

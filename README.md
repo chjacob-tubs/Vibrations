@@ -1,12 +1,3 @@
-[![pipeline status](https://gitlab.pyadf.org/vib/vibrations/badges/update_doc/pipeline.svg)](https://gitlab.pyadf.org/vib/vibrations/-/commits/update_doc)
-[![Custom Badge](https://gitlab.pyadf.org/vib/vibrations/badges/update_doc/coverage.svg?min_medium=30&min_acceptable=50&min_good=75&key_text=Unittest+Coverage&key_width=130)](https://gitlab.pyadf.org/vib/vibrations/-/commits/update_doc)
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
-[![Numpy 1.23.4](https://img.shields.io/badge/numpy-1.23.4-blue.svg)](https://numpy.org/devdocs/release/1.23.4-notes.html)
-[![Matplotlib 3.6.1](https://img.shields.io/badge/matplotlib-3.6.1-blue.svg)](https://matplotlib.org/stable/users/installing/index.html)
-[![Scipy 1.9.3](https://img.shields.io/badge/scipy-1.9.3-blue.svg)](https://scipy.org/stable/users/installing/index.html)
-[![Openbabel 3.1.1](https://img.shields.io/badge/openbabel-3.1.1-cornflowerblue.svg)](https://bioweb.pasteur.fr/packages/pack@openbabel@3.1.1)
-[![Openbabel 3.1.1.16](https://img.shields.io/badge/openbabel--wheel-3.1.1.16-blueviolet.svg)](https://pypi.org/project/openbabel-wheel/3.1.1.16/)
-
 # Vibrations
 
 Vibrations is a Python code for vibrational calculations with
@@ -21,7 +12,7 @@ of the code, see the following articles
 
 We can find the documentation for LocVib/VibTools on the website
 
-[Vibrations Documentation](https://vib.gitlab-pages.pyadf.org/vibrations)
+[Vibrations Documentation](https://vibrations.readthedocs.io/en/latest/)
 
 Download-Link:
 
@@ -35,39 +26,70 @@ packages, extended with NumPy, SciPy and Openbabel(for LocVib/PyADF). However, f
 modes from previous calculations are read in, and/or the potential energy surfaces 
 are calculated with QM programs, additional packages are needed
 
- * [LocVib package](https://github.com/chjacob-tubs/LocVib) for reading normal modes, 
-   localizing them,
+ * Already included as git subtree in /src/LocVib: [LocVib package](https://github.com/chjacob-tubs/LocVib) for reading normal modes and localizing them.
 
- * [PyADF suite](http://pyadf.org) as an interface to QM codes, for calculating 
+ * To install manually: [PyADF suite](http://pyadf.org) as an interface to QM codes, for calculating 
    potential energy and property surfaces.
 
 ## Installation
 
-Just clone this repository, update $PYTHONPATH environment variable accordinly.
-Or install it using pip by using
+Just clone this repository, update $PYTHONPATH environment variable accordingly.
 
-    vibrations/% pip install .
+Or install it using pip install in the folder where pyproject.toml is located.
 
-in the folder where `setup.py` is located.
+There are different predefined setup variants depending on your use case and prefered openbabel package:
 
-Verify the installation with running the tests in the `tests/` and `unittests/` directory.
+If you want to use openbabel package install with
+```bash
+pip install ".[openbabel]"
+```
 
-    vibrations/tests/% pyton tests.py
-    vibrations/unittests/% pytest -v .
+If you want to use openbabel-wheel package install with
+```bash
+pip install ".[openbabel-wheel]"
+```
+
+If you want to run the tests and/or build the documentation it is recommended to do a full installation
+```bash
+pip install ".[full-openbabel]"
+```
+or
+```bash
+pip install ".[full-openbabel-wheel]"
+```
+
+You can build the Fortran libraries automatically with
+
+```bash
+pip install ".[fints]"
+```
+
+More details are in the documentation.
+
+Verify the installation with running the tests:
+
+```bash
+    src/Vibrations/tests/% python tests.py
+    src/Vibrations/unittests/% pytest -v .
+```
 
 Other installation options can be found in the further documentation.
 
 ## Documentation
 
-We can find the documentation, as mentioned above, on the Homepage (https://vib.gitlab-pages.pyadf.org/vibrations) or we can generate the HTML documentation ourselves with Sphinx.
+We can find the documentation, as mentioned above, on the Homepage (https://vibrations.readthedocs.io/en/latest/) or we can generate the HTML documentation ourselves with Sphinx.
 
-Build documentation via Sphinx and extension packages (must be installed before).
+Build documentation via Sphinx and extension packages (works in docs installations only):
 
-    vibrations/doc/ % sphinx-build . Build
+```bash
+doc/ % sphinx-build . build
+```
 
 Opening the index.html file takes you to the home directory of the code documentation:
 
-    vibrations/doc/Build/ % open index.html
+```bash
+doc/build/ % open index.html
+```
 
 ## Usage
 
