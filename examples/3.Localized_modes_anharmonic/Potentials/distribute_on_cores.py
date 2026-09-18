@@ -12,9 +12,9 @@ runner = sys.argv[2]
 
 endir = 'energies'
 
-print 'Cores: ', nodes
-print 'Runner:', runner
-print 'Energies stored to: ', endir
+print('Cores: ', nodes)
+print('Runner:', runner)
+print('Energies stored to: ', endir)
 os.mkdir(endir)
 os.chdir(endir)
 endirpath = os.getcwd()

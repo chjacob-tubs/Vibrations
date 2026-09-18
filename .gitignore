@@ -1,6 +1,33 @@
 *.pyc
+
+*.egg-info/
+.idea
+.vscode
+
+# __pycache__
+unittests/__pycache__
+unittests/.coverage
+
+# coverage
+.coverage
+tests/.coverage
+src/.coverage
+
+
+# log
 *.log
 fints.so
 fints.so.dSYM/
+fints.*.so
 
+# Doc
 *.html
+doc/_build/
+doc/Build/
+doc/build/
+
+## DS Store
+.DS_Store
+._.DS_Store
+doc/.DS_Store
+

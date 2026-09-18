@@ -1,0 +1,9 @@
+name: VibENV
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - numpy
+  - matplotlib
+  - openbabel
+  - scipy

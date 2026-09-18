@@ -31,11 +31,11 @@ res.mol.write(os.path.join(dir_grid, 'grid_E0.dat'))
 
 for i in range(modes.nmodes):
     for j in range(ngrid):
-        print ' *** Writing  Mode: ',i,', Point: ',j
+        print(' *** Writing  Mode: ',i,', Point: ',j)
         mol = grid.get_molecule([i],[j])
         filename = 'grid_v1_%i_%i.xyz' % (i,j)
         mol.write(os.path.join(dir_grid, filename))
-    print
+    print()
  
 # generate xyz-files for 2-Mode Potentials
 
@@ -43,7 +43,7 @@ for i in range(modes.nmodes):
     for j in range(i+1,modes.nmodes):
         for k in range(ngrid):
             for l in range(ngrid):
-                print ' *** Writing V2 - Mode:',i,j,', Point: ',k,l
+                print(' *** Writing V2 - Mode:',i,j,', Point: ',k,l)
                 mol = grid.get_molecule([i,j],[k,l])
                 filename = 'grid_v2_%i_%i_%i_%i.xyz' % (i,j,k,l)
                 mol.write(os.path.join(dir_grid, filename))

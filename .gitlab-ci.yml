@@ -1,136 +1,255 @@
 variables:
-  SCHEDULER_PARAMETERS: "-n 1 -p nitrogen"
   USER: legit
   VIBRA_HOME: $CI_BUILDS_DIR/$CI_PROJECT_PATH
+  GIT_SUBMODULE_STRATEGY: recursive
+  CONDA_MODULE_LOAD: python/miniforge3-25.3.0
+  CONDA_ENV: "pipeline_${CI_PIPELINE_ID}"
+  CONDA_ENV_BASE: ci_vibrations
 
+workflow:
+    rules: # these are the rules for any pipelines to start
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        - if: '$CI_PIPELINE_SOURCE == "web"'
+        - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
+default:
+    id_tokens: # mandatory to authenticate with runner, see issue #75 in pyadf
+        SITE_ID_TOKEN:
+            aud: https://gitlab.pyadf.org
+    tags:
+      - local
+      - shell
+    before_script:
+        - hostname
+        - . /usr/share/modules/init/bash
+        - . /usr/share/modules/init/setup
+        - module load $CONDA_MODULE_LOAD
+        - conda activate $CONDA_ENV
+        - cd $CI_PROJECT_DIR
+        - export TMPDIR=/scratch/$USER/ci-pipeline_${CI_PIPELINE_ID}/${CI_JOB_ID}
+        - mkdir -p $TMPDIR
+        - cd $TMPDIR
+        - echo "Running in directory $TMPDIR "
 
 stages:
     - build
-    - test
+    - unittest
+    - quality
+    - autodoc
+    - deploy
+    - cleanup
 
-before_script:
+install_vibrations:
+  tags:
+    - local
+    - shell
+  rules:
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        - if: '$CI_PIPELINE_SOURCE == "web"'
+        - if: '$CI_PIPELINE_SOURCE == "schedule"' # schedules can be created via the web interface
+  before_script:
         - hostname
-        - module load module_include_dir
         - . /usr/share/modules/init/bash
-        - . /usr/share/modules/init/setup 
-        - export PYTHONPATH=$PYTHONPATH:$VIBRA_HOME/src
-        - module load python/anaconda3-2021.11
-        - source activate base
-        - conda init bash
-        - conda activate ci_vibrations
-        - module load pyadf/master-20220201
-        - module list 
-        - pip list
-        
-        
-check-requirements:
-    tags:
-        - nodes
-    stage: build
+        - . /usr/share/modules/init/setup
+        - module load $CONDA_MODULE_LOAD
+        - |-
+            if conda env list | grep -q $CONDA_ENV; then
+                conda env remove --name $CONDA_ENV --yes
+            fi
+        #packages from environment.yml files, special file needed as long as pyADF fails to declare its dependencies correctly
+        - conda env create -n $CONDA_ENV -f $CI_PROJECT_DIR/requirements/environment_tests_doc_pyadf.yml -y
+        - conda activate $CONDA_ENV #needed as long as pyADF fails to declare this as a dependency
+        - pip install docstr-coverage sphinx-mdinclude # not available on conda-forge
+        #pyadf installation
+        - git clone https://github.com/chjacob-tubs/pyadf-releases.git 
+        - cd pyadf-releases 
+        - pip install .
+        - cd $CI_PROJECT_DIR
+
+  stage: build
+  script:
+    - pip install --no-deps -e .
+ #   - pip install --no-deps -e ".[fints]"
+ # artifacts:
+ #   paths:
+ #     - src/Vibrations/fints.so
+ #   expire_in: 1 day
+
+       
+
+###################
+#### UNITTESTS ###########################################################
+###################
+
+##### VibTools #####
+unittests-VibTools:
+    stage: unittest
     script:
-        - hostname
-        - module load module_include_dir
-        - . /usr/share/modules/init/bash
-        - . /usr/share/modules/init/setup 
-        - export PYTHONPATH=$PYTHONPATH:$VIBRA_HOME/src
-        - module load python/anaconda3-2021.11
-        - source activate base
-        - conda activate ci_vibrations
-        - conda env list
-        - conda list
-        - module load pyadf/master-20220201
+        - pytest -v $CI_PROJECT_DIR/src/VibTools/tests
+
+#unittests-VibTools-fints:
+#    stage: unittest
+#    dependencies:
+#      - install_vibrations
+#    script:
+#        - pytest -v $CI_PROJECT_DIR/src/VibTools/tests
 
 
-unittest-Grids-Pawel:
-    tags:
-        - nodes
-    stage: test
+### Vibrations #####
+
+unittest-Grid-Pawel:
+    stage: unittest
     script:
-        - cd unittests/
-        - pytest -v test_Grids_unittest.py
-        - cd ../
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_Grids_unittest.py
+
 
 unittest-Surface-Pawel:
-    tags:
-        - nodes
-    stage: test
+    stage: unittest
     script:
-        - cd unittests/
-        - pytest -v test_Surfaces_unittest.py
-        - cd ../
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_Surfaces_unittest.py
+
 
 unittest-Grids:
-    tags:
-        - nodes
-    stage: test
+    stage: unittest
     script:
-        - cd unittests/
-        - pytest -v test_Grids.py
-        - cd ../
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_Grids.py
+
 
 unittest-Surface:
-    tags:
-        - nodes
-    stage: test
+    stage: unittest
     script:
-        - cd unittests/
-        - pytest -v test_Surface.py
-        - cd ../
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_Surface.py
 
 
 unittest-Wavefunctions:
-    tags:
-        - nodes
-    stage: test
+    stage: unittest
     script:
-        - cd unittests/
-        - pytest -v test_Wavefunction.py
-        - cd ../
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_Wavefunction.py
+
 
 unittest-VSCF:
-    tags:
-        - nodes
-    stage: test
+    stage: unittest
     script:
-        - cd unittests/
-        - pytest -v test_VSCF.py
-        - cd ../
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_VSCF.py
+
 
 unittest-VCI:
-    tags:
-        - nodes
-    stage: test
+    stage: unittest
     script:
-        - cd unittests/
-        - pytest -v test_VCI.py
-        - cd ../
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_VCI.py
+
+#unittest-VCI-fints:
+#    stage: unittest
+#    dependencies:
+#      - install_vibrations
+#    script:
+#        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_VCI.py
 
 unittest-Misc:
-    tags:
-        - nodes
-    stage: test
+    stage: unittest
     script:
-        - cd unittests/
-        - pytest -v test_Misc.py
-        - cd ../
+        - pytest -v $CI_PROJECT_DIR/src/Vibrations/unittests/test_Misc.py
 
+################
+# CODE QUALITY ####################################################################
+################
 
-
-test-vibrations-Pawel:
+unittest-Coverage:
+    stage: quality
     tags:
-        - nodes
-    stage: test
+        - local
+        - shell
     script:
-        - cd unittests/
-        - pytest -v test_Surfaces_unittest.py
-        - cd ../
+        - pytest --cov=Vibrations --cov-report term --cov-report xml:$CI_PROJECT_DIR/coverage.xml $CI_PROJECT_DIR/src/Vibrations/unittests/
+    coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+    artifacts:
+      reports:
+        coverage_report:
+          coverage_format: cobertura
+          path: $CI_PROJECT_DIR/coverage.xml
 
- 
-test-sphinx:
+unittest-Report:
+    stage: quality
     tags:
-        - nodes
-    stage: test
+        - local
+        - shell
     script:
-        - cd doc/
-        - sphinx-build . _build/
-        - cd ../
+        - pytest --junitxml=$CI_PROJECT_DIR/report.xml $CI_PROJECT_DIR/src/Vibrations/unittests/
+    artifacts:
+      when: always
+      reports:
+        junit: $CI_PROJECT_DIR/report.xml
+
+unittest-Min-Coverage:
+    stage: quality
+    script:
+        - pytest --cov=Vibrations --cov-fail-under=56 $CI_PROJECT_DIR/src/Vibrations/unittests/
+
+
+docstr-Min-Coverage:
+    stage: quality
+    tags:
+        - local
+        - shell
+    script:
+        - docstr-coverage --fail-under=88 -b $CI_PROJECT_DIR $CI_PROJECT_DIR/src/Vibrations/*.py
+    artifacts:
+      paths:
+        - $CI_PROJECT_DIR/docstr_coverage_badge.svg
+
+Style-Check-Min:
+    stage: quality
+    script:
+        - pylint --fail-under=8.1 $CI_PROJECT_DIR/src/Vibrations
+
+
+#######################
+#### INTEGRATIONTEST ###########################################################
+#######################
+
+integrationtest-Vibrations:
+    stage: unittest
+    script:
+        - python $CI_PROJECT_DIR/src/Vibrations/tests/tests.py
+
+#######################
+#### DOCUMENTATION #############################################################
+#######################
+
+build-sphinx-doc:
+    stage: autodoc
+    script:
+        - sphinx-build $CI_PROJECT_DIR/doc/ $TMPDIR/build
+
+
+pages:
+    stage: deploy
+    tags:
+      - local
+      - shell
+    script:
+        - sphinx-build $CI_PROJECT_DIR/doc/ $TMPDIR/build
+        - mkdir $CI_PROJECT_DIR/public
+        - cp -r $TMPDIR/build/* $CI_PROJECT_DIR/public/
+    artifacts:
+        paths:
+         - $CI_PROJECT_DIR/public
+
+
+##################
+#### CLEAN UP ##################################################################
+##################
+
+cleanup_conda:
+    tags:
+      - local
+      - shell
+    before_script:
+        - hostname
+        - . /usr/share/modules/init/bash
+        - . /usr/share/modules/init/setup
+        - module load $CONDA_MODULE_LOAD
+    stage: cleanup
+    when: always
+    script:
+        - conda env remove --name $CONDA_ENV --yes

@@ -1,0 +1,21 @@
+# Load basic Docker image
+FROM condaforge/miniforge3
+
+# Create a "work folder"
+WORKDIR /app
+
+# Copy project in this work folder
+COPY . /app
+
+# RUN:
+# Installation of dependencies
+# Installation of package itself
+# Git clone PyADF
+RUN  python -m pip install  ".[full-openbabel]" \
+     && pip install /app/ \
+     && git clone https://github.com/chjacob-tubs/pyadf-releases.git
+
+## Installation of PyADF
+ENV PYTHONPATH="/app/pyadf-releases/src"
+
+WORKDIR /app/doc/

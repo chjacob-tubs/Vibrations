@@ -1,7 +1,8 @@
-# This file is a part of 
-# Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-# Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
-# Michael Welzel, and Christoph R. Jacob.
+# This file is a part of Vibrations:
+# A Python Code for Anharmonic Theoretical Vibrational Spectroscopy
+# Copyright (C) 2014-2026 by Pawel T. Panek, Christoph R. Jacob,
+# Julia Brüggemann, Maria Chekmeneva, Adrian A. Hoeske, Michael Welzel
+# and Mario Wolter
 #
 #    Vibrations is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -19,11 +20,11 @@
 # In scientific publications using Vibrations please cite:
 #   P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.
 #   P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.
-# 
+#
 # The most recent version of Vibrations is available at
 #   http://www.christophjacob.eu/software
 """
-Module containing classes related to property hypersurfaces: 
+Module containing classes related to property hypersurfaces:
 potential energy surface, dipole moment surface, and other
 properties surfaces.
 """
@@ -35,22 +36,26 @@ from . import Misc
 class Surface(object):
     """
     Class containing and manipulating a generic property surface.
-    
-    An object is initialized with existing grids, the order of the surface (how many modes are involved), and
-    the shape of the property: (1,) for energy, (3,) for dipole moment, (6,) for polarizability.
-    
+
+    An object is initialized with existing grids, the order of the surface
+    (how many modes are involved), and the shape of the property:
+    (1,) for energy, (3,) for dipole moment, (6,) for polarizability.
+
     Parameters
     ----------
     grids : Vibrations grid object
-        Class containing and manipulating the grids. The grids are used for evaluation of the property surfaces, and for integrals in the VSCF/VCI calculations.
+        Class containing and manipulating the grids.
+        The grids are used for evaluation of the property surfaces,
+        and for integrals in the VSCF/VCI calculations.
     ngrid : int
        number of grid points.
-    order : Int 
+    order : Int
         Order (or dimensionality) of the surface
-    prop : Tuple of Integer 
+    prop : Tuple of Integer
         Shape of the property, e.g. (1,) for energy
     empty : Bool
-        If it is set to False, the attributes data and indices are processed automatically for certain methods. 
+        If it is set to False, the attributes data and indices are processed
+        automatically for certain methods.
     indices : list
         indices of the modes corresponding to the data stored in data.
     data : list
@@ -76,8 +81,8 @@ class Surface(object):
 
         self.order = order
         self.prop = prop
-
-        self.indices = []  # indices of the modes corresponding to the data stored in self.data
+        # indices of the modes corresponding to the data stored in self.data
+        self.indices = []
         self.data = []  # data (potential, dipole moment, etc.)
 
     def __str__(self):
@@ -92,10 +97,10 @@ class Surface(object):
     def delete(self, *lind):
         """
         Deleting a surface of given index (ind)
-        
+
         Parameters
         ----------
-        lind : list of tuples 
+        lind : list of tuples
            List of tuples of modes
         """
         for ind in lind:
@@ -105,19 +110,20 @@ class Surface(object):
                 i = self.indices.index(tuple(ind))
                 self.indices.pop(i)
                 self.data.pop(i)
-            except:
-                print('Surface of index ',ind,' not found')
+            except Exception:
+                print('Surface of index ', ind, ' not found')
 
     def zero(self):
         """
         Zeroing all surfaces.
         """
-        for i,e in enumerate(self.data):
-            self.data[i] *=0.0
+        for i, e in enumerate(self.data):
+            self.data[i] *= 0.0
 
     def __getitem__(self, item):
         """
-        Gets a surface/element for given indices, Nindices == 2*Nmodes => for a given grid point
+        Gets a surface/element for given indices,
+        Nindices == 2*Nmodes => for a given grid point
 
         Parameters
         ----------
@@ -136,36 +142,48 @@ class Surface(object):
         if len(item) == self.order:
             ind = list(item)
             newind = ind[:]
-            newind.sort() #  the data in the object is sorted according to the indices
-            #whichelement = self.indices.index(tuple(newind))
-            #print whichelement
+            # the data in the object is sorted according to the indices
+            newind.sort()
+            # whichelement = self.indices.index(tuple(newind))
+            # print whichelement
             try:
-                #return np.transpose(self.data[self.indices.index(tuple(newind))],sorted(range(len(ind)), key=lambda k: ind[k]))
-                return np.transpose(self.data[self.indices.index(tuple(newind))],axes=(tuple([newind.index(i) for i in ind])))
-            except:
-                #pass
+                # return np.transpose(
+                #     self.data[self.indices.index(tuple(newind))],
+                #     sorted(range(len(ind)), key=lambda k: ind[k])
+                #     )
+                return np.transpose(
+                    self.data[self.indices.index(tuple(newind))],
+                    axes=(tuple([newind.index(i) for i in ind])))
+            except Exception:
+                # pass
                 raise Exception('Surface not found')
 
         elif len(item) == 2 * self.order:
             ind = list(item)
-            newind = list(zip(ind[:self.order],ind[self.order:]))
+            newind = list(zip(ind[:self.order], ind[self.order:]))
             newind.sort()
             newind2 = [x[0] for x in newind] + [x[1] for x in newind]
             modes = newind2[:self.order]
             points = newind2[self.order:]
             try:
-                #return  self.data[self.indices.index(tuple(newind[:self.order]))][tuple(newind[self.order:])]
-                return  self.data[self.indices.index(tuple(modes))][tuple(points)]
-            except:
+                # return self.data[
+                #            self.indices.index(tuple(newind[:self.order]))
+                #            ][tuple(newind[self.order:])]
+                # return  self.data[self.indices.index(tuple(modes))]\
+                #         [tuple(points)]
+                data = (self.data[self.indices.index(tuple(modes))]
+                        [tuple(points)])
+                return data
+
+            except Exception:
                 raise Exception('Point not found')
         else:
             pass
 
 
-
 class Potential(Surface):
     """
-    Potential class 
+    Potential class
     Contains attributes inherited from Vibrations.Surface
     """
 
@@ -191,14 +209,14 @@ class Potential(Surface):
         res.append(self.data[self.index])
         return tuple(res)
 
-
     def read_np(self, fname):
         """
-        Reads in the existing potential energy surface from a NumPy formatted binary file `*.npy`.
+        Reads in the existing potential energy surface from a NumPy
+        formatted binary file `*.npy`.
 
         Parameters
         ----------
-        fname : Str 
+        fname : Str
            File name, without extension
         """
 
@@ -215,45 +233,45 @@ class Potential(Surface):
         elif len(tmparray.shape) == 6:
             if self.order != 3:
                 raise Exception('Shape mismatch')
-                
+
         elif len(tmparray.shape) == 8:
             if self.order != 4:
                 raise Exception('Shape mismatch')
         else:
-            raise Exception('Input data shape mismatch, check shape of stored arrays')
-
-
-
+            raise Exception('Input data shape mismatch,\
+             check shape of stored arrays')
 
         if self.order == 1:
             for i in range(tmparray.shape[0]):
                 self.indices.append(i)
-                self.data.append(tmparray[i,:])
+                self.data.append(tmparray[i, :])
 
         elif self.order == 2:
             for i in range(tmparray.shape[0]):
-                for j in range(i+1,tmparray.shape[0]):
-                    if not np.all(tmparray[i,j,:,:]==0.0):
-                        self.indices.append((i,j))
-                        self.data.append(tmparray[i,j,:,:])
-        
+                for j in range(i+1, tmparray.shape[0]):
+                    if not np.all(tmparray[i, j, :, :] == 0.0):
+                        self.indices.append((i, j))
+                        self.data.append(tmparray[i, j, :, :])
+
         elif self.order == 3:
             for i in range(tmparray.shape[0]):
                 for j in range(i+1, tmparray.shape[0]):
                     for k in range(j+1, tmparray.shape[0]):
-                        if not np.all(tmparray[i,j,k,:,:,:]==0.0):
-                            self.indices.append((i,j,k))
-                            self.data.append(tmparray[i,j,k,:,:,:])
+                        if not np.all(tmparray[i, j, k, :, :, :] == 0.0):
+                            self.indices.append((i, j, k))
+                            self.data.append(tmparray[i, j, k, :, :, :])
 
         elif self.order == 4:
             nmodes = tmparray.shape[0]
             for i in range(nmodes):
                 for j in range(i+1, nmodes):
                     for k in range(j+1, nmodes):
-                        for l in range(k+1, nmodes):
-                            if not np.all(tmparray[i,j,k,l,:,:,:,:] == 0.0):
-                                self.indices.append((i,j,k,l))
-                                self.data.append(tmparray[i,j,k,l,:,:,:,:])
+                        for L in range(k+1, nmodes):
+                            if not np.all(tmparray[i, j, k, L,
+                                                   :, :, :, :] == 0.0):
+                                self.indices.append((i, j, k, L))
+                                self.data.append(tmparray[i, j, k, L,
+                                                          :, :, :, :])
 
     def save(self, fname='pot.npy'):
         """
@@ -265,10 +283,10 @@ class Potential(Surface):
         print(shape)
         tmparray = np.zeros(shape)
 
-        for i,ind in enumerate(self.indices):
+        for i, ind in enumerate(self.indices):
             tmparray[ind] = self.data[i]
 
-        np.save(fname,tmparray)
+        np.save(fname, tmparray)
 
     def generate_harmonic(self, cmat=None):
         """
@@ -286,26 +304,32 @@ class Potential(Surface):
                 if self.order == 1:
                     for i in range(self.grids.nmodes):
                         self.indices.append(i)
-                        potential = (self.grids.grids[i] ** 2 * (self.grids.modes.freqs[i] *
-                                                             Misc.cm_in_au)**2) / 2.0
+                        potential = (self.grids.grids[i] ** 2
+                                     * (self.grids.modes.freqs[i]
+                                     * Misc.cm_in_au)**2) / 2.0
                         self.data.append(potential)
             else:
                 if self.order == 1:
                     for i in range(self.grids.nmodes):
                         self.indices.append(i)
-                        potential = (self.grids.grids[i] ** 2 * cmat[i, i]) / 2.0
+                        potential = (self.grids.grids[i] ** 2
+                                     * cmat[i, i]) / 2.0
                         self.data.append(potential)
 
                 elif self.order == 2:
                     for i in range(self.grids.nmodes):
                         for j in range(i+1, self.grids.nmodes):
-                            if cmat[i,j] != 0.0:
-                                self.indices.append((i,j))
-                                potential = np.zeros((self.ngrid,self.ngrid))
+                            if cmat[i, j] != 0.0:
+                                self.indices.append((i, j))
+                                potential = np.zeros((self.ngrid, self.ngrid))
                                 for k in range(self.grids.ngrid):
-                                    for l in range(self.grids.ngrid):
-                                        potential[k, l] = self.grids.grids[i, k] * self.grids.grids[j, l] * cmat[i, j]
-                                        potential[l, k] = potential[k, l]
+                                    for L in range(self.grids.ngrid):
+                                        potential[k, L] = (
+                                            self.grids.grids[i, k]
+                                            * self.grids.grids[j, L]
+                                            * cmat[i, j]
+                                            )
+                                        potential[L, k] = potential[k, L]
 
                                 self.data.append(potential)
 
@@ -313,16 +337,17 @@ class Potential(Surface):
         """
         Generates PES by calling a given function.
 
-        The function f((i,j,..), (qi,qj,...)) has a tuple with the mode indices as
-        its first argument and a tuple of the displacement values (possibly numpy
+        The function f((i,j,..), (qi,qj,...)) has a tuple
+        with the mode indices as its first argument and
+        a tuple of the displacement values (possibly numpy
         arrays) as its second argument.
 
         Example for 1D:
-        >>> def func(i, qi) :
+        >>> def func(i, qi):
         >>>     return (qi ** 2 * freq[i]) / 2.0
 
         Example for 2D:
-        >>> def func(ij, qij) :
+        >>> def func(ij, qij):
         >>>     pot = .
         """
         # UNITTEST IS MISSING: gi? gij?
@@ -336,19 +361,25 @@ class Potential(Surface):
             elif self.order == 2:
                 for i in range(self.grids.nmodes):
                     for j in range(i+1, self.grids.nmodes):
-                        self.indices.append((i,j))
-                        #f = np.vectorize(lambda x,y: func(i,j, y,x))
-                        #potential = f(self.grids.grids[i, :], self.grids.grids[j, :].reshape((self.grids.ngrid,1)))
-                        potential = np.zeros((self.grids.ngrid, self.grids.ngrid))
-                        for n in range(self.grids.ngrid) :
-                            for m in range(self.grids.ngrid) :
-                                potential[n,m] = func(i,j, self.grids.grids[i, n], self.grids.grids[j, m])
+                        self.indices.append((i, j))
+                        # f = np.vectorize(lambda x,y: func(i,j, y,x))
+                        # potential = f(self.grids.grids[i, :],
+                        # self.grids.grids[j,:].reshape((self.grids.ngrid,1)))
+                        potential = np.zeros((self.grids.ngrid,
+                                              self.grids.ngrid))
+                        for n in range(self.grids.ngrid):
+                            for m in range(self.grids.ngrid):
+                                grid_in = self.grids.grids[i, n]
+                                grid_jm = self.grids.grids[j, m]
+                                potential[n, m] = func(i, j, grid_in, grid_jm)
+#                                    self.grids.grids[i, n],
+#                                    self.grids.grids[j, m])
                         self.data.append(potential)
 
 
 class Polarizability(Surface):
-    """ 
-    The polarizability tensors. 
+    """
+    The polarizability tensors.
     """
     def __init__(self, grids=None, gauge='len', order=1):
         """
@@ -360,11 +391,12 @@ class Polarizability(Surface):
 
     def generate_harmonic(self, res):
         """
-        Generates the harmonic polarizability surface, using its first derivative from
-        harmonic calculations.
+        Generates the harmonic polarizability surface,
+        using its first derivative from harmonic calculations.
         res -- VibTools results instance
         """
-        pol_deriv_nm = res.get_tensor_deriv_nm('pol'+self.gauge, ncomp=6, modes=self.grids.modes)
+        pol_deriv_nm = res.get_tensor_deriv_nm('pol'+self.gauge, ncomp=6,
+                                               modes=self.grids.modes)
         print(pol_deriv_nm.shape)
 
         if not self.empty:
@@ -373,17 +405,19 @@ class Polarizability(Surface):
                     pol = np.zeros((self.grids.ngrid, 6))
                     self.indices.append(i)
                     for j in range(6):
-                        pol[:,j] = self.grids.grids[i] * pol_deriv_nm[i,j]
+                        pol[:, j] = self.grids.grids[i] * pol_deriv_nm[i, j]
                     self.data.append(pol)
             else:
-                raise Exception('In the harmonic approximation only 1-mode polarizability tensors are available')
+                raise Exception('In the harmonic approximation only\
+                 1-mode polarizability tensors are available')
+
 
 class Gtensor(Surface):
     """
     The G tensor for ROA intensities
     """
-    
-    def __init__(self,grids=None, gauge='vel', order=1):
+
+    def __init__(self, grids=None, gauge='vel', order=1):
         """
         Gtensor constructor.
         Further details in class description.
@@ -392,25 +426,27 @@ class Gtensor(Surface):
         self.gauge = gauge
 
     def generate_harmonic(self, res):
-
-        gten_deriv_nm = res.get_tensor_deriv_nm('gten'+self.gauge, modes=self.grids.modes)
+        gten_deriv_nm = res.get_tensor_deriv_nm('gten'+self.gauge,
+                                                modes=self.grids.modes)
         if not self.empty:
             if self.order == 1:
                 for i in range(self.grids.nmodes):
                     gten = np.zeros((self.grids.ngrid, 9))
                     self.indices.append(i)
                     for j in range(9):
-                        gten[:,j] = self.grids.grids[i] * gten_deriv_nm[i,j]
+                        gten[:, j] = self.grids.grids[i] * gten_deriv_nm[i, j]
                     self.data.append(gten)
             else:
-                raise Exception('In the harmonic approximation only 1-mode polarizability tensors are available')
+                raise Exception('In the harmonic approximation only 1-mode\
+                 polarizability tensors are available')
+
 
 class Atensor(Surface):
     """
     The A tensor for ROA intensities
     """
-    
-    def __init__(self,grids=None, order=1):
+
+    def __init__(self, grids=None, order=1):
         """
         Atensor constructor.
         Further details in class description.
@@ -426,10 +462,12 @@ class Atensor(Surface):
                     aten = np.zeros((self.grids.ngrid, 27))
                     self.indices.append(i)
                     for j in range(27):
-                        aten[:,j] = self.grids.grids[i] * aten_deriv_nm[i,j]
+                        aten[:, j] = self.grids.grids[i] * aten_deriv_nm[i, j]
                     self.data.append(aten)
             else:
-                raise Exception('In the harmonic approximation only 1-mode polarizability tensors are available')
+                raise Exception('In the harmonic approximation only\
+                 1-mode polarizability tensors are available')
+
 
 class Dipole(Surface):
 
@@ -440,12 +478,14 @@ class Dipole(Surface):
         """
         Surface.__init__(self, grids, order, prop=(3,))
 
-    def generate_harmonic(self,res):
+    def generate_harmonic(self, res):
         """
-        Generates the harmonic dipole moment surface, using its first derivative from harmonic calculations
+        Generates the harmonic dipole moment surface,
+        using its first derivative from harmonic calculations
         res -- the VibTools results instance
         """
-        dm_deriv_nm =  res.get_tensor_deriv_nm('dipole',modes=self.grids.modes)
+        dm_deriv_nm = res.get_tensor_deriv_nm('dipole',
+                                              modes=self.grids.modes)
 
         if not self.empty:
             if self.order == 1:
@@ -453,20 +493,24 @@ class Dipole(Surface):
                     dm = np.zeros((self.grids.ngrid, 3))
                     self.indices.append(i)
                     for j in range(3):
-                        dm[:,j] = self.grids.grids[i] * dm_deriv_nm[i,j]  * Misc.au_in_Debye * np.sqrt(Misc.me_in_amu)
+                        dm[:, j] = (self.grids.grids[i]
+                                    * dm_deriv_nm[i, j]
+                                    * Misc.au_in_Debye
+                                    * np.sqrt(Misc.me_in_amu)
+                                    )
                     self.data.append(dm)
             else:
-                raise Exception('In the harmonic approximation only 1-mode dipole moments are available')
-
-                                                
+                raise Exception('In the harmonic approximation only 1-mode\
+                 dipole moments are available')
 
     def read_np(self, fname):
         """
-        Reads in the existing dipole moment surface from a NumPy formatted binary file *.npy
+        Reads in the existing dipole moment surface from a
+        NumPy formatted binary file *.npy
 
         Parameters
         ----------
-        fname : Str 
+        fname : Str
            File name
         """
 
@@ -474,22 +518,22 @@ class Dipole(Surface):
 
         if len(tmparray.shape) == 3:
             if self.order != 1:
-               raise Exception('Shape mismatch')
+                raise Exception('Shape mismatch')
 
         elif len(tmparray.shape) == 5:
             if self.order != 2:
-              raise Exception('Shape mismatch')
+                raise Exception('Shape mismatch')
         else:
-            raise Exception('Input data shape mismatch, check shape of stored arrays')
+            raise Exception('Input data shape mismatch,\
+             check shape of stored arrays')
 
         if self.order == 1:
             for i in range(tmparray.shape[0]):
                 self.indices.append(i)
-                self.data.append(tmparray[i,:,:])
+                self.data.append(tmparray[i, :, :])
 
         elif self.order == 2:
             for i in range(tmparray.shape[0]):
-                for j in range(i+1,tmparray.shape[0]):
-                    self.indices.append((i,j))
-                    self.data.append(tmparray[i,j,:,:,:])
-
+                for j in range(i+1, tmparray.shape[0]):
+                    self.indices.append((i, j))
+                    self.data.append(tmparray[i, j, :, :, :])

@@ -1,7 +1,8 @@
-# This file is a part of 
-# Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-# Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
-# Michael Welzel, and Christoph R. Jacob.
+# This file is a part of Vibrations:
+# A Python Code for Anharmonic Theoretical Vibrational Spectroscopy
+# Copyright (C) 2014-2026 by Pawel T. Panek, Christoph R. Jacob,
+# Julia Brüggemann, Maria Chekmeneva, Adrian A. Hoeske, Michael Welzel
+# and Mario Wolter
 #
 #    Vibrations is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -19,7 +20,7 @@
 # In scientific publications using Vibrations please cite:
 #   P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.
 #   P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.
-# 
+#
 # The most recent version of Vibrations is available at
 #   http://www.christophjacob.eu/software
 """
@@ -32,12 +33,15 @@ from . import Misc
 
 class Grid(object):
     """
-    Class containing and manipulating the grids. The grids are used for evaluation of the property
-    surfaces, and for integrals in the VSCF/VCI calculations.
-    
-    The class can be initialized with objects referring to the molecular structure and the normal modes. By default,
-    an empty grid is created, this may be used to read in an existing grid from `*.npy` file, see read_np method.
-    
+    Class containing and manipulating the grids. The grids are used
+    for evaluation of the property surfaces,
+    and for integrals in the VSCF/VCI calculations.
+
+    The class can be initialized with objects referring to the
+    molecular structure and the normal modes. By default,
+    an empty grid is created, this may be used to read in
+    an existing grid from `*.npy` file, see read_np method.
+
     Parameters
     ----------
     mol : molecule object
@@ -61,7 +65,7 @@ class Grid(object):
         Grid constructor.
         Further details in class description.
         """
-        import copy 
+        import copy
         self.modes = copy.copy(modes)
         self.mol = copy.copy(mol)
         self.ngrid = 0
@@ -76,7 +80,6 @@ class Grid(object):
 
             self.natoms = int(self.mol.natoms)
             self.nmodes = int(self.modes.nmodes)
-
 
     def __str__(self):
         """
@@ -100,12 +103,12 @@ class Grid(object):
 
         return s
 
-    def generate_grids(self, ngrid, amp):   # generate grid with ngrid number of points per mode and amp amplitude
+    def generate_grids(self, ngrid, amp):
         """
         Generate the grids with a ngrid number of grid points
         and amp grid's amplitude, see ChemPhysChem 15 (2014) 3365 for
         the details.
-        
+
         Parameters
         ----------
         ngrid : int
@@ -114,7 +117,8 @@ class Grid(object):
             grid amplitude.
         """
         if ngrid < 1:
-            raise Exception('Some positive number of grid points should be given')
+            raise Exception('Some positive number of grid\
+             points should be given')
         if amp < 1:
             raise Exception('Some positive grid amplitude should be given')
 
@@ -133,25 +137,25 @@ class Grid(object):
 
         self.grids = np.copy(grids)
 
-    def get_grid_structure(self, modes, points, unit = 'Angstrom'):
+    def get_grid_structure(self, modes, points, unit='Angstrom'):
         """
         Obtain the structure for the given point(s) of the given mode(s).
         Returns atomic numbers and coordinates.
-        
+
         Example usage:
-        >>> get_grid_structure([0,1],[10,11]) 
-        
+        >>> get_grid_structure([0,1],[10,11])
+
         returns the structure
         displaced along modes 0 and 1 to the grid points 10 and 11,
         repsectively.
-        
+
         Parameters
         ----------
         modes : List of ints
             list of modes of a given order
         points: List of ints
             list of points for given modes
-        
+
         Returns
         -------
         (self.mol.get_atnums(), newcoords) : (list of ints, ndarray)
@@ -160,17 +164,19 @@ class Grid(object):
         if self.mol is None:
             raise Exception('No molecule defined!')
         if len(modes) != len(points):
-            raise Exception('The number of given modes should be equal to the number of points.')
-        
+            raise Exception('The number of given modes should be\
+             equal to the number of points.')
+
         order = len(modes)
         newcoords = self.mol.coordinates.copy() / Misc.Bohr_in_Angstrom
-        shift = np.zeros((self.natoms,3))
+        shift = np.zeros((self.natoms, 3))
 
         for i in range(order):
-            shift +=  self.grids[modes[i],points[i]]  * np.sqrt(Misc.me_in_amu) \
-                      * self.modes.modes_c[modes[i],:].reshape((self.natoms,3))
+            shift += self.grids[modes[i], points[i]] * np.sqrt(Misc.me_in_amu)\
+                     * self.modes.modes_c[modes[i], :]\
+                     .reshape((self.natoms, 3))
 
-        newcoords += shift  #  New coords are in Angstrom
+        newcoords += shift  # New coords are in Angstrom
 
         if unit == 'Angstrom':
             newcoords *= Misc.Bohr_in_Angstrom
@@ -180,7 +186,7 @@ class Grid(object):
     def get_molecule(self, modes, points):
         """
         Same as L{get_grid_structure} but returns VibTools molecule object.
-    
+
         Parameters
         ----------
         modes : List of ints
@@ -199,13 +205,13 @@ class Grid(object):
     def get_pyadf_molecule(self, modes, points):
         """
         Same as L{get_grid_structure} but returns PyADF molecule object.
-       
+
         Parameters
         ----------
         modes : List of ints
             list of modes of a given order
         points: List of ints
-            list of points for given modes   
+            list of points for given modes
         """
         import pyadf
 
@@ -215,11 +221,10 @@ class Grid(object):
 
         return mol
 
-
     def read_np(self, fname):
         """
         Read in an existing grid from NumPy formatted binary file `*.npy`.
-        
+
         Parameters
         ----------
         fname : str
@@ -239,10 +244,10 @@ class Grid(object):
     def save_grids(self, fname='grids'):
         """
         Save the grid to a NumPy formatted binary file `*.npy`.
-        
+
         Parameters
-        ---------- 
-        fname : Str 
+        ----------
+        fname : Str
             file name, without extension
         """
         fname = fname + '_' + str(self.nmodes) + '_' + str(self.ngrid) + '.npy'

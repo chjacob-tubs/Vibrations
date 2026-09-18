@@ -1,0 +1,119 @@
+[build-system]
+requires = ["setuptools>=62.6", "wheel", "numpy", "meson", "ninja"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+homepage = "https://www.tu-braunschweig.de/pci/agjacob/software"
+source = "https://github.com/chjacob-tubs/Vibrations"
+documentation = "https://vibrations.readthedocs.io/en/latest/"
+
+[project]
+name = 'vibrations'
+version = "1.0"
+description = 'Vibrations is a Python code for vibrational calculations with user-defined vibrational modes'
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.11.4"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+authors = [
+    {name = "Pawel T. Panek"},
+    {name = "Christoph Jacob"},
+    {name = "Julia Brueggemann"},
+    {name = "Maria Chekmeneva"},
+    {name = "Adrian A. Hoeske"},
+    {name = "Michael Welzel"},
+    {name = "Mario Wolter"},
+    {name = "others"},
+]
+classifiers = [
+"Programming Language :: Python :: 3",
+"Operating System :: OS Independent",
+]
+
+# Base runtime dependencies (no openbabel)
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+]
+
+# Choose one of these depending on how you want openbabel provided:
+
+[project.optional-dependencies]
+# Usage with openbabel
+openbabel = [
+    "openbabel>=3.2.1",
+]
+
+# Usage with openbabel-wheel
+openbabel-wheel = [
+    "openbabel-wheel",
+]
+
+# Compile Fortran libraries
+fints = [
+    "meson",
+]
+
+# Testing with openbabel
+testing-openbabel = [
+    "vibrations[openbabel]",
+    "pytest",
+    "pytest-cov",
+    "pylint",
+    "docstr-coverage",
+]
+
+# Testing with openbabel-wheel
+testing-openbabel-wheel = [
+    "vibrations[openbabel-wheel]",
+    "pytest",
+    "pytest-cov",
+    "pylint",
+    "docstr-coverage",
+]
+
+# Documentation building dependencies with openbabel
+docs-openbabel = [
+    "vibrations[openbabel]",
+    "sphinx",
+    "sphinx-rtd-theme",
+    "sphinx-design",
+    "sphinx-mdinclude",
+]
+
+# Documentation building dependencies with openbabel-wheel
+docs-openbabel-wheel = [
+    "vibrations[openbabel-wheel]",
+    "sphinx",
+    "sphinx-rtd-theme",
+    "sphinx-design",
+    "sphinx-mdinclude",
+]
+
+# Full install with openbabel
+full-openbabel = [
+    "vibrations[testing-openbabel]",
+    "vibrations[docs-openbabel]",
+]
+
+# Full install with openbabel-wheel
+full-openbabel-wheel = [
+    "vibrations[testing-openbabel-wheel]",
+    "vibrations[docs-openbabel-wheel]",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+
+[tool.setuptools.packages.find]
+where = ["src",]
+
+
+[tool.setuptools.package-data]
+"Vibrations" = [
+    "tests/**/*",
+    "unittests/test_data/**/*",
+    "fints*.so"
+]
