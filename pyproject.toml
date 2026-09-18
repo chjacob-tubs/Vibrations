@@ -35,7 +35,7 @@ dependencies = [
 [project.optional-dependencies]
 # Usage with openbabel
 openbabel = [
-    "openbabel>=3.21",
+    "openbabel>=3.2.1",
 ]
 
 # Usage with openbabel-wheel
