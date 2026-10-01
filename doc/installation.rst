@@ -2,172 +2,243 @@
 Installation
 ************
 
-The *LocVib* *Python* package releases with its *VibTools* modules 
-are available as a Github repository
+The *LocVib* Python package releases with its *VibTools* modules 
+are available as a GitHub repository
 https://github.com/chjacob-tubs/LocVib.
 
-LocVib relies on additional *Python* packages, that have to be installed on our system:
+*LocVib* relies on additional *Python* packages that have to be installed on the system. 
+The required dependencies are defined in ``pyproject.toml``.
+
+The main requirements are:
 
 * **Python 3** (https://www.python.org/).
 
-* **Numpy** (https://numpy.org/).
+* **NumPy** (https://numpy.org/).
 
 * **Matplotlib** (https://matplotlib.org/).
 
-* **Openbabel 3** (https://open-babel.readthedocs.io/en/latest/UseTheLibrary/Python.html).
+* **Open Babel 3** (https://open-babel.readthedocs.io/en/latest/UseTheLibrary/Python.html).
 
-Additional (optinal) extensions:
+Additional (optional) extensions:
 
 * **Pytest** (https://pytest.org) (recommended).
 
-* **Sphinx** (https://www.sphinx-doc.org)
+* **Sphinx** (https://www.sphinx-doc.org).
 
-For the installation we just need to download the file and follow the instructions below.
+For the installation, download the repository and follow the instructions below.
 
 .. note::
-   We highly recommend using a **Conda environment** (see `Conda Environment`_).
+   We highly recommend using a **Conda environment** (see `Install in a Conda Environment (Recommended)`_).
+
+
+.. _Download the Code:
 
 Download the Code
 =================
 
-Download the Github repository as a zip file from the link below:
+The *LocVib* repository can be downloaded as a ZIP file or cloned using Git.
+The repository is available on GitHub at:
 
 https://github.com/chjacob-tubs/LocVib
 
-Unzip the LocVib-Package-Zip-File:
+Download as a ZIP file
+----------------------
 
-   >>> unzip file.zip
+Download the repository as a ZIP file, extract it and change to the extracted directory:
 
-We should now find the following folder structure:
+.. code-block:: console
+
+   unzip LocVib-main.zip
+   cd LocVib-main
+
+Download using Git
+------------------ 
+
+Clone the *LocVib* repository using Git and change to the cloned directory:
+
+.. code-block:: console
+
+   git clone https://github.com/chjacob-tubs/LocVib.git
+   cd LocVib
+
+
+.. _Repository Structure:
+
+The following installation instructions assume that you are in the root directory of the 
+*LocVib* repository.
+
+Respository Structure
+=====================
+
+After downloading the repository, the *LocVib* directory has the following structure:
 
 .. code-block:: bash
 
    LocVib/
-   ├── COPYING
    ├── doc/
-   ├── Dockerfile
-   ├── example/
-   ├── README.md
    ├── requirements/
-   ├── setup.py
-   ├── src/VibTools/
-   └── tests/
+   ├── src/
+   │   └── VibTools/
+   │       └── tests/
+   ├── CITATION.cff   
+   ├── COPYING
+   ├── Dockerfile
+   ├── pyproject.toml
+   ├── README.md
+   └── ...
 
-Install with pip (easiest method)
-=================================
-
-Execute the following command in the main code directory
-(Python-3 and a current pip version must already be installed):
+The ``pyproject.toml`` file contains the package configuration, dependencies, 
+and available installation variants. The source code is located in ``src/VibTools/``, 
+while the documentation is located in ``doc/``.
 
 
-    >>> LocVib/ % pip install .
+.. _Install in a Conda Environment (Recommended):
 
-.. _automatic pip installation:
+Install in a Conda Environment (Recommended)
+============================================
 
+..
+ We highly recommend using the *Conda* package manager (https://conda.io/) for the environment
+ and the use of *Anaconda* (https://www.anaconda.com/) for using *Python*.
+ The required Python dependencies, including *NumPy*, *Matplotlib* and
+ *Open Babel*, can be installed using the Conda environment file provided
+ with the repository.
 
-Install with Conda
-==================
+ With *Pytest* we can determine the correct executability of the program.
 
-We highly recommend using the *Conda* package manager(https://conda.io/) for the environment 
-and the use of *Anaconda* (https://www.anaconda.com/) for using *Python*.
-The above *Python* dependencies (*Numpy*, *Matplotlib*, *Openbabel*) must be installed for *LocVib* to work. 
+ If we are interested in the further development of *LocVib* ourselfs,
+ it makes sense to install *Sphinx* for the documentation.
 
-With *Pytest* we can determine the correct executability of the program.
+We highly recommend installing *LocVib* in an isolated Conda environment.
 
-If we are interested in the further development of *LocVib* ourselfs, 
-it makes sense to install *Sphinx* for the documentation.
+The Conda environment can either be created manually (`Create Conda Environment`_), with the required
+dependencies installed afterwards (`Installation Variants`_), or from one of the predefined environment
+files provided in the ``requirements/`` directory (`Conda Environment from Requirements File`_).
 
-.. _Conda Environment:
+The recommended way to install Conda is to follow the instructions on the 
+Conda homepage (https://conda.io/).
 
-Installation Conda Environment
-------------------------------
+..
+ Below, we briefly describe the *Conda* commands required to install the
+ necessary Python packages.
 
-First we install *Conda* on our system.
-The best way to do this is to follow the instructions 
-on the *Conda* homepage (https://conda.io/).
+**Conda Initialization**
 
-Here we show in short form which *Conda* commands are necessary 
-to install the necessary *Python* packages, 
-provided that our conda installation worked.
-
-**Conda initialization:**
-
-   >>> % conda init zsh
-
-Or usage without initialization only with `source activate`:
-
-   >>> % source activate
-   >>> (base)%
-
-Pip Installation in Conda Environment (recommended)
----------------------------------------------------
-
-Create and activate the LocVib Conda environment:
-
-   >>> (base)% conda create --name VibToolsCondaENV python=3.11.4
-   >>> (base)% conda activate VibToolsCondaENV
-   >>> (VibToolsCondaENV)% 
-
-As a prerequisite we still need the pip package:
-
-   >>> (VibToolsCondaENV)% conda install pip
-
-Select the *LocVib* folder and run the *pip* installation:
-
-   >>> (VibToolsCondaENV)% cd LocVib
-   >>> (VibToolsCondaENV)/LocVib% pip install .
+If Conda is installed but not yet initialized, initialize it for your shell.
+For example, for ``zsh``:
 
 .. code-block:: console
 
-   Processing ~/LocVib
-     Preparing metadata (setup.py) ... done
-   Requirement already satisfied: numpy in /home/name/.conda/envs/LVenv/lib/python3.10/site-packages (from VibTools==0.0.1) (1.22.3)
-   Requirement already satisfied: matplotlib in /home/name/.conda/envs/LVenv/lib/python3.10/site-packages (from VibTools==0.0.1) (3.5.2)
-   Requirement already satisfied: pytest in /home/name/.conda/envs/LVenv/lib/python3.10/site-packages (from VibTools==0.0.1) (7.1.2)
-   Requirement already satisfied: python-dateutil>=2.7 in /home/name/.conda/envs/LVenv/lib/python3.10/site-packages (from matplotlib->VibTools==0.0.1) (2.8.2)
-   Requirement already satisfied: cycler>=0.10 in /home/name/.conda/envs/LVenv/lib/python3.10/site-packages (from matplotlib->VibTools==0.0.1) (0.11.0)
-   .
-   .
-   .
-   Building wheels for collected packages: VibTools
-     Building wheel for VibTools (setup.py) ... done
-     Created wheel for VibTools: filename=VibTools-0.0.1-py3-none-any.whl size=96726 sha256=0e2110eaffbb70ba64c2e3cf5bf1dd724387a642a73ead3b244b454dea79ff9b
-     Stored in directory: /tmp/pip-ephem-wheel-cache-jijb06l6/wheels/70/2a/ae/c4a6afe46f78a2dd633299e079f4d909310bc94ec529e1388d
-   Successfully built VibTools
-   Installing collected packages: VibTools
-   Successfully installed VibTools-0.0.1 
+   % conda init zsh
 
-.. note:: 
-   We can also install with pip in developer mode (editable). 
-      >>> (VibToolsCondaENV)/LocVib% pip install -e .
+Or, Conda can be used without initialization by running:
 
+.. code-block:: console
 
-Here everything is done regarding the installation.
+   % source activate
+   (base) %
 
-**Optional:** For verification (see `Verify Installation with Pytest`_) of successful installation install **pytest** additionally:
+.. _Create Conda Environment:
 
-   >>> (VibToolsCondaENV)/LocVib% conda install -c conda-forge pytest=7.2.0
+**Create Conda Environment**
+
+If Conda is already installed and initialized, create a new environment:
+
+.. code-block:: console
+
+   (base) % conda create --name VibToolsCondaENV
+
+Activate the environment:
+
+.. code-block:: console
+
+   (base) % conda activate VibToolsCondaENV
+   (VibToolsCondaENV) % 
+
+.. _Install LocVib with pip:
+
+Install LocVib with pip
+-----------------------
+
+*LocVib* uses the ``pyproject.toml`` file to define the package metadata and dependencies.
+
+Before installing *LocVib*, make sure that Python 3 and ``pip`` are available in the active environment.
+If ``pip`` is not yet installed in the Conda environment, install it with:
+
+.. code-block:: console
+   
+   (VibToolsCondaENV) % conda install pip
+
+.. _Installation Variants:
+
+**Installation Variants**
+
+There are different predefined setup variants depending on your use case and preferred *Open Babel* package:
+
+If you want to use the ``openbabel`` package, install with
+
+.. code-block:: console
+
+   (VibToolsCondaENV) LocVib % pip install ".[openbabel]"
+
+If you want to use the ``openbabel-wheel`` package, install with
+
+.. code-block:: console
+
+   (VibToolsCondaENV) LocVib % pip install ".[openbabel-wheel]"
+
+If you want to run the tests and/or build the documentation, it is recommended to do a full installation:
+
+.. code-block:: console
+
+   (VibToolsCondaENV) LocVib % pip install ".[full-openbabel]"
+
+or
+
+.. code-block:: console
+
+   (VibToolsCondaENV) LocVib % pip install ".[full-openbabel-wheel]"
+
+For development, *LocVib* can be installed in editable mode:
+
+.. code-block:: console
+
+   (VibToolsCondaENV) LocVib % pip install -e ".[full-openbabel]"
+
+or
+
+.. code-block:: console
+
+   (VibToolsCondaENV) LocVib % pip install -e ".[full-openbabel-wheel]"
+
+Verify the installation by running ``pytest`` (see `Verify Installation with Pytest`_).
 
 .. note::
-   The automatic Pip installation also works without Conda environment but Pip must be installed anyway.
+   The automatic pip installation also works without Conda environment but pip must be installed anyway.
 
-Semi-Automatic Installation with Conda
---------------------------------------
+.. _Conda Environment from Requirements File:
 
-Go to the LocVib folder and perform the creation of the appropriate environment:
+Conda Environment from Requirements File
+----------------------------------------
 
-   >>> (base)% cd LocVib/
-   >>> (base)LocVib/ % conda env create -f requirements/environment.yml
-   Collecting package metadata (repodata.json): done
-   Downloading and Extracting Packages
-   kiwisolver-1.4.4     | 70 KB     | ################################################## | 100% 
-   libllvm14-14.0.6     | 33.4 MB   | ################################################## | 100% 
-   openssl-1.1.1v       | 3.7 MB    | ################################################## | 100% 
+The repository provides predefined Conda environments in the ``requirements/`` directory.
+These environments provide the dependencies required for a basic *LocVib* installation 
+and a installation including testing and documentation support.
+
+**Basic Conda Environment**
+
+For creating a Conda environment containing the required dependencies for *LocVib*, 
+use ``requirements/environment.yml``.
+
+.. code-block:: console
+   
+   (base) % cd LocVib/
+   (base) LocVib % conda env create -f requirements/environment.yml
    .
    .
    .
-   certifi-2023.7.22    | 154 KB    | ################################################## | 100% 
-   Solving environment: done
+   Downloading and Extracting Packages:
+
    Preparing transaction: done
    Verifying transaction: done
    Executing transaction: done
@@ -180,125 +251,200 @@ Go to the LocVib folder and perform the creation of the appropriate environment:
    #
    #     $ conda deactivate
 
-Now you only need to activate the environment and add LocVib:
+After activating the environment, *LocVib* can be installed from the root directory 
+of the repository using ``pip``:
 
-   >>> (base)LocVib/ % conda activate VibToolsCondaENV
-   >>> (VibToolsCondaENV)LocVib% conda develop src/
-   added /home/User/LocVib/src
-   completed operation for: /home/User/LocVib/src
+.. code-block:: console
 
-Manual Installation
--------------------
+   (base) LocVib % conda activate VibToolsCondaENV
+   (VibToolsCondaENV) LocVib % pip install .
+   Processing ./.
+     Installing build dependencies ... done
+     Getting requirements to build wheel ... done
+     Preparing metadata (pyproject.toml) ... done
+   .
+   .
+   .
+   Successfully built vibtools
+   Installing collected packages: vibtools
+   Successfully installed vibtools-1.4
 
-**Creating suitable LocVib environment:**
+For available installation variants with *Open Babel*, see `Install LocVib with pip`_.
 
-   >>> conda create -n VibToolsCondaENV
+..   
+ Now, you only need to activate the environment and add LocVib:
 
-   >>> conda activate VibToolsCondaENV
+ .. code-block:: console
 
-**Installation of the necessary packages:**
+    (base) LocVib % conda activate VibToolsCondaENV
+    (VibToolsCondaENV) LocVib % conda develop src/
+    added /path/to/LocVib/src
+    completed operation for: /path/to/LocVib/src
 
-   >>> (VibToolsCondaENV)% conda install anaconda
-   >>> (VibToolsCondaENV)% conda install -c conda-forge python~=3.11.4
-   >>> (VibToolsCondaENV)% conda install -c conda-forge numpy~=1.23.4
-   >>> (VibToolsCondaENV)% conda install -c conda-forge matplotlib`=3.6.1
-   >>> (VibToolsCondaENV)% conda install -c conda-forge openbabel~=3.1.1
-   >>> (VibToolsCondaENV)% conda install -c conda-forge pytest~=7.2.0
+**Testing and Documentation Environment**
 
-optional for developing the Documentation:
+The ``requirements/environment_tests_doc.yml`` file provides a Conda environment containing 
+the dependencies required for testing and documentation.
 
-   >>> (VibToolsCondaENV)% conda install -c conda-forge sphinx~=5.3.0
-   >>> (VibToolsCondaENV)% pip install sphinx_rtd_theme~=0.4.3
-   >>> (VibToolsCondaENV)% pip install sphinx_mdinclude~=0.5.3
+From the root directory of the *LocVib* repository, create the environment:
 
-Installation of LocVib itself:
+.. code-block:: console
 
-   >>> (VibToolsCondaENV)LocVib% conda develop src/
-   added /home/User/LocVib/src
-   completed operation for: /home/User/LocVib/src
+   (base) % cd LocVib/
+   (base) LocVib % conda env create -f requirements/environment_tests_doc.yml
+   .
+   .
+   .
+   Downloading and Extracting Packages:
 
-.. warning:: 
-   If we use an up-to-date conda version, unfortunately the develop command is no longer supported
-   and the pip editable mode is recommended(`pip install -e .`).
+   Preparing transaction: done
+   Verifying transaction: done
+   Executing transaction: done
+   #
+   # To activate this environment, use
+   #
+   #     $ conda activate VibToolsCondaENV
+   #
+   # To deactivate an active environment, use
+   #
+   #     $ conda deactivate
 
-.. note::
-   In principle, other versions of the respective packages are also usable, 
-   but with the specified versions, the runnability is guaranteed in any case.
+After activating the environment, *LocVib* can be installed from the root directory
+of the repository using ``pip``:
 
-.. _download LocVib:
+.. code-block:: console
+
+   (base) LocVib % conda activate VibToolsCondaENV
+   (VibToolsCondaENV) LocVib % pip install .
+   Processing ./.
+     Installing build dependencies ... done
+     Getting requirements to build wheel ... done
+     Preparing metadata (pyproject.toml) ... done
+   .
+   .
+   .
+   Building wheels for collected packages: vibtools
+     Building wheel for vibtools (pyproject.toml) ... done
+     Created wheel for vibtools: filename=vibtools-1.4-py3-none-any.whl size=8387926 sha256=cb54ca71ee4b945387fec40e19f3057e227ffadafbe4c835b77c3568d16eea60
+     Stored in directory: /tmp/pip-ephem-wheel-cache-l__b64y1/wheels/cb/e8/46/a1a2c19b51945c091486fc56b252aa16e49e57c6b84350239f
+   Successfully built vibtools
+   Installing collected packages: ...
+   Successfully installed vibtools-1.4
+
+For available installation variants with *Open Babel*, see `Install LocVib with pip`_.
+
+Additional documentation packages can be installed if required:
+
+.. code-block:: console
+
+   (VibToolsCondaENV) LocVib % pip install docstr-coverage sphinx-mdinclude
+
+Verify the installation by running ``pytest`` (see `Verify Installation with Pytest`_).
+The required testing dependencies, including ``pytest``, are already installed through the
+provided ``requirements/environment_tests_doc.yml``.
 
 
+.. _Install in a Python Virtual Enviroment:
 
+Install in a Python Virtual Environment
+=======================================
+
+Alternatively, a Python virtual environment can be created using the ``venv`` module:
+
+.. code-block:: console
+
+   python -m venv venv-locvib
+
+Activate the virtual environment:
+
+.. code-block:: console
+
+   source venv-locvib/bin/activate
+
+After activation, *LocVib* can be installed using ``pip``. 
+
+For a basic installation:
+
+.. code-block:: console 
+
+   (venv-locvib) LocVib % pip install ".[openbabel]"
+
+For a full installation, including tests and documentation:
+
+.. code-block:: console
+
+   (venv-locvib) LocVib % pip install ".[full-openbabel]"
+
+For other installation variants, see `Install LocVib with Pip`_.
+
+Verify the installation by running ``pytest`` (see `Verify Installation with Pytest`_).
+
+
+.. _Manual Installation (PYTHONPATH):
 
 Manual Installation (PYTHONPATH)
 ================================
 
-We have to include the subdirectory 'LocVib/src/VibTools' in our
+The subdirectory ``LocVib/src/VibTools`` has to be included in the
 PYTHONPATH environment variable.
 
-We can modify your *.zprofile* file with adding:
+The *.zprofile* file can be modified by adding:
 
-   >>> export PYTHONPATH="${PYTHONPATH}:/home/yourname/LocVib/src/"
+.. code-block:: console
 
-Or we use the following lines of code in our scripts for importing LocVib:
+   export PYTHONPATH="${PYTHONPATH}:/path/to/LocVib/src/"
 
-   >>> import sys
-   >>> sys.path.append('/home/yourname/LocVib/src/')
+Or, the following lines can be added to a script before importing *LocVib*:
+
+.. code-block:: console
+
+   import sys
+   sys.path.append('/path/to/LocVib/src/')
 
 
+.. _Verify Installation with Pytest:
 
 Verify Installation with Pytest
 ===============================
 
-.. _Verify Installation with Pytest:
-
-The prerequisite for the check is that we have pytest installed.
-
-Go to the appropiate test folder:
-
-   >>> % cd LocVib/tests/
-
-Run the test:
-
-   >>> LocVib/tests/% pytest -v
-
-If everything runs correctly, we will get the following output:
+Verify the installation by running ``pytest`` (works in testing and full installations only):
 
 .. code-block:: console
 
-    ============================================== test session starts ==============================================
-    platform linux -- Python 3.10.4, pytest-7.1.2, pluggy-1.0.0 -- /home/yourname/.conda/envs/LVenv/bin/python
-    cachedir: .pytest_cache
-    rootdir: /home/yourname/LocVib
-    collected 104 items                                                                                             
-    
-    test_VibTools.py::test_read_from_coord PASSED                                                             [  0%]
-    test_VibTools.py::test_get_fragment PASSED                                                                [  1%]
-    test_VibTools.py::test_reset_molcache PASSED                                                              [  2%]
-    test_VibTools.py::test_write_and_read PASSED                                                              [  3%]
-    test_VibTools.py::test_get_natoms PASSED                                                                  [  4%]
-    test_VibTools.py::test_get_atmasses PASSED                                                                [  5%]
-    test_VibTools.py::test_get_atnums PASSED                                                                  [  6%]
-    test_VibTools.py::test_get_coordinates PASSED                                                             [  7%]
-    test_VibTools.py::test_add_atoms PASSED                                                                   [  8%]
-    test_VibTools.py::test_residue_groups PASSED                                                              [  9%]
-    .
-    .
-    .
-    test_VibTools.py::test_get_gaussian_spectrum PASSED                                                       [ 94%]
-    test_VibTools.py::test_get_rect_spectrum PASSED                                                           [ 95%]
-    test_VibTools.py::test_scale_range PASSED                                                                 [ 96%]
-    test_VibTools.py::test_get_band_maxima PASSED                                                             [ 97%]
-    test_VibTools.py::test_get_band_minima PASSED                                                             [ 98%]
-    test_VibTools.py::test_get_plot PASSED                                                                    [ 99%]
-    test_VibTools.py::test_get_rect_plot PASSED                                                               [100%]
-    
-    ============================================= 104 passed in 14.38s ==============================================
+   src/VibTools/tests % pytest -v
 
 .. note::
-   Another possibility to check the executability of the program is to calculate the code examples. 
-   See
+   Another option to check the executability of the program is to calculate the code examples. 
+   
+   The examples are located in ``LocVib/src/VibTools/example/``.
+   
+   See also:
 
    .. toctree::
 
       examples
+
+
+.. _Documentation:
+
+Documentation
+=============
+
+You can find the documentation, as mentioned above,
+on the homepage (https://locvibvibtools.readthedocs.io/en/latest/)
+or you can generate the HTML documentation yourself with Sphinx.
+
+Build documentation via Sphinx and extension packages (works in docs installations only):
+
+.. code-block:: console
+
+   doc/ % sphinx-build . build
+
+Opening the ``index.html`` file takes you to the home directory of the code documentation:
+
+.. code-block:: console
+
+   doc/build/ % open index.html
+
+.. note:: The documentation is automatically built and deployed as defined in ``.gitlab-ci.yml``.
+

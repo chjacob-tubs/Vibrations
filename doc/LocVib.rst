@@ -19,9 +19,10 @@ LocVib(VibTools) should already be installed as a loadable Python module.
 
 Import package:
 
-   >>> import VibTools as vt
+   >>> import VibTools
 
-To create the LocVib class we need data from the Modes class (Modes based on the Molecule class):
+To create the ``LocVib`` object, we need the normal mode data provided by 
+the ``Modes`` class (``Modes`` based on the ``Molecule`` class):
 
 .. toctree::
    :maxdepth: 1
@@ -29,33 +30,34 @@ To create the LocVib class we need data from the Modes class (Modes based on the
    Molecule
    Modes
 
-For this, we create a dataset using the PySNF interface class
+For this, we create a dataset using the ``PySNF`` interface class
 
 .. toctree::
    :maxdepth: 1
 
    PySNF
 
-Here is the specific example, pay attention to the correct path.
-We take an example from the test folder:
+The following example uses the H2O test data included in the repository.
+Make sure to use the correct path to the test data:
 
-   >>> path = '/LocVib/tests/test_data/H2O/'
-   >>> res = vt.SNFResults(outname=path+'snf.out',
-   >>>                        restartname=path+'restart',
-   >>>                        coordfile=path+'coord')
+   >>> path = '/LocVib/src/VibTools/tests/test_data/H2O/'
+   >>> res = VibTools.SNFResults(
+   ...     outname=path+'snf.out',
+   ...     restartname=path+'restart',
+   ...     coordfile=path+'coord')
    >>> res.read()
    >>> vibmodes = res.modes
 
 Show data:
 
-   >>> print('natoms  =' , vibmodes.natoms  )
-   >>> print('namodes  =', vibmodes.nmodes  )
-   >>> print('modes_mw=\n' , vibmodes.modes_mw)
-   >>> print('modes_c =\n' , vibmodes.modes_c )
-   >>> print('freqs   =\n' , vibmodes.freqs   )
-   natoms  = 3
-   namodes  = 3
-   modes_mw=
+   >>> print('natoms =', vibmodes.natoms)
+   >>> print('nmodes =', vibmodes.nmodes)
+   >>> print('modes_mw =\n', vibmodes.modes_mw)
+   >>> print('modes_c =\n', vibmodes.modes_c)
+   >>> print('freqs =\n', vibmodes.freqs)
+   natoms = 3
+   nmodes = 3
+   modes_mw =
     [[ 0.41227257  0.          0.54138338 -0.         -0.         -0.2717917
      -0.41227257 -0.          0.54138338]
     [-0.57448154  0.          0.38852104 -0.         -0.         -0.19505052
@@ -69,63 +71,63 @@ Show data:
       0.57224698 -0.          0.38700981]
     [-0.53487836 -0.          0.41709893  0.06740284  0.         -0.
      -0.53487836  0.         -0.41709893]]
-   freqs   =
+   freqs =
     [1575.16798 3685.32274 3796.19483]
 
-We create the localization class and need the peter
-class:
+Create the ``LocVib`` object using the normal modes:
+ 
+   >>> lv = VibTools.LocVib(vibmodes)
 
-   >>> lv = vt.LocVib(vibmodes) 
+Show data:
 
-Show some LocVib class data:
-
-   >>> print('natoms  =', lv.natoms)
-   >>> print('nmodes  =', lv.nmodes)
-   >>> print('loctype  =', lv.loctype)
-   >>> print('transmat=\n',lv.transmat)
-   >>> print('subsets=\n',lv.subsets)
-   natoms  = 3
-   nmodes  = 3
-   loctype  = PM
-   transmat=
+   >>> print('natoms =', lv.natoms)
+   >>> print('nmodes =', lv.nmodes)
+   >>> print('loctype =', lv.loctype)
+   >>> print('transmat =/n', lv.transmat)
+   >>> print('subsets =', lv.subsets)
+   natoms = 3
+   nmodes = 3
+   loctype = PM
+   transmat =
     [[1. 0. 0.]
     [0. 1. 0.]
     [0. 0. 1.]]
-   subsets=
-    None
+   subsets = None
 
-Maximize localization
+Maximize Localization
 """""""""""""""""""""
 
-First, we must have prepared the steps from the section `Preparation`_.
-Based on the calculated normal modes from the Modes class, we localize the corresponding modes.
-Therefore, we define the following:
+After the normal modes have been prepared as described in the previous `Preparation`_ section,
+the normal modes are ready to be localized.
+
+We define the following:
 
    >>> modes_mw = vibmodes.modes_mw
 
-Now we calculate a single localization measure, :math:`\xi(Q)`:
+to calculate the localization measure `ξ(Q)`: 
 
    >>> p = lv.calc_p(modes_mw)
    >>> print('calc_p= ',p)
    calc_p= 1.333694596761428                         
 
-Next, we want to maximize localization and subject this to an optimization :math:`max(\xi(Q))` problem:
+Next, we want to maximize localization by solving the optimization problem `\max(ξ(Q))`:
 
    >>> transmat,del_p = lv.try_localize()
 
 With the given optimization parameters, 
-we get the following transformation matrix 
-and the last distance between the last computed localization measures (iteratiion cycles):
+the following transformation matrix and the final distance between the last computed 
+localization measures (iteration cycles) are obtained:
 
-   >>> print('transmat=\n',transmat)
-   transmat=
+   >>> print('transmat =\n', transmat)
+   transmat =
     [[ 5.78585531e-03  7.07083109e-01 -7.07106781e-01]
     [-9.99966523e-01  8.18243563e-03  5.76447963e-10]
     [ 5.78585613e-03  7.07083110e-01  7.07106781e-01]]
-   >>> print('del_p=',del_p)
+   >>> print('del_p =', del_p)
    del_p = 0.8871338845549153
 
-The next function performs the maximization (above), displays each cycle, and sets the transformation matrix  into the LocVib class:
+The next function performs the maximization (above), displays the progress of each cycle, 
+and updates the transformation matrix of the ``LocVib`` object:
 
    >>> lv.localize()
    Normal mode localization: Cycle   1    p:    1.936   change:  0.6020189     1.95004 
@@ -134,14 +136,15 @@ The next function performs the maximization (above), displays each cycle, and se
    Normal mode localization: Cycle   4    p:    2.221   change:  0.0000000     0.00002 
 
 
-Localize subsets of normal modes
+Localize Subsets of Normal Modes
 """"""""""""""""""""""""""""""""
 
-TEXT in progress.
+Normal modes can be put into subsets and localized separately. In this example, 
+all three modes are localized in a single subset:
 
-   >>> ml = [[0],[0,1],[0,1,2]]
+   >>> modelist = [[0,1,2]]
    
-   >>> lv.localize_subsets(ml)
+   >>> lv.localize_subsets(modelist)
     Normal mode localization: Cycle   1    p:    0.893   change:  0.0000000     0.00000 
     Normal mode localization: Cycle   1    p:    1.328   change:  0.0000000     0.00000 
     Normal mode localization: Cycle   1    p:    2.221   change: -0.0000000     0.00000 

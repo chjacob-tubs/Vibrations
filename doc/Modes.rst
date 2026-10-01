@@ -22,196 +22,194 @@ LocVib(VibTools) should already be installed as a loadable Python module.
 
 Import package:
 
-   >>> import VibTools as vt
+   >>> import VibTools
 
-To create the VibModes class we need data from the Molecule class:
+To create the ``VibModes`` object, we need data from the ``Molecule`` class:
 
 .. toctree::
    :maxdepth: 1
 
    Molecule
 
-Let's take a water molecule as an example.
+Let's use a water molecule as an example.
 
-We can extract a coordinate file from the test folder /LocVib/tests/test_data/H2O.
+We can extract a coordinate file from the test folder ``/LocVib/src/Vibtools/tests/test_data/H2O``.
 
-   >>> mol = vt.VibToolsMolecule()
+   >>> mol = VibTools.VibToolsMolecule()
    >>> mol.read_from_coord('test_data/H2O/coord')
 
-The number of modes is given by :math:`nmodes = 3 \cdot natoms - 6`, where natoms is the total number of atoms.
+The number of modes is given by ``nmodes = 3 * natoms - 6``, where *natoms* is the total number of atoms.
 
-Now we fill VibModes with the number of modes(nmodes) and the molecule class (mol):
+We can now create a ``VibModes`` object using the number of modes (``nmodes``) 
+and the molecular structure (``mol``)::
 
    >>> nmodes = 3*mol.natoms-6
-   >>> vimo = vt.VibModes(nmodes,mol)
+   >>> vimo = VibTools.VibModes(nmodes,mol)
 
-We display some relevant data (freqs: frequencies, modes_mw: mass-weighted normal modes, modes_c: cartesian normal modes):
+We can display some relevant data (``freqs``: frequencies, ``modes_mw``: mass-weighted normal modes, 
+``modes_c``: cartesian normal modes)::
 
-   >>> print("\nnmodes  =\n ",vimo.nmodes )
-   >>> print("\nnatoms  =\n ",vimo.natoms  )
-   >>> print("\nfreqs   =\n ",vimo.freqs   )
-   >>> print("\nmodes_mw=\n ",vimo.modes_mw)
-   >>> print("\nmodes_c =\n ",vimo.modes_c )
+   >>> print("\nnmodes =", vimo.nmodes)
+   >>> print("\nnatoms =", vimo.natoms)
+   >>> print("\nfreqs =", vimo.freqs)
+   >>> print("\nmodes_mw =\n", vimo.modes_mw)
+   >>> print("\nmodes_c =\n", vimo.modes_c)
 
-Which results in:
+   nmodes = 3 
 
-.. code-block:: console
+   natoms = 3
 
-   nmodes  =
-     3
-   
-   natoms  =
-     3
-   
-   freqs   =
-     [1. 2. 3.]
-   
-   modes_mw=
-     [[0. 0. 0. 0. 0. 0. 0. 0. 0.]
+   freqs = [1. 2. 3.]
+
+   modes_mw =
+    [[0. 0. 0. 0. 0. 0. 0. 0. 0.]
     [0. 0. 0. 0. 0. 0. 0. 0. 0.]
     [0. 0. 0. 0. 0. 0. 0. 0. 0.]]
-   
+
    modes_c =
-     [[0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    [[0. 0. 0. 0. 0. 0. 0. 0. 0.]
     [0. 0. 0. 0. 0. 0. 0. 0. 0.]
     [0. 0. 0. 0. 0. 0. 0. 0. 0.]]
 
 
-Set VibTools.Modes with values from an SNF calculation
+Set VibTools.Modes with Values from an SNF Calculation
 """"""""""""""""""""""""""""""""""""""""""""""""""""""
 
- .. _Results-SNF-Calculation:
+ .. _SNFResults calculation:
 
-Beforehand, execute the steps from the section `Preparation`_.
+First, execute the steps from the `Preparation`_ section.
 
-Now we want to set the normal modes of a water molecule from a PySNF calculation:
+We now obtain the normal-mode data for a water molecule from a PySNF calculation::
 
-   >>> path = 'LocVib/tests/test_data/H2O/'
-   >>> res = vt.SNFResults(outname=path+'snf.out',
-                          restartname=path+'restart',
-                          coordfile=path+'coord')
+   >>> path = 'LocVib/src/VibTools/tests/test_data/H2O/'
+   >>> res = VibTools.SNFResults(
+   ...     outname=path+'snf.out',
+   ...     restartname=path+'restart',
+   ...     coordfile=path+'coord')
    >>> res.read()
    >>> output = res.snfoutput
-   >>> SNF_modes_mw =output.modes.modes_mw
-   >>> SNF_modes_c =output.modes.modes_c
-   >>> SNF_freqs =output.modes.freqs
+   >>> SNF_modes_mw = output.modes.modes_mw
+   >>> SNF_modes_c = output.modes.modes_c
+   >>> SNF_freqs = output.modes.freqs
 
-Further, we can set the *vimo* class with the data from the PySNF calculation and display the values used:
+Assign the data from the PySNF calculation to the ``vimo`` object
+and display the values::
 
   >>> modes_mw = vimo.set_modes_mw(SNF_modes_mw)
   >>> modes_c = vimo.set_modes_c(SNF_modes_c)
   >>> freqs = vimo.set_freqs(SNF_freqs)
 
-  >>> print("\nfreqs   =\n ",vimo.freqs   )
-  >>> print("\nmodes_mw=\n ",vimo.modes_mw)
-  >>> print("\nmodes_c =\n ",vimo.modes_c )
+  >>> print("\nfreqs =\n", vimo.freqs)
+  >>> print("\nmodes_mw =\n", vimo.modes_mw)
+  >>> print("\nmodes_c =\n", vimo.modes_c)
 
-.. code-block:: console
+  freqs =
+   [1575.16798 3685.32274 3796.19483]
    
-   freqs   =
-     [1575.16798 3685.32274 3796.19483]
+  modes_mw =
+   [[ 0.41227257  0.          0.54138338 -0.         -0.         -0.2717917
+    -0.41227257 -0.          0.54138338]
+   [-0.57448154  0.          0.38852104 -0.         -0.         -0.19505052
+     0.57448154 -0.          0.38852104]
+   [-0.536967   -0.          0.41872766  0.26956849  0.         -0.
+    -0.536967    0.         -0.41872766]]
    
-   modes_mw=
-     [[ 0.41227257  0.          0.54138338 -0.         -0.         -0.2717917
-     -0.41227257 -0.          0.54138338]
-    [-0.57448154  0.          0.38852104 -0.         -0.         -0.19505052
-      0.57448154 -0.          0.38852104]
-    [-0.536967   -0.          0.41872766  0.26956849  0.         -0.
-     -0.536967    0.         -0.41872766]]
-   
-   modes_c =
-     [[ 0.41066895  0.          0.53927756 -0.         -0.         -0.06795872
-     -0.41066895 -0.          0.53927756]
-    [-0.57224698  0.          0.38700981 -0.         -0.         -0.04877038
-      0.57224698 -0.          0.38700981]
-    [-0.53487836 -0.          0.41709893  0.06740284  0.         -0.
-     -0.53487836  0.         -0.41709893]]
+  modes_c =
+   [[ 0.41066895  0.          0.53927756 -0.         -0.         -0.06795872
+    -0.41066895 -0.          0.53927756]
+   [-0.57224698  0.          0.38700981 -0.         -0.         -0.04877038
+     0.57224698 -0.          0.38700981]
+   [-0.53487836 -0.          0.41709893  0.06740284  0.         -0.
+    -0.53487836  0.         -0.41709893]]
 
-Attention: modes_c is normalized in mass weighted terms.
+.. note::
 
-modes_c is normalized cartesian terms:
+   - ``modes_mw`` is normalized in mass-weighted terms.
+   - ``modes_c`` is normalized in Cartesian terms.
+
+To obtain the normalized Cartesian modes, use::
 
    >>> modes_c_norm = vimo.get_modes_c_norm()
-    modes_c_norm= [[ 0.42732671  0.          0.56115199 -0.         -0.         -0.0707153
-      -0.42732671 -0.          0.56115199]
-     [-0.58500312  0.          0.39563677 -0.         -0.         -0.04985754
+   >>> print("\nmodes_c_norm =\n", modes_c_norm)
+
+   modes_c_norm =
+    [[ 0.42732671  0.          0.56115199 -0.         -0.         -0.0707153
+     -0.42732671 -0.          0.56115199]
+    [-0.58500312  0.          0.39563677 -0.         -0.         -0.04985754
       0.58500312 -0.          0.39563677]
-     [-0.55623749 -0.          0.43375482  0.07009441  0.         -0.
+    [-0.55623749 -0.          0.43375482  0.07009441  0.         -0.
      -0.55623749  0.         -0.43375482]]
 
 
-
-Editing single Modes
+Editing Single Modes
 """"""""""""""""""""
 
-Beforehand, execute the steps from the section `Preparation`_.
+First, execute the steps from the `Preparation`_ section.
 
-We can edit individual rows of the normal mode arrays. To do this, we select the *i*-th line and set the appropriate values:
+Individual rows of the normal-mode arrays can be edited. 
+To do this, we select the *i*-th line and set the appropriate values::
 
    >>> i = 1
    >>> imode = np.array([1., 1., 1., 2., 2., 2., 3., 3., 3.])
    >>> ifreq = 1
 
-We insert *imode* and *ifreqs* in the modes-setters (mass-weighted):
+Insert *imode* and *ifreq* in the modes-setters (mass-weighted)::
 
-   >>> vimo.set_mode_mw (i, imode, freq=ifreq)
-   >>> print("\nmodes_mw=\n ",vimo.modes_mw)
+   >>> vimo.set_mode_mw(i, imode, freq=ifreq)
+   >>> print("\nmodes_mw =\n", vimo.modes_mw)
 
-.. code-block:: console
-   
-   modes_mw=
-     [[0.         0.         0.         0.         0.         0.
+   modes_mw =
+    [[0.         0.         0.         0.         0.         0.
      0.         0.         0.        ]
     [0.15430335 0.15430335 0.15430335 0.3086067  0.3086067  0.3086067
      0.46291005 0.46291005 0.46291005]
     [0.         0.         0.         0.         0.         0.
      0.         0.         0.        ]]
 
-The values at line *i=1* differ because the setter-function executes the update and normalization functions beforehand. 
-This is analogous for the cartesian modes:
+The values at line *i=1* differ because the setter-function executes 
+the update and normalization functions beforehand. 
+This is analogous for the cartesian modes::
 
-    >>> vimo.set_mode_c (i, imode, freq=ifreq)
-    >>> print("\nmodes_c=\n ",vimo.modes_c)
+   >>> vimo.set_mode_c (i, imode, freq=ifreq)
+   >>> print("\nmodes_c =\n", vimo.modes_c)
 
-.. code-block:: console
-
-   modes_c=
-     [[0.         0.         0.         0.         0.         0.
+   modes_c =
+    [[0.         0.         0.         0.         0.         0.
      0.         0.         0.        ]
-     [0.06708936 0.06708936 0.06708936 0.13417872 0.13417872 0.13417872
+    [0.06708936 0.06708936 0.06708936 0.13417872 0.13417872 0.13417872
      0.20126808 0.20126808 0.20126808]
-     [0.         0.         0.         0.         0.         0.
+    [0.         0.         0.         0.         0.         0.
      0.         0.         0.        ]]
 
-Finally, we have the adjusted frequencies displayed:
+Finally, we have the adjusted frequencies displayed::
 
-   >>> print("freqs= ",vimo.freqs)
-   freqs= [1. 1. 3.]
+   >>> print("freqs =", vimo.freqs)
+   freqs = [1. 1. 3.]
 
-Get a smaller subset of the vibrational spectrum
+Get a Smaller Subset of the Vibrational Spectrum
 """"""""""""""""""""""""""""""""""""""""""""""""
 
-In this example we show how to extract a smaller sample of the spectrum. 
+This example shows how to extract a smaller sample of the spectrum. 
 It's more useful for larger molecules, but for clarity, let's stick with water.
 
-Beforehand, execute the steps from the section `Preparation`_.
-Before the next steps, we execute some steps from the section `Results-SNF-Calculation`_:
+First, execute the steps from the `Preparation`_ section.
+Then, execute the steps from the `SNFResults calculation`_ section::
 
    >>> path = 'test_data/H2O/'
-   >>> res = vt.SNFResults(outname=path+'snf.out',
-   >>>                           restartname=path+'restart',
-   >>>                           coordfile=path+'coord')
+   >>> res = VibTools.SNFResults(
+   ...     outname=path+'snf.out',
+   ...     restartname=path+'restart',
+   ...     coordfile=path+'coord')
    >>> res.read()
    >>> SNFmodes_mw = output.modes.modes_mw
    >>> SNFmodes_c = output.modes.modes_c
    >>> SNFfreqs = output.modes.freqs
-   >>> print("\n\nmodes_mw=\n",SNFmodes_mw  )
-   >>> print("\n\nmodes_c=\n", SNFmodes_c)
-   >>> print("\n\nfreqs=\n",   SNFfreqs     )
 
-.. code-block:: console
+   >>> print("\nmodes_mw =\n", SNFmodes_mw)
+   >>> print("\nmodes_c =\n", SNFmodes_c)
+   >>> print("\nfreqs =\n", SNFfreqs)
 
-   modes_mw=
+   modes_mw =
     [[ 0.41227257  0.          0.54138338 -0.         -0.         -0.2717917
      -0.41227257 -0.          0.54138338]
     [-0.57448154  0.          0.38852104 -0.         -0.         -0.19505052
@@ -219,8 +217,7 @@ Before the next steps, we execute some steps from the section `Results-SNF-Calcu
     [-0.536967   -0.          0.41872766  0.26956849  0.         -0.
      -0.536967    0.         -0.41872766]]
    
-   
-   modes_c=
+   modes_c =
     [[ 0.41066895  0.          0.53927756 -0.         -0.         -0.06795872
      -0.41066895 -0.          0.53927756]
     [-0.57224698  0.          0.38700981 -0.         -0.         -0.04877038
@@ -228,51 +225,45 @@ Before the next steps, we execute some steps from the section `Results-SNF-Calcu
     [-0.53487836 -0.          0.41709893  0.06740284  0.         -0.
      -0.53487836  0.         -0.41709893]]
    
-   
-   freqs=
+   freqs =
     [1575.16798 3685.32274 3796.19483]
 
-Now we can either use *get_range* to limit the range of the spectrum
-in terms of frequencies, or use *get_subset* to select the direct modes.
+Now, we can either use ``get_range`` to limit the range of the spectrum
+in terms of frequencies, or use ``get_subset`` to directly select the modes::
 
-   >>> ml = range(0,2)
-   >>> modes = res.modes.get_subset(ml)
-   >>> print("\n\nmodes_mw=\n",modes.modes_mw)
-   >>> print("\n\nmodes_c=\n", modes.modes_c)
-   >>> print("\n\nfreqs=\n",   modes.freqs)
+   >>> modelist = range(0,2)
+   >>> modes = res.modes.get_subset(modelist)
+   >>> print("\nmodes_mw =\n", modes.modes_mw)
+   >>> print("\nmodes_c =\n", modes.modes_c)
+   >>> print("\nfreqs =\n", modes.freqs)
 
-.. code-block:: console
-   
-   modes_mw=
+   modes_mw =
     [[ 0.41227257  0.          0.54138338 -0.         -0.         -0.2717917
      -0.41227257 -0.          0.54138338]
     [-0.57448154  0.          0.38852104 -0.         -0.         -0.19505052
       0.57448154 -0.          0.38852104]]
    
-   
-   modes_c=
+   modes_c =
     [[ 0.41066895  0.          0.53927756 -0.         -0.         -0.06795872
      -0.41066895 -0.          0.53927756]
     [-0.57224698  0.          0.38700981 -0.         -0.         -0.04877038
       0.57224698 -0.          0.38700981]]
    
-   
-   freqs=
+   freqs =
     [1575.16798 3685.32274]
 
-We get the same result for the range version with:
+The same result is obtained with ``get_range``::
 
    >>> modes = res.modes.get_range(1000,3700)
 
 We can also separate the modes with respect to different atoms,
-where atomlist is a list of the corresponding atomic indices:
-
-atomlist = [0,1]
-modes_fragment = res.modes.get_fragment_modes(atomlist)
+where ``atomlist`` is a list of the corresponding atomic indices::
 
    >>> atomlist = [0,1]
    >>> modes = res.modes.get_fragment_modes(atomlist)
-   modes_mw=
+   >>> print("\nmodes_mw =\n", modes.modes_mw)
+
+   modes_mw =
     [[ 0.56263072  0.          0.73882897 -0.         -0.         -0.37091567]
     [-0.79741252  0.          0.53928894 -0.         -0.         -0.27074104]
     [-0.7332129  -0.          0.57176051  0.36808798  0.         -0.        ]]
@@ -280,21 +271,22 @@ modes_fragment = res.modes.get_fragment_modes(atomlist)
 Modes - Gaussian System (g98.out)
 """""""""""""""""""""""""""""""""
 
-Beforehand, execute the steps from the section `Preparation`_.
-Before the next steps, we execute some steps from the section `Results-SNF-Calculation`_:
+First, execute the steps from the `Preparation`_ section.
+Then, execute the steps from the `SNFResults calculation`_ section::
 
-   >>> path = 'LocVib/tests/test_data/H2O/'
-   >>> res = vt.SNFResults(outname=path+'snf.out',
-   >>>                           restartname=path+'restart',
-   >>>                           coordfile=path+'coord')
+   >>> path = 'LocVib/src/VibTools/tests/test_data/H2O/'
+   >>> res = VibTools.SNFResults(
+   ...     outname=path+'snf.out',
+   ...     restartname=path+'restart',
+   ...     coordfile=path+'coord')
    >>> res.read()
    >>> output = res.snfoutput
 
-With the results of the Peter calculation we now write a g98.out file:
+With the results of the SNF calculation, we now write a ``g98.out`` file::
 
    >>> output.modes.write_g98out()
 
-This leads to this *g98.out* file:
+This generates the following ``g98.out`` file:
 
 .. code-block:: console
 
@@ -336,49 +328,48 @@ This leads to this *g98.out* file:
 Unitary Transformation of the Normal Modes
 """"""""""""""""""""""""""""""""""""""""""
 
-Beforehand, execute the steps from the section `Preparation`_.
-Before the next steps, we execute some steps from the section `Results-SNF-Calculation`_:
+First, execute the steps from the `Preparation`_ section.
+Then, execute the steps from the `SNFResults calculation`_ section::
 
    >>> path = 'test_data/H2O/'
-   >>> res = vt.SNFResults(outname=path+'snf.out',
-   >>>                           restartname=path+'restart',
-   >>>                           coordfile=path+'coord')
+   >>> res = VibTools.SNFResults(
+   ...     outname=path+'snf.out',
+   ...     restartname=path+'restart',
+   ...     coordfile=path+'coord')
    >>> res.read()
    >>> mol = res.mol
    >>> natoms = mol.natoms
    >>> output = res.snfoutput
    >>> SNFmodes_mw = output.modes.modes_mw
 
-Create the VibTools.Modes class and set the mass-weighted normal modes:
+Create the ``VibTools.Modes`` object and set the mass-weighted normal modes::
 
-   >>> vimo = vt.VibModes(3*natoms-6,mol)
+   >>> vimo = VibTools.VibModes(3*natoms-6,mol)
    >>> vimo_modes_mw = vimo.set_modes_mw(SNFmodes_mw)
 
-Create an orthonormal (unitary) real matrix :math:`U` (3 x 3);
-:math:`U^tU=I`, :math:`U^t=U^{-1}`. 
+Create an orthonormal (unitary) real matrix U (3 × 3);
+UᵀU = I and Uᵀ = U⁻¹. 
 
-The simplest example of this is a canonical basis matrix consisting of unit vectors:
+The simplest example of this is a canonical basis matrix consisting of unit vectors::
 
    >>> tmatrix = np.asarray([[0,0,1],[0,1,0],[1,0,0]])
 
-Apply the tranformation function:
+Apply the transformation function:
 
-:math:`Q_{transformed}=UQ`
+    Q_transformed = U Q 
 
-:math:`H_{transformed}=UHU^t`
+    H_transformed = U H Uᵀ
 
-where :math:`H` is the diagonal Hesse matrix and :math:`Q` the matrix of normal modes.
+where H is the diagonal Hessian matrix and Q the matrix of normal modes.
 
    >>> newmodes = vimo.transform(tmatrix)
 
-Compare the original modes with the transformed ones:
+Compare the original modes with the transformed ones::
 
-   >>> print("\n\nmodes_mw=\n",SNFmodes_mw  )
-   >>> print("\n\nnewmodes modes_mw=\n",newmodes.modes_mw  )
+   >>> print("\nmodes_mw =\n", SNFmodes_mw)
+   >>> print("\nnewmodes =\n", newmodes.modes_mw)
 
-.. code-block:: console
-
-   modes_mw=
+   modes_mw =
     [[ 0.41227257  0.          0.54138338 -0.         -0.         -0.2717917
      -0.41227257 -0.          0.54138338]
     [-0.57448154  0.          0.38852104 -0.         -0.         -0.19505052
@@ -386,8 +377,7 @@ Compare the original modes with the transformed ones:
     [-0.536967   -0.          0.41872766  0.26956849  0.         -0.
      -0.536967    0.         -0.41872766]]
    
-   
-   newmodes modes_mw=
+   newmodes =
     [[-0.536967    0.          0.41872766  0.26956849  0.          0.
      -0.536967    0.         -0.41872766]
     [-0.57448154  0.          0.38852104  0.          0.         -0.19505052
@@ -396,14 +386,16 @@ Compare the original modes with the transformed ones:
      -0.41227257  0.          0.54138338]]
 
 
-Useful functions
+Useful Functions
 ^^^^^^^^^^^^^^^^
 
-Beforehand, execute the steps from the section `Preparation`_.
-Before the next steps, we execute some steps from the section `Results-SNF-Calculation`_:
+First, execute the steps from the `Preparation`_ section.
+Then, execute the steps from the `SNFResults calculation`_ section::
 
-   >>> res = vt.SNFResults(outname=path+'snf.out',
-   >>>                           restartname=path+'restart',
+   >>> res = VibTools.SNFResults(
+   ...     outname=path+'snf.out',
+   ...     restartname=path+'restart',
+   ...     coordfile=path+'coord')
    >>> res.read()
    >>> mol = res.mol
    >>> natoms = mol.natoms
@@ -413,9 +405,9 @@ Before the next steps, we execute some steps from the section `Results-SNF-Calcu
    >>> SNFmodes_c = output.modes.modes_c
    >>> SNFfreqs = output.modes.freqs
 
-Create a VibTools.Modes class:
+Create a ``VibTools.Modes`` object::
 
-   >>> vimo = vt.VibModes(3*natoms-6,mol)
+   >>> vimo = VibTools.VibModes(3*natoms-6,mol)
    >>> vimo.set_modes_mw(SNFmodes_mw)
    >>> vimo.set_modes_c(SNFmodes_c)
    >>> vimo.set_freqs(SNFfreqs)
@@ -423,50 +415,50 @@ Create a VibTools.Modes class:
 overlap
 """""""
 
-The overlap function allows to calculate the overlap between two sets of modes.
+The ``overlap`` function allows to calculate the overlap between two sets of modes.
 
-If we use the same modes, we get a 100 percent overlap:
+If we use the same modes, we get a 100 percent overlap::
 
    >>> ov = vimo.overlap(SNFmodes)
-   >>> print('ov=',ov)
-   ov= [1. 1. 1.]
+   >>> print('ov =', ov)
+   ov = [1. 1. 1.]
 
-Now, we change the modes before calculating the overlap:
+Now, we change the modes before calculating the overlap::
 
    >>> for i in range(3):
    >>>     vimo.modes_mw[i] = vimo.modes_mw[i]/(1.5*i+0.7)
    >>>     print(vimo.modes_mw[i])
    >>> ov = vimo.overlap(SNFmodes)
-   >>> print('ov=',ov)
-   ov= [2.04081633 0.20661157 0.07304602]
+   >>> print('ov =', ov)
+   ov = [2.04081633 0.20661157 0.07304602]
 
 center
 """"""
 
-The center function allows the center of mass to be calculated.
+The ``center`` function allows the center of mass to be calculated::
 
    >>> modes_index = 0
    >>> cen = vimo.center(modes_index)
-   >>> print('cen, 0=',cen)
-   cen= [-3.16918761 -1.1179783   0.04193042]
+   >>> print('cen =', cen)
+   cen = [-3.16918761 -1.1179783   0.04193042]
 
 
 distance
 """"""""
 
-The function distance calculates distance between two centers of mass.
+The ``distance`` function calculates the distance between two centers of mass.
 
-We now calculate all possible distances of the given modes:
+We now calculate all possible distances of the given modes::
 
    >>> natoms = 3 # Number of atoms in H2O
    >>> dist = np.zeros((natoms,natoms))
    >>> for imode in range(natoms):
    >>>     for jmode in range(natoms):
    >>>         dist[imode,jmode] = vimo.distance(imode, jmode)
-   >>> print('dist=\n',dist)
-   dist=
+   >>> print('dist =\n', dist)
+   dist =
     [[0.         0.02140059 0.00071894]
     [0.02140059 0.         0.02068165]
     [0.00071894 0.02068165 0.        ]]
 
-Obviously the diagonal entries are zero because they are the distances to themselves.
+As expected, the diagonal entries are zero because they are the distances to themselves.

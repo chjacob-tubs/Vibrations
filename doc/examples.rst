@@ -2,7 +2,7 @@
 Examples
 ########
 
-See `/LocVib/example/` directory for some examples of typical runs.
+See the ``/LocVib/src/VibTools/example/`` directory for some examples of typical runs.
 
 
 .. code-block:: console
@@ -11,26 +11,26 @@ See `/LocVib/example/` directory for some examples of typical runs.
    ├── 1_composition.py
    ├── 2_locmodes.py
    ├── 3_couplings.py
-   ├── Ala10
-   │   ├── coord
-   │   ├── restart
-   │   └── snf.out
+   └── Ala10
+       ├── coord
+       ├── restart
+       └── snf.out
 
-As a typical example of a vibrational spectra calculation in terms of localized modes, we take the results of an **SNF** calculation (https://reiher.ethz.ch/software/snf.html) of an *Ala10* molecule (harmonic approximation).
+As a typical example of a vibrational spectra calculation using localized modes, we show the results of an **SNF** calculation (https://reiher.ethz.ch/software/snf.html) for an *Ala10* molecule (harmonic approximation).
 
-Composition
+composition
 ===========
 
-Here we see the script for the first part of the example `1_composition.py`:
+The ``1_composition.py`` script provides an example of calculating vibrational compositions:
 
 .. dropdown:: Open Python Script - 1_composition.py
 
    .. literalinclude:: ../src/VibTools/example/1_composition.py
        :language: python
 
-When we run the script we get:
+Running the script, generates the following output:
 
-   >>> /LocVib/example/ % python 1_composition.py
+   >>> /LocVib/src/VibTools/example % python 1_composition.py
 
 .. dropdown:: Open Output: python 1_composition.py
 
@@ -40,16 +40,16 @@ When we run the script we get:
 locmodes
 ========
 
-Here we see the script for the first part of the example `2_locmodes.py`:
+The ``2_locmodes.py`` script provides an example of localizing normal modes:
 
 .. dropdown:: Open Python Script - 2_locmodes.py
 
    .. literalinclude:: ../src/VibTools/example/2_locmodes.py
        :language: python
 
-When we run the script we get:
+Running the script, generates the following output:
 
-   >>> /LocVib/example/% python 2_locmodes.py
+   >>> /LocVib/src/VibTools/example % python 2_locmodes.py
 
 .. dropdown:: Open Output: python 2_locmodes.py
 
@@ -60,16 +60,16 @@ When we run the script we get:
 couplings
 =========
 
-Here we see the script for the first part of the example `3_couplings.py`:
+The ``3_couplings.py`` script provides an example of calculating couplings between localized modes:
 
 .. dropdown:: Open Python Script - 3_couplings.py
 
    .. literalinclude:: ../src/VibTools/example/3_couplings.py
        :language: python
 
-When we run the script we get:
+Running the script, generates the following output:
 
-   >>> /LocVib/example/% python 3_couplings.py
+   >>> /LocVib/src/VibTools/example % python 3_couplings.py
 
 .. dropdown:: Open Output: python 3_couplings.py
 
