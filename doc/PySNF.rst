@@ -25,17 +25,17 @@ LocVib(VibTools) should already be installed as a loadable Python module.
 
 Import package:
 
-   >>> import VibTools as vt
+   >>> import VibTools
 
-Reading in the data (SNF restart file) from the test folder in LocVib:
+Read the SNF restart file from the test folder in LocVib:
 
-   >>> filename = 'LocVib/tests/test_data/H2O/restart'
-   >>> SNFrest = vt.SNFRestartFile()
+   >>> filename = 'LocVib/src/VibTools/tests/test_data/H2O/restart'
+   >>> SNFrest = VibTools.SNFRestartFile()
    >>> SNFrest.read(filename)
 
 Show restart file:
 
-   >>> vi LocVib/tests/test_data/H2O/restart
+   >>> vi LocVib/src/VibTools/tests/test_data/H2O/restart
    /scratch/pawel/20130506-130557                                
    (4D20.10)    
    420    1    2    0    9    2    0
@@ -56,35 +56,38 @@ Show restart file:
       -0.4000000000D-13   -0.8385388605D+00
    etc. ...   
 
-Print out some data (See the documentation above for the meaning of the variables):
+Print out some data (see the documentation above for the meaning of the variables):
 
-   >>> print("\nSNFrest.nvar = ",SNFrest.nvar)
-   SNFrest.nvar =  9
+   >>> print("SNFrest.nvar =", SNFrest.nvar)
+   SNFrest.nvar = 9
 
-   >>> print("\nSNFrest.natoms = ",SNFrest.natoms )
-   SNFrest.natoms =  3
+   >>> print("SNFrest.natoms =", SNFrest.natoms)
+   SNFrest.natoms = 3
 
-   >>> print("\nSNFrest.iaus = ",SNFrest.iaus )
-   SNFrest.iaus =  2
+   >>> print("SNFrest.iaus =", SNFrest.iaus)
+   SNFrest.iaus = 2
 
-   >>> print("\nSNFrest.nmodes = ",SNFrest.nmodes  )
-   SNFrest.nmodes =  0
+   >>> print("SNFrest.nmodes =", SNFrest.nmodes)
+   SNFrest.nmodes = 0
 
-   >>> print("\nSNFrest.displ = ",SNFrest.displ )
-   SNFrest.displ =  0.01
+   >>> print("SNFrest.displ =", SNFrest.displ)
+   SNFrest.displ = 0.01
 
-   >>> print("\nSNFrest.intonly = ",SNFrest.intonly  )
-   SNFrest.intonly =  False
+   >>> print("SNFrest.intonly =", SNFrest.intonly)
+   SNFrest.intonly = False
 
-   >>> print("\nSNFrest.ncalcsets = ",SNFrest.ncalcsets  )
-   SNFrest.ncalcsets =  3
+   >>> print("SNFrest.ncalcsets =", SNFrest.ncalcsets)
+   SNFrest.ncalcsets = 3
 
-Print dipoles with narray size:
+Print dipole moments with the array size and shape:
    
    >>> import numpy as np
-   >>> print(size(SNFrest.dipole) =",np.size(dipole))
+   >>> dipole = SNFrest.dipole 
+   >>> print("size(SNFrest.dipole) =", np.size(dipole))
+   size(SNFrest.dipole) = 54
+   >>> print("shape(SNFrest.dipole) =", np.shape(dipole))
    shape(SNFrest.dipole) = (3, 6, 3)
-   >>> print("SNFrest.dipole =",dipole )
+   >>> print("SNFrest.dipole =", dipole)
    SNFrest.dipole = [[[ 2.26856391e-03 -6.00000000e-14 -8.36288781e-01]
      [-2.30047851e-03 -2.11280000e-09 -8.37720903e-01]
      [-4.93777769e-06  3.70556737e-03 -8.37007180e-01]
@@ -106,15 +109,15 @@ Print dipoles with narray size:
 
 This is analogous for the other variables/attributes.
 
-Delete the data entries of Atom 1 and 2:
+Delete the data entries of atom 0 and 2:
 
     >>> atoms = [0,2]
     >>> SNFrest.del_int_for_atoms(atoms)
 
-Show dipoles of class with deleted data entries (example - dipoles):
+Show dipole moments with deleted data entries (example - dipoles):
 
-    >>> print("SNFrest.dipole = ",  SNFrest.dipole )
-    SNFrest.dipole ) =  [[[ 0.00000000e+00  0.00000000e+00  0.00000000e+00]
+    >>> print("SNFrest.dipole = ", SNFrest.dipole)
+    SNFrest.dipole ) = [[[ 0.00000000e+00  0.00000000e+00  0.00000000e+00]
       [ 0.00000000e+00  0.00000000e+00  0.00000000e+00]
       [ 0.00000000e+00  0.00000000e+00  0.00000000e+00]
       [ 0.00000000e+00  0.00000000e+00  0.00000000e+00]
@@ -150,22 +153,22 @@ LocVib(VibTools) should already be installed as a loadable Python module.
 
 Import package:
 
-   >>> import VibTools as vt
+   >>> import VibTools
 
-First, we need Vibtools's molecule class and use a water molecule from the test data folder (LINK):
+First, we need the ``VibToolsMolecule`` class and a water molecule from the test data folder:
 
-   >>> path ='LocVib/tests/test_data/H2O/'
+   >>> path = 'LocVib/src/VibTools/tests/test_data/H2O/'
 
    >>> molefilename = path+'coord'
-   >>> vtmole = vt.VibToolsMolecule()
+   >>> vtmole = VibTools.VibToolsMolecule()
    >>> vtmole.read_from_coord(molefilename)
 
-Create the SNFoutputFile class:
+Create the ``SNFOutputFile`` object:
 
    >>> outfilename = path+'snf.out'
-   >>> SNFoutput = vt.SNFOutputFile(outfilename)
+   >>> SNFoutput = VibTools.SNFOutputFile(outfilename)
 
-Now we read in the snf.out-file:
+Read the ``snf.out`` file:
 
    >>> SNFoutput.read(vtmole)
 
@@ -173,28 +176,28 @@ Print some data:
  
 Print modes class:
    
-   >>> print("modes = ", SNFoutput.modes)
+   >>> print("modes =", SNFoutput.modes)
    modes = <VibTools.Modes.VibModes object at 0x1545d4222b50>
 
 Print lwl:
 
-   >>> print("lwl = ", SNFoutput.lwl)
+   >>> print("lwl =", SNFoutput.lwl)
    None
 
 Print filename:
 
-   >>> print("filename = ", SNFoutput.filename)
+   >>> print("filename =", SNFoutput.filename)
    filename = test_data/H2O/snf.out
 
 Print intonly:
 
-   >>> print("intonly = ", SNFoutput.intonly)
+   >>> print("intonly =", SNFoutput.intonly)
    intonly = False
 
 Print mass-weighted normal modes:
 
-   >>> print("modes_mw = ",SNFoutput.modes.modes_mw)
-    modes_mw = [[ 0.41227257  0.          0.54138338 -0.         -0.         -0.2717917
+   >>> print("modes_mw =", SNFoutput.modes.modes_mw)
+   modes_mw = [[ 0.41227257  0.          0.54138338 -0.         -0.         -0.2717917
      -0.41227257 -0.          0.54138338]
     [-0.57448154  0.          0.38852104 -0.         -0.         -0.19505052
       0.57448154 -0.          0.38852104]
@@ -203,7 +206,7 @@ Print mass-weighted normal modes:
 
 Print frequencies corresponding to the normal modes above:
 
-   >>> print("freqs = ",SNFoutput.modes.freqs)
+   >>> print("freqs =", SNFoutput.modes.freqs)
    freqs = [1575.16798 3685.32274 3796.19483]
 
 SNFControlFile
@@ -223,8 +226,8 @@ This part of the documentation is still in progress.
 SNFResults
 ----------
 
-SNFResults based on the classes `SNFRestartFile`_, `SNFOutputFile`_, `SNFControlFile`_ and
-the LocVib's main modules: 
+``SNFResults`` is based on the classes `SNFRestartFile`_, `SNFOutputFile`_, `SNFControlFile`_ and
+LocVib's main modules: 
 
 .. toctree::
    :maxdepth: 1
@@ -242,18 +245,19 @@ LocVib(VibTools) should already be installed as a loadable Python module.
 
 Import package:
 
-   >>> import VibTools as vt
+   >>> import VibTools
 
-First, we need some data from a molecule(water) from the test data folder (LINK):
+First, we need molecule data (water) from the test data folder:
 
-   >>> path ='LocVib/tests/test_data/H2O/'
+   >>> path = 'LocVib/src/VibTools/tests/test_data/H2O/'
 
-The corresponding files (snf.out, restart, cood) are in this folder.
-Now we run SNFResults init and read:
+The corresponding files (``snf.out``, ``restart``, ``coord``) are located in this folder.
+Initialize ``SNFResults`` and read the data:
 
-   >>> res = vt.SNFResults(outname=path+'snf.out',
-                             restartname=path+'restart',
-                             coordfile=path+'coord')
+   >>> res = VibTools.SNFResults(
+   ...     outname=path+'snf.out',
+   ...     restartname=path+'restart',
+   ...     coordfile=path+'coord')
    >>> res.read()
 
 What data are in the molecular module? 
@@ -263,18 +267,18 @@ What data are in the molecular module?
 
    Molecule
 
-Here, we see some general molecular informations as number of atoms (natoms), 
-atomic masses (atmasses), atomic numbers (atnums) and coordinates (coordinates).
+Here, we see some general molecular informations such as the number of atoms (``natoms``), 
+atomic masses (``atmasses``), atomic numbers (``atnums``) and coordinates (``coordinates``).
 
    >>> mol = res.mol
-   >>> print('natoms=', mol.natoms)
-   >>> print('atmasses=',mol.atmasses )
-   >>> print('atnums=',mol.atnums)
-   >>> print('coordinates=',mol.coordinates)
-   natoms= 3
-   atmasses= [ 1.00782503 15.99491462  1.00782503]
-   atnums= [1. 8. 1.]
-   coordinates= [[-2.40315717e+00 -1.11797830e+00 -2.19608983e-03]
+   >>> print('natoms =', mol.natoms)
+   >>> print('atmasses =', mol.atmasses )
+   >>> print('atnums =', mol.atnums)
+   >>> print('coordinates =', mol.coordinates)
+   natoms = 3
+   atmasses = [ 1.00782503 15.99491462  1.00782503]
+   atnums = [1. 8. 1.]
+   coordinates = [[-2.40315717e+00 -1.11797830e+00 -2.19608983e-03]
     [-3.16918773e+00 -1.11797830e+00  5.95151641e-01]
     [-3.93521804e+00 -1.11797830e+00 -2.19608983e-03]]
 
@@ -285,23 +289,26 @@ What data are in the `SNFOutputFile`_ class?
 
    Modes
 
-Here, we get some technical informations and the massweighted normal modes (modes_mw) and the corresponding frequencies (freqs):
+Here, we get some technical informations, the mass-weighted normal modes (``modes_mw``) 
+and the corresponding frequencies (``freqs``)::
 
    >>> output = res.snfoutput
-   >>> print("lwl = ", output.lwl)
-   >>> print("filename = ", output.filename)
-   >>> print("intonly = ", output.intonly)
-   >>> print("\n\nmodes_mw=\n",output.modes.modes_mw)
-   >>> print("\n\nfreqs=\n",output.modes.freqs)
-   lwl =  None
-   filename =  test_data/H2O/snf.out
-   intonly =  False   
-   modes_mw=
+   >>> print("lwl =", output.lwl)
+   >>> print("filename =", output.filename)
+   >>> print("intonly =", output.intonly)
+   >>> print("\nmodes_mw =\n", output.modes.modes_mw)
+   >>> print("\nfreqs =\n", output.modes.freqs)
+   lwl = None
+   filename = test_data/H2O/snf.out
+   intonly = False   
+
+   modes_mw =
     [[ 0.41227257  0.          0.54138338 -0.         -0.         -0.2717917
      -0.41227257 -0.          0.54138338]
     [-0.57448154  0.          0.38852104 -0.         -0.         -0.19505052
       0.57448154 -0.          0.38852104]
     [-0.536967   -0.          0.41872766  0.26956849  0.         -0.
      -0.536967    0.         -0.41872766]]
-   freqs=
+
+   freqs =
     [1575.16798 3685.32274 3796.19483]

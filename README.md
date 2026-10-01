@@ -18,27 +18,27 @@ https://github.com/chjacob-tubs/LocVib
 ## Requirements
 
 LocVib is an independent code that for running needs only Python standard
-packages, extended with NumPy, Matplotlib and Openbabel.
+packages, extended with NumPy, Matplotlib and Open Babel.
 More details are in the documentation.
 
 ## Installation
 
 Just clone this repository and update `$PYTHONPATH` environment variable accordingly.
-Or install it using pip install in the folder where pyproject.toml is located.
+Or install it using `pip install` in the folder where `pyproject.toml` is located.
 
-There are different predefined setup variants depending on your use case and prefered openbabel package:
+There are different predefined setup variants depending on your use case and preferred Open Babel package:
 
-If you want to use openbabel package install with
+If you want to use the `openbabel` package, install with
 ```bash
 pip install ".[openbabel]"
 ```
 
-If you want to use openbabel-wheel package install with
+If you want to use the `openbabel-wheel` package, install with
 ```bash
 pip install ".[openbabel-wheel]"
 ```
 
-If you want to run the tests and/or build the documentation it is recommended to do a full installation
+If you want to run the tests and/or build the documentation, it is recommended to do a full installation:
 ```bash
 pip install ".[full-openbabel]"
 ```
@@ -49,7 +49,7 @@ pip install ".[full-openbabel-wheel]"
 
 More details are in the documentation.
 
-Verify the installation with running pytest (works in testing and full installations only):
+Verify the installation with running `pytest` (works in testing and full installations only):
 
 ```bash
 src/VibTools/tests % pytest -v
@@ -60,7 +60,7 @@ Other installation options can be found in the further documentation.
 ## Documentation
 
 You can find the documentation, as mentioned above,
-on the Homepage (https://locvibvibtools.readthedocs.io/en/latest/) 
+on the homepage (https://locvibvibtools.readthedocs.io/en/latest/) 
 or you can generate the HTML documentation yourself with Sphinx.
 
 Build documentation via Sphinx and extension packages (works in docs installations only):
@@ -69,7 +69,7 @@ Build documentation via Sphinx and extension packages (works in docs installatio
 doc/ % sphinx-build . build
 ```
 
-Opening the index.html file takes you to the home directory of the code documentation:
+Opening the ``index.html`` file takes you to the home directory of the code documentation:
 
 ```bash
 doc/build/ % open index.html
