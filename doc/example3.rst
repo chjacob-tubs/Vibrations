@@ -2,9 +2,13 @@
 Localized Anharmonic Modes
 **************************
 
+This example demonstrates the use of localized modes in an **L-VCI-S** (localized-mode 
+vibrational configuration interaction with single excitations) calculation for water.
+The :ref:`first script <Harmonic Calculation>` uses harmonic potentials. The :ref:`second script <Anharmonic Calculation>` uses anharmonic potentials.
+
 .. code-block:: console
 
-   /vibrations/examples/
+   Vibrations/examples/
             ├── 3.Localized_modes_anharmonic/ 
                      ├── coord
                      ├── Dm1_g16.npy
@@ -27,21 +31,22 @@ Instructions with PyADF
 .. include:: ../examples/3.Localized_modes_anharmonic/README
    :literal:
 
+.. _Harmonic Calculation:
+
 Python Scripts: Harmonic Calculations
 =====================================
 
-Here we see the script for the first part of the example *Example3_1_Harmonic_L-VCI-S.py*:
+The script ``Example3_1_Harmonic_L-VCI-S.py`` performs an L-VCI-S calculation using harmonic
+potentials:
 
 
 .. literalinclude:: ../examples/3.Localized_modes_anharmonic/Example3_1_Harmonic_L-VCI-S.py
     :language: python
 
-When we run the script we get:
+Running the script, generates the following output:
 
 .. code-block:: console
 
-   WARNING: Fortran routines not used for integrals,     this might be very slow. 
-            see src/Vibrations/README_f2py 
    
     ***************************************************************************
     *
@@ -129,8 +134,6 @@ When we run the script we get:
    
    Initial state:  [0, 0, 0]
    Transition energies in cm^-1
-   WARNING: Fortran routines not used for integrals,             this might be very slow. 
-            see src/Vibrations/README_f2py 
    +---------------------------+
    |--- There are 4 states ---|
    +---------------------------+
@@ -179,21 +182,22 @@ When we run the script we get:
    |--- http://www.christophjacob.eu ---|
    +------------------------------------+
 
+.. _Anharmonic Calculation:   
+
 Python Scripts: Anharmonic Calculations
 =======================================
 
-Here we see the script for the first part of the example *Example3_2_Anharmonic_L-VCI-S.py*:
+The script ``Example3_2_Anharmonic_L-VCI-S.py`` performs an L-VCI-S calculation using 
+anharmonic potentials:
 
 
 .. literalinclude:: ../examples/3.Localized_modes_anharmonic/Example3_2_Anharmonic_L-VCI-S.py
     :language: python
 
-When we run the script we get:
+Running the script, generates the following output:
 
 .. code-block:: console
 
-   WARNING: Fortran routines not used for integrals,     this might be very slow. 
-            see src/Vibrations/README_f2py 
    
     ***************************************************************************
     *
@@ -295,8 +299,6 @@ When we run the script we get:
    
    Initial state:  [0, 0, 0]
    Transition energies in cm^-1
-   WARNING: Fortran routines not used for integrals,             this might be very slow. 
-            see src/Vibrations/README_f2py 
    +---------------------------+
    |--- There are 4 states ---|
    +---------------------------+
