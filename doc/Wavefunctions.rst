@@ -15,23 +15,21 @@ Wavefunction
 Example
 """""""
 
-Import the Vibrations and VibTools packages:
+Import the `Vibrations` and `VibTools` packages:
 
 .. code-block:: python
 
     import VibTools
     import Vibrations as vib
 
-The import from the package produces an output:
+When importing the packages, the following information is displayed:
 
 .. code-block:: console
      
-        WARNING: Fortran routines not used for integrals, this might be very slow. 
-             see src/Vibrations/README_f2py 
      
      ***************************************************************************
      *
-     *  Vibrations v0.9
+     *  Vibrations v0.96
      *
      *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
      *  Copyright (C) 2014-2018 by Pawel T. Panek, and Christoph R. Jacob.

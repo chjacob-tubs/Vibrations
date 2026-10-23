@@ -1,8 +1,8 @@
 VibrationalSCF
 --------------
 
-Module containing all Vibrational SCF classes
-G{classtree VSCF}
+Module containing all Vibrational SCF classes.
+
 
 VSCF
 ^^^^

@@ -2,28 +2,26 @@
 Localized Harmonic Modes
 ************************
 
-Here we see the script for localized harmonic modes:
+This example shows how to localize normal modes into subsets and perform a **harmonic L-VCI-S** (localized-mode vibrational configuration interaction with single excitations) calculation.
 
 .. code-block:: console
 
-   /vibrations/examples/
+   Vibrations/examples/
             ├── 2.Localized_modes_harmonic/ 
                      ├── coord
                      ├── Example2_Harmonic_L-VCI-S.py
                      ├── restart
                      └── snf.out
 
-Here we see the script for the first part of the example *Example2_Harmonic_L-VCI-S.py*:
+To perform the calculation, run the script ``Example2_Harmonic_L-VCI-S.py``:
 
 .. literalinclude:: ../examples/2.Localized_modes_harmonic/Example2_Harmonic_L-VCI-S.py
     :language: python
 
-When we run the script we get:
+Running the script, generates the following output:
 
 .. code-block:: console
 
-   WARNING: Fortran routines not used for integrals,     this might be very slow.
-            see src/Vibrations/README_f2py 
    
     ***************************************************************************
     *
@@ -32,9 +30,20 @@ When we run the script we get:
     *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
     *  Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
     *  Michael Welzel, and Christoph R. Jacob.
-                            .
-                            .
-                            .
+    *
+    *     Vibrations is free software: you can redistribute it and/or modify
+    *     it under the terms of the GNU General Public License as published by
+    *     the Free Software Foundation, either version 3 of the License, or
+    *     (at your option) any later version.
+    *
+    *     Vibrations is distributed in the hope that it will be useful,
+    *     but WITHOUT ANY WARRANTY;      without even the implied warranty of
+    *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    *     GNU General Public License for more details.
+    *
+    *     You should have received a copy of the GNU General Public License
+    *     along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.
+    *
     *  In scientific publications using Vibrations please cite:
     *    P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.
     *    P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.
@@ -43,8 +52,6 @@ When we run the script we get:
     *    http://www.christophjacob.eu/software
     *
     ***************************************************************************
-    *
-    *
    +------------------+
    |--- Example 2: ---|
    +------------------+
@@ -65,9 +72,9 @@ When we run the script we get:
    Normal mode localization: Cycle   6    p:    1.444   change:  0.0005905     0.04309
    Normal mode localization: Cycle   7    p:    1.444   change:  0.0003128     0.03171
    Normal mode localization: Cycle   8    p:    1.444   change:  0.0001826     0.02443
-                            .
-                            .
-                            .
+               .
+               .
+               .
    Normal mode localization: Cycle  15    p:    1.632   change:  0.0000000     0.00024
    Normal mode localization: Cycle  16    p:    1.632   change:  0.0000000     0.00013
    Normal mode localization: Cycle  17    p:    1.632   change:  0.0000000     0.00007
@@ -140,8 +147,6 @@ When we run the script we get:
    
    Initial state:  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
    Transition energies in cm^-1
-   WARNING: Fortran routines not used for integrals,             this might be very slow.
-            see src/Vibrations/README_f2py
    +---------------------------+
    |--- There are 13 states ---|
    +---------------------------+
