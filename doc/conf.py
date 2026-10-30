@@ -10,19 +10,36 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-sys.path.insert(0, os.path.abspath('..'))
+#import os
+#import sys
+
+import tomllib
+import pathlib
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'LocVib 1.4'
-copyright = '2009 - 2026 by Christoph Jacob and others'
-author = 'Christoph Jacob, Tobias Bergmann, Julia Brueggemann, Maria Chekmeneva, Michael Welzel, Mario Wolter, and others'
+# Read version and authors from pyproject.toml
+project_root = pathlib.Path(__file__).resolve().parent.parent
+with open(project_root / "pyproject.toml", "rb") as f:
+    config = tomllib.load(f)
 
-# The full version, including alpha/beta/rc tags
-release = '1.4'
+project = config["project"]["name"]
+version = config["project"]["version"]
+release = version
+
+# Build author string from the authors list
+authors = config["project"].get("authors", [])
+if authors:
+    author_names = [a["name"] for a in authors]
+    if len(author_names) == 1:
+        author = author_names[0]
+    else:
+        last = author_names[-1]
+        others = author_names[:-1]
+        author = ", ".join(others) + ", and " + last
+else:
+    author = "Unknown"
 
 
 # -- General configuration ---------------------------------------------------

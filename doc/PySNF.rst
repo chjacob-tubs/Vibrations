@@ -1,7 +1,7 @@
 PySNF
 =====
 
-This module enables a comfortable connection between SNF and LocVib/VibTools.
+This module enables a comfortable connection between SNF and LocVib/src/VibTools.
 
 SNF 4.0.0, Manual (2007):
 
