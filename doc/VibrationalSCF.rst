@@ -45,6 +45,3 @@ VSCF4D
 .. autoclass:: Vibrations.VSCF4D
    :members:
    :show-inheritance:
-
-
-
