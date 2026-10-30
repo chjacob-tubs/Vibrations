@@ -24,40 +24,14 @@ Import the Vibrations and VibTools packages:
     import VibTools
     import Vibrations as vib
 
-The import from the package produces an output:
+When importing the packages, the following information is displayed:
 
 .. code-block:: console
-     
-        WARNING: Fortran routines not used for integrals, this might be very slow. 
-             see src/Vibrations/README_f2py 
+
      
      ***************************************************************************
      *
-     *  Vibrations v0.96
-     *
-     *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-     *  Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
-     *  Michael Welzel, and Christoph R. Jacob.
-     *
-     *     Vibrations is free software: you can redistribute it and/or modify
-     *     it under the terms of the GNU General Public License as published by
-     *     the Free Software Foundation, either version 3 of the License, or
-     *     (at your option) any later version.
-     *
-     *     Vibrations is distributed in the hope that it will be useful,
-     *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-     *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     *     GNU General Public License for more details.
-     *
-     *     You should have received a copy of the GNU General Public License
-     *     along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.
-     *
-     *  In scientific publications using Vibrations please cite:
-     *    P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.
-     *    P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.
-     *
-     *  The most recent version of Vibrations is available at
-     *    http://www.christophjacob.eu/software
+     * Current Vibrations Header and Copyright *
      *
      ***************************************************************************
      *
@@ -65,83 +39,51 @@ The import from the package produces an output:
 
 
 
-We create the (empty) Surface class and display the attributes:
+An empty ``Surface`` object can be created. Its attributes are printed below:
 
 .. code-block:: python
    
    surf = vib.Surface()
-   print('grids  = ', surf.grids  )
-   print('empty  = ', surf.empty  )
-   print('ngrid  = ', surf.ngrid  )
-   print('order  = ', surf.order  )
-   print('prop   = ', surf.prop   )
-   print('indices= ', surf.indices)
-   print('data   = ', surf.data   )
+   print('grids   =', surf.grids  )
+   print('empty   =', surf.empty  )
+   print('ngrid   =', surf.ngrid  )
+   print('order   =', surf.order  )
+   print('prop    =', surf.prop   )
+   print('indices =', surf.indices)
+   print('data    =', surf.data   )
 
 .. code-block:: console
    
-   grids  =  None
-   empty  =  True
-   ngrid  =  0
-   order  =  1
-   prop   =  (1,)
-   indices=  []
-   data   =  []
+   grids   =  None
+   empty   =  True
+   ngrid   =  0
+   order   =  1
+   prop    =  (1,)
+   indices =  []
+   data    =  []
 
-Now we create the Surface (Vibrations) object with the Grid (Vibrations depend on VibTools) object.
-Therefore we need some SNF-Results (readable with VibTools):
+To construct a functional ``Surface`` object, a grid with computed vibrational points is required.
+The SNF calculation results can be loaded using the ``SNFResults`` class from VibTools 
+(SNF: https://reiher.ethz.ch/software/snf.html).
 
 .. code-block:: python
   
-   # Load SNF-Results via VT 
+   # Load SNF results using VibTools 
+   path = 'src/Vibrations/unittests/test_data/'
    res = VibTools.SNFResults(outname = path+'snf.out',
                           restartname=path+'restart',
                           coordfile=path+'coord')
    res.read()
 
-Now we still need to prepare the local modes via VibTools.
-For more details look at the documentation of the Grid module of Vibrations.
-
+Next, the local modes are prepared using VibTools.
+For more details, see the documentation of the :ref:`Grid module <Grid>` in the Vibrations package.
 
 .. code-block:: python
 
-   def localize_subsets(modes,subsets):
-       # method that takes normal modes and list of lists (beginin and end)
-       # of subsets and make one set of modes localized in subsets
-
-       # first get number of modes in total
-       total = 0
-       modes_mw = np.zeros((0, 3*modes.natoms))
-       freqs = np.zeros((0,))
-
-       for subset in subsets:
-           n = subset[1] - subset[0]
-           total += n
-
-
-       print('Modes localized: %i, modes in total: %i' %(total, modes.nmodes))
-
-       if total > modes.nmodes:
-           raise Exception('Number of modes in the subsets is larger than the total number of modes')
-       else:
-           cmat = np.zeros((total, total))
-           actpos = 0 #actual position in the cmat matrix
-           for subset in subsets:
-               tmp = localize_subset(modes, range(subset[0], subset[1]))
-               modes_mw = np.concatenate((modes_mw, tmp[0]), axis = 0)
-               freqs = np.concatenate((freqs, tmp[1]), axis = 0)
-               cmat[actpos:actpos + tmp[2].shape[0],actpos:actpos + tmp[2].shape[0]] = tmp[2]
-               actpos = actpos + tmp[2].shape[0]
-           localmodes = VibTools.VibModes(total, modes.mol)
-           localmodes.set_modes_mw(modes_mw)
-           localmodes.set_freqs(freqs)
-
-           return localmodes, cmat
-
-   # Calculate Localmodes via VT - Data-Prod-function:
-   subsets = [[0,4], [4,8], [8,12]]
-   localmodes,cmat = datprod.localize_subsets(res.modes,subsets)
-   # Create Grid Class
+   # Localize modes in separate subsets using VibTools:
+   subsets = [[0,1,2,3],[4,5,6,7],[8,9,10,11]]
+   localmodes,cmat = VibTools.LocVib.localize_subsets(subsets,res.modes)
+   # Create Grid class
    mol = res.mol
    ngrid = 16
    amp = 14
@@ -149,16 +91,25 @@ For more details look at the documentation of the Grid module of Vibrations.
    grid.generate_grids(ngrid,amp)
    
    surf = vib.Surface(grids=grid)
-   print('grids  = ', surf.grids  )
-   print('empty  = ', surf.empty  )
-   print('ngrid  = ', surf.ngrid  )
-   print('order  = ', surf.order  )
-   print('prop   = ', surf.prop   )
-   print('indices= ', surf.indices)
-   print('data   = ', surf.data   )
+   print('grids   =', surf.grids  )
+   print('empty   =', surf.empty  )
+   print('ngrid   =', surf.ngrid  )
+   print('order   =', surf.order  )
+   print('prop    =', surf.prop   )
+   print('indices =', surf.indices)
+   print('data    =', surf.data   )
 
 .. code-block:: console
    
+   Modes localized: 12, modes in total: 12
+   Normal mode localization: Cycle   1    p:    1.423   change:  0.5793322     1.71249
+   Normal mode localization: Cycle   2    p:    1.430   change:  0.0067229     0.19422
+   Normal mode localization: Cycle   3    p:    1.438   change:  0.0084692     0.19886
+   Normal mode localization: Cycle   4    p:    1.442   change:  0.0033325     0.12330
+   Normal mode localization: Cycle   5    p:    1.443   change:  0.0012660     0.06618
+    .
+    .
+    .
    grids  =  Grids:
    Number of modes:       12
    Number of grid points: 16
@@ -199,53 +150,54 @@ Potential
    :members:
    :show-inheritance:
 
-
 Example
 """""""
 
-blablalbla
-
+...
 
 
 Polarizability
 ^^^^^^^^^^^^^^
 
-blablabla
+.. autoclass:: Vibrations.Polarizability
+   :members:
+   :show-inheritance:
 
 Example
 """""""
 
-blablalbla
+...
 
 
+Gtensor
+^^^^^^^
+
+.. autoclass:: Vibrations.Gtensor
+   :members:
+   :show-inheritance:
 
 
 Atensor
 ^^^^^^^
 
-blablabla
+.. autoclass:: Vibrations.Atensor
+   :members:
+   :show-inheritance:
 
 Example
 """""""
 
-blablalbla
-
-
-
+...
 
 
 Dipole
 ^^^^^^
 
-blablabalbla
-
+.. autoclass:: Vibrations.Dipole
+   :members:
+   :show-inheritance:
 
 Example
 """""""
 
-blablalbla
-
-
-
-
-
+...

@@ -9,7 +9,7 @@ documentation = "https://vibrations.readthedocs.io/en/latest/"
 
 [project]
 name = 'vibrations'
-version = "1.0"
+version = "1.1"
 description = 'Vibrations is a Python code for vibrational calculations with user-defined vibrational modes'
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.11.4"
@@ -21,6 +21,7 @@ authors = [
     {name = "Julia Brueggemann"},
     {name = "Maria Chekmeneva"},
     {name = "Adrian A. Hoeske"},
+    {name = "Wadtey S. Oung"},
     {name = "Michael Welzel"},
     {name = "Mario Wolter"},
     {name = "others"},

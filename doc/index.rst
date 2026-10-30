@@ -13,7 +13,7 @@ Overview
 User Documentation
 ==================
 
-Here we find installation instructions and examples of use.
+Here you'll find installation instructions and examples of use.
 
 .. toctree::
    :maxdepth: 2
@@ -21,6 +21,7 @@ Here we find installation instructions and examples of use.
 
    installation
    verify_installation
+   building_the_documentation
 
 .. toctree::
    :maxdepth: 2
@@ -40,11 +41,11 @@ Code Documentation
 .. image:: Vibrations_archi.png
    :alt: Code architecture of Vibrations
 
-Here we find the code documentation.
+Here you'll find the code documentation.
 
 .. toctree::
    :maxdepth: 2
-   :caption: vibration's modules
+   :caption: Vibrations Modules
 
    Grid
    Surface

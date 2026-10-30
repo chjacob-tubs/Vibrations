@@ -2,9 +2,13 @@
 Localized Anharmonic Modes
 **************************
 
+This example demonstrates the use of localized modes in an **L-VCI-S** (localized-mode 
+vibrational configuration interaction with single excitations) calculation for water.
+The :ref:`first script <Harmonic Calculation>` uses harmonic potentials. The :ref:`second script <Anharmonic Calculation>` uses anharmonic potentials.
+
 .. code-block:: console
 
-   /vibrations/examples/
+   Vibrations/examples/
             ├── 3.Localized_modes_anharmonic/ 
                      ├── coord
                      ├── Dm1_g16.npy
@@ -27,49 +31,26 @@ Instructions with PyADF
 .. include:: ../examples/3.Localized_modes_anharmonic/README
    :literal:
 
+.. _Harmonic Calculation:
+
 Python Scripts: Harmonic Calculations
 =====================================
 
-Here we see the script for the first part of the example *Example3_1_Harmonic_L-VCI-S.py*:
+The script ``Example3_1_Harmonic_L-VCI-S.py`` performs an L-VCI-S calculation using harmonic
+potentials:
 
 
 .. literalinclude:: ../examples/3.Localized_modes_anharmonic/Example3_1_Harmonic_L-VCI-S.py
     :language: python
 
-When we run the script we get:
+Running the script, generates the following output:
 
 .. code-block:: console
 
-   WARNING: Fortran routines not used for integrals,     this might be very slow. 
-            see src/Vibrations/README_f2py 
    
     ***************************************************************************
     *
-    *  Vibrations v0.96
-    *
-    *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-    *  Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
-    *  Michael Welzel, and Christoph R. Jacob.
-    *
-    *     Vibrations is free software: you can redistribute it and/or modify
-    *     it under the terms of the GNU General Public License as published by
-    *     the Free Software Foundation, either version 3 of the License, or
-    *     (at your option) any later version.
-    *
-    *     Vibrations is distributed in the hope that it will be useful,
-    *     but WITHOUT ANY WARRANTY;      without even the implied warranty of
-    *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    *     GNU General Public License for more details.
-    *
-    *     You should have received a copy of the GNU General Public License
-    *     along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.
-    *
-    *  In scientific publications using Vibrations please cite:
-    *    P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.
-    *    P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.
-    *
-    *  The most recent version of Vibrations is available at
-    *    http://www.christophjacob.eu/software
+    * Current Vibrations Header and Copyright *
     *
     ***************************************************************************
     *
@@ -129,8 +110,6 @@ When we run the script we get:
    
    Initial state:  [0, 0, 0]
    Transition energies in cm^-1
-   WARNING: Fortran routines not used for integrals,             this might be very slow. 
-            see src/Vibrations/README_f2py 
    +---------------------------+
    |--- There are 4 states ---|
    +---------------------------+
@@ -179,49 +158,26 @@ When we run the script we get:
    |--- http://www.christophjacob.eu ---|
    +------------------------------------+
 
+.. _Anharmonic Calculation:   
+
 Python Scripts: Anharmonic Calculations
 =======================================
 
-Here we see the script for the first part of the example *Example3_2_Anharmonic_L-VCI-S.py*:
+The script ``Example3_2_Anharmonic_L-VCI-S.py`` performs an L-VCI-S calculation using 
+anharmonic potentials:
 
 
 .. literalinclude:: ../examples/3.Localized_modes_anharmonic/Example3_2_Anharmonic_L-VCI-S.py
     :language: python
 
-When we run the script we get:
+Running the script, generates the following output:
 
 .. code-block:: console
 
-   WARNING: Fortran routines not used for integrals,     this might be very slow. 
-            see src/Vibrations/README_f2py 
    
     ***************************************************************************
     *
-    *  Vibrations v0.96
-    *
-    *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-    *  Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
-    *  Michael Welzel, and Christoph R. Jacob.
-    *
-    *     Vibrations is free software: you can redistribute it and/or modify
-    *     it under the terms of the GNU General Public License as published by
-    *     the Free Software Foundation, either version 3 of the License, or
-    *     (at your option) any later version.
-    *
-    *     Vibrations is distributed in the hope that it will be useful,
-    *     but WITHOUT ANY WARRANTY;      without even the implied warranty of
-    *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    *     GNU General Public License for more details.
-    *
-    *     You should have received a copy of the GNU General Public License
-    *     along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.
-    *
-    *  In scientific publications using Vibrations please cite:
-    *    P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.
-    *    P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.
-    *
-    *  The most recent version of Vibrations is available at
-    *    http://www.christophjacob.eu/software
+    * Current Vibrations Header and Copyright *
     *
     ***************************************************************************
     *
@@ -295,8 +251,6 @@ When we run the script we get:
    
    Initial state:  [0, 0, 0]
    Transition energies in cm^-1
-   WARNING: Fortran routines not used for integrals,             this might be very slow. 
-            see src/Vibrations/README_f2py 
    +---------------------------+
    |--- There are 4 states ---|
    +---------------------------+

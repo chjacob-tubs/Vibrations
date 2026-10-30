@@ -16,5 +16,3 @@ VCI
 .. autoclass:: Vibrations.VCI
    :members:
    :show-inheritance:
-
-

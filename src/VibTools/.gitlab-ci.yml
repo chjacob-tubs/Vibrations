@@ -1,0 +1,224 @@
+variables:
+  USER: legit
+  CONDA_MODULE_LOAD: python/miniforge3-25.3.0
+  CONDA_ENV: "pipeline_${CI_PIPELINE_ID}" 
+  CONDA_ENV_BASE: ci_locvib
+
+
+workflow:
+    rules: # these are the rules for any pipelines to start
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        - if: '$CI_PIPELINE_SOURCE == "web"'
+        - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
+
+default:
+    id_tokens: # mandatory to authenticate with runner, see issue #75 in pyadf
+        SITE_ID_TOKEN:
+            aud: https://gitlab.pyadf.org
+    tags:
+        - local
+        - shell 
+    before_script:
+        - hostname
+        - . /usr/share/modules/init/bash
+        - . /usr/share/modules/init/setup
+        - module load $CONDA_MODULE_LOAD
+        - conda activate $CONDA_ENV
+        - cd $CI_PROJECT_DIR
+        - export TMPDIR=/scratch/$USER/ci-pipeline_${CI_PIPELINE_ID}/${CI_JOB_ID}
+        - mkdir -p $TMPDIR
+        - cd $TMPDIR
+        - echo "Running in directory $TMPDIR "
+
+
+stages:
+    - build
+    - unittest
+    - examples
+    - quality
+    - autodoc
+    - deploy
+    - cleanup
+
+
+
+
+######################
+#### BUILD #########################################################
+######################
+
+install_locvib:
+    stage: build
+    tags:
+        - local 
+        - shell
+    rules:
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        - if: '$CI_PIPELINE_SOURCE == "web"'
+        - if: '$CI_PIPELINE_SOURCE == "schedule"' # schedules can be created via the web interface
+    before_script:
+        - hostname
+        - . /usr/share/modules/init/bash
+        - . /usr/share/modules/init/setup
+        - module load $CONDA_MODULE_LOAD
+        - |-
+            if conda env list | grep -q $CONDA_ENV; then
+                conda env remove --name $CONDA_ENV --yes
+            fi
+        #packages from environment.yml files
+        - conda env create -n $CONDA_ENV -f $CI_PROJECT_DIR/requirements/environment_tests_doc.yml -y
+        - conda activate $CONDA_ENV
+        - pip install docstr-coverage sphinx-mdinclude # not available on conda-forge
+        
+    script:
+        - cd $CI_PROJECT_DIR
+        - pip install --no-deps -e .
+
+
+###################
+#### UNITTESTS ###############################################################
+###################
+
+unittest-Molecule:
+    stage: unittest
+    script:
+        - pytest -v $CI_PROJECT_DIR/src/VibTools/tests/test_Molecule.py
+
+unittest-Modes:
+    stage: unittest
+    script:
+        - pytest -v $CI_PROJECT_DIR/src/VibTools/tests/test_Modes.py
+
+unittest-LocVib:
+    stage: unittest
+    script:
+        - pytest -v $CI_PROJECT_DIR/src/VibTools/tests/test_LocVib.py
+
+unittest-HugAnalysis:
+    stage: unittest
+    script:
+        - pytest -v $CI_PROJECT_DIR/src/VibTools/tests/test_HugAnalysis.py
+
+unittest-Spectrum:
+    stage: unittest
+    script:
+        - pytest -v $CI_PROJECT_DIR/src/VibTools/tests/test_Spectrum.py
+
+unittest-Results:
+    stage: unittest
+    script:
+        - pytest -v $CI_PROJECT_DIR/src/VibTools/tests/test_Results.py
+
+# Interfaces ---------
+
+unittest-PySNF:
+    stage: unittest
+    script:
+        - pytest -v $CI_PROJECT_DIR/src/VibTools/tests/test_PySNF.py
+
+#######################
+#### EXAMPLES #############################################################
+#######################
+
+examples-composition:
+    stage: examples
+    script:
+        - python $CI_PROJECT_DIR/src/VibTools/example/1_composition.py
+
+
+examples-locmodes:
+    stage: examples
+    script:
+        - python $CI_PROJECT_DIR/src/VibTools/example/2_locmodes.py
+
+examples-couplings:
+    stage: examples
+    script:
+        - python $CI_PROJECT_DIR/src/VibTools/example/3_couplings.py
+
+
+##########################
+#### Code Quality ##########################################################
+##########################
+
+unittest-Coverage:
+    stage: quality
+    script:
+        - pytest --cov=VibTools --cov-report term --cov-report xml:$CI_PROJECT_DIR/coverage.xml $CI_PROJECT_DIR/src/VibTools/tests
+    coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+    artifacts:
+        reports:
+            coverage_report:
+                coverage_format: cobertura
+                path: $CI_PROJECT_DIR/coverage.xml
+
+unittest-Min-Coverage:
+    stage: quality
+    script:
+        - pytest --cov=VibTools --cov-fail-under=67 $CI_PROJECT_DIR/src/VibTools/tests
+
+Style-Check-Min:
+    stage: quality
+    script:
+        - pylint --fail-under=7.8 $CI_PROJECT_DIR/src/VibTools
+
+unittest-Report:
+    stage: quality
+    script:
+        - pytest --junitxml=$CI_PROJECT_DIR/report.xml $CI_PROJECT_DIR/src/VibTools/tests
+    artifacts:
+        when: always 
+        reports:
+            junit: $CI_PROJECT_DIR/report.xml
+
+docstr-Min-Coverage:
+    stage: quality
+    script:
+        - docstr-coverage --fail-under=74 -b $CI_PROJECT_DIR $CI_PROJECT_DIR/src/VibTools/*.py
+    artifacts:
+        paths:
+            - $CI_PROJECT_DIR/docstr_coverage_badge.svg
+
+#######################
+#### DOCUMENTATION #############################################################
+#######################
+
+
+build-sphinx-doc:
+    stage: autodoc
+    script:
+        - sphinx-build $CI_PROJECT_DIR/doc/ $TMPDIR/build
+
+
+pages:
+    stage: deploy
+    tags:
+        - local
+        - shell
+    script:
+        - sphinx-build $CI_PROJECT_DIR/doc/ $TMPDIR/build
+        - mkdir $CI_PROJECT_DIR/public
+        - cp -r $TMPDIR/build/* $CI_PROJECT_DIR/public/
+    artifacts:
+        paths:
+            - $CI_PROJECT_DIR/public
+
+##################
+#### CLEAN UP ##################################################################
+##################
+
+cleanup-conda-local-shell:
+    before_script:
+        - hostname
+        - . /usr/share/modules/init/bash
+        - . /usr/share/modules/init/setup
+        - module load $CONDA_MODULE_LOAD
+    stage: cleanup
+    tags: 
+        - local
+        - shell
+    script:
+        - conda env remove --name $CONDA_ENV --yes
+    when: always
+
