@@ -1,0 +1,58 @@
+Normal mode localization: Cycle   1    p:    4.501   change:  2.3145195     6.41573 
+Normal mode localization: Cycle   2    p:    4.565   change:  0.0635835     0.57591 
+Normal mode localization: Cycle   3    p:    4.565   change:  0.0000638     0.00852 
+Normal mode localization: Cycle   4    p:    4.565   change:  0.0000000     0.00000 
+Obtaining coupling matrix in [a.u.]
+Obtaining coupling matrix in [a.u.]
+Obtaining coupling matrix in [a.u.]
+Obtaining coupling matrix in [a.u.]
+Obtaining coupling matrix in [a.u.]
+Obtaining coupling matrix in [a.u.]
+Obtaining coupling matrix in [a.u.]
+Obtaining coupling matrix in [a.u.]
+
+Composition of localized modes: 
+                    NH      CO      CA      HA     CHB   
+   0   1663.7      3.6    94.5     0.6     0.8     0.5   
+   1   1667.1      3.4    94.5     0.5     1.2     0.4   
+   2   1654.1      3.9    93.9     0.5     1.2     0.5   
+   3   1651.6      3.8    94.0     0.5     1.2     0.5   
+   4   1651.7      3.9    94.0     0.5     1.2     0.5   
+   5   1652.2      3.8    94.1     0.5     1.1     0.4   
+   6   1652.2      4.2    93.6     0.5     1.2     0.5   
+   7   1676.9      2.9    95.7     0.4     0.5     0.4   
+   8   1668.2      2.6    96.0     0.5     0.4     0.5   
+
+min:               2.6    93.6     0.4     0.4     0.4   
+max:               4.2    96.0     0.6     1.2     0.5   
+
+                     1      10       2       3       4       5       6       7       8       9   
+   0   1663.7     95.5     0.0     3.6     0.5     0.3     0.0     0.0     0.0     0.0     0.0   
+   1   1667.1      0.0     0.0    95.9     3.2     0.5     0.3     0.0     0.0     0.0     0.0   
+   2   1654.1      0.0     0.0     0.0    95.2     3.8     0.6     0.3     0.0     0.0     0.0   
+   3   1651.6      0.0     0.0     0.0     0.0    95.3     3.6     0.7     0.3     0.1     0.0   
+   4   1651.7      0.0     0.0     0.0     0.0     0.0    95.3     3.6     0.6     0.4     0.1   
+   5   1652.2      0.0     0.1     0.0     0.0     0.0     0.0    95.4     3.6     0.6     0.4   
+   6   1652.2      0.0     0.7     0.0     0.0     0.0     0.0     0.0    94.9     3.7     0.8   
+   7   1676.9      0.0     0.4     0.0     0.0     0.0     0.0     0.0     0.0    96.5     3.1   
+   8   1668.2      0.0     3.2     0.0     0.0     0.0     0.0     0.0     0.0     0.0    96.8   
+
+min:               0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0   
+max:              95.5     3.2    95.9    95.2    95.3    95.3    95.4    94.9    96.5    96.8   
+
+
+ROA backscattering intensities of normal modes and localized modes
+
+  normal modes        |  localized modes 
+     freq       int   |    freq       int
+241  1644.0     29.38 |  1 1663.7     4.81
+242  1650.0     22.59 |  2 1667.1    12.55
+243  1651.1     10.84 |  3 1654.1     0.54
+244  1656.1    -37.40 |  4 1651.6    -0.25
+245  1657.2     -0.96 |  5 1651.7     5.95
+246  1663.7     -2.65 |  6 1652.2    -5.54
+247  1668.3      8.81 |  7 1652.2     1.44
+248  1670.0      2.27 |  8 1676.9    13.08
+249  1677.3     11.15 |  9 1668.2    11.46
+
+Total ROA Int    :  44.02970684750425

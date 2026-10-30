@@ -1,0 +1,34 @@
+*.pyc
+
+*.egg-info/
+.idea
+.vscode
+
+# __pycache__
+tests/__pycache__
+src/VibTools/__pycache__
+
+# Example output
+example/locmodes-amide1.out
+
+# Tests
+tests/rumprobier_Molecule.py
+
+# Doc
+*.html
+doc/_build/
+doc/Build/
+doc/build/
+
+# coverage
+.coverage
+tests/.coverage
+src/.coverage
+
+
+# DS Store
+.DS_Store
+._.DS_Store
+
+doc/.DS_Store
+
