@@ -1,0 +1,320 @@
+# TEST
+variables:
+  USER: legit
+
+workflow:
+    rules: # these are the rules for any pipelines to start
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        - if: '$CI_PIPELINE_SOURCE == "web"'
+        - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
+
+stages:
+    - build
+    - unittest
+    - examples
+    - quality
+    - autodoc
+    - deploy
+    - cleanup
+
+before_script:
+        - hostname
+
+######################
+#### IMAGE BUILDS #########################################################
+######################
+
+build-docker-test-image:
+    tags:
+       - local
+       - shell
+    stage: build
+    script:
+       - docker build --no-cache -t lv_unittest -f Dockerfile .
+
+build-docker-autodoc-image:
+    tags:
+       - local
+       - shell
+    stage: build
+    script:
+       - docker build --no-cache -t lv_sphinxdoc -f doc/Dockerfile . 
+
+build-docker-example-image:
+    tags:
+       - local
+       - shell
+    stage: build
+    script:
+       - docker build --no-cache -t lv_example -f src/VibTools/example/Dockerfile . 
+
+###################
+#### UNITTESTS ###############################################################
+###################
+
+unittest-Molecule:
+    tags:
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image]
+    script:
+        - docker run --workdir /app/src/VibTools/tests lv_unittest pytest -v test_Molecule.py
+
+
+unittest-Modes:
+    tags:
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image]
+    script:
+        - docker run --workdir /app/src/VibTools/tests lv_unittest pytest -v test_Modes.py
+
+
+unittest-LocVib:
+    tags:
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image] #,unittest-Modes]
+    script:
+        - docker run --workdir /app/src/VibTools/tests lv_unittest pytest -v test_LocVib.py
+
+
+unittest-HugAnalysis:
+    tags:
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image] #, unittest-Modes]
+    script:
+        - docker run --workdir /app/src/VibTools/tests lv_unittest pytest -v test_HugAnalysis.py
+
+
+unittest-Spectrum:
+    tags:
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image,unittest-Modes]
+    script:
+        - docker run --workdir /app/src/VibTools/tests lv_unittest pytest -v test_Spectrum.py
+
+
+unittest-Results:
+    tags:
+        - local
+        - shell
+    stage: unittest
+    needs: [build-docker-test-image,unittest-Molecule]
+    script:
+        - docker run --workdir /app/src/VibTools/tests lv_unittest pytest -v test_Results.py
+
+# Interfaces ---------
+
+unittest-PySNF:
+    tags:
+        - local
+        - shell
+    stage: unittest
+    needs:
+        - build-docker-test-image
+        - unittest-Modes
+        - unittest-Molecule
+        - unittest-Results
+    script:
+        - docker run --workdir /app/src/VibTools/tests lv_unittest pytest -v test_PySNF.py
+
+#######################
+#### EXAMPLES #############################################################
+#######################
+
+examples-composition:
+    tags:
+        - local
+        - shell
+    stage: examples
+    needs:
+        - build-docker-test-image
+    script:
+        - docker run --workdir /app/src/VibTools/example --name lv_exp1 lv_example python 1_composition.py 
+
+examples-locmodes:
+    tags:
+        - local
+        - shell
+    stage: examples
+    needs:
+        - build-docker-test-image
+    script:
+        - docker run --workdir /app/src/VibTools/example --name lv_exp2 lv_example python 2_locmodes.py 
+
+examples-couplings:
+    tags:
+        - local
+        - shell
+    stage: examples
+    needs:
+        - build-docker-test-image
+    script:
+        - docker run --workdir /app/src/VibTools/example --name lv_exp3 lv_example python 3_couplings.py 
+
+##########################
+#### Code Quality ##########################################################
+##########################
+
+unittest-Coverage:
+    tags:
+        - local
+        - shell
+    stage: quality
+    needs:
+        - build-docker-test-image
+    script:
+        - docker run --workdir /app/src/VibTools/tests --name lv_test_coverage lv_unittest pytest --cov=VibTools --cov-report term --cov-report xml:coverage.xml
+        - docker cp lv_test_coverage:/app/src/VibTools/tests/coverage.xml coverage.xml
+    coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+    artifacts:
+      reports:
+        coverage_report:
+          coverage_format: cobertura
+          path: coverage.xml
+
+
+unittest-Min-Coverage:
+    tags:
+        - local
+        - shell
+    stage: quality
+    needs: [build-docker-test-image]
+    script:
+        - docker run --workdir /app/src/VibTools/tests lv_unittest pytest --cov=VibTools --cov-fail-under=67
+
+Style-Check-Min:
+    tags:
+        - local
+        - shell
+    stage: quality
+    needs: [build-docker-test-image]
+    script:
+        - docker run --workdir /app/src/VibTools/src lv_unittest pylint --fail-under=7.8 VibTools
+
+unittest-Report:
+    tags:
+        - local
+        - shell
+    stage: quality
+    needs:
+        - build-docker-test-image
+    script:
+        - docker run --workdir /app/src/VibTools/tests --name lv_test_report lv_unittest pytest --junitxml=report.xml
+        - docker cp lv_test_report:/app/src/VibTools/tests/report.xml report.xml
+    artifacts:
+      when: always
+      reports:
+        junit: report.xml
+
+
+docstr-Min-Coverage:
+    tags:
+        - local
+        - shell
+    stage: quality
+    needs:
+        - build-docker-test-image
+    script:
+        - docker run --workdir /app/src --name lv_docstr lv_unittest sh -c "docstr-coverage --fail-under=74 -b . VibTools/*.py"
+        - docker cp lv_docstr:/app/src/docstr_coverage_badge.svg docstr_coverage_badge.svg
+    artifacts:
+      paths:
+        - docstr_coverage_badge.svg
+
+#######################
+#### DOCUMENTATION #############################################################
+#######################
+
+
+build-sphinx-doc:
+    tags:
+        - local
+        - shell
+    stage: autodoc
+    needs:
+        - build-docker-autodoc-image
+        - unittest-Coverage
+        - examples-composition
+        - examples-locmodes
+        - examples-couplings
+    script:
+        - docker run --workdir /app/doc --name sphinxdoc_lv_container lv_sphinxdoc sphinx-build . build 
+
+pages:
+    tags:
+        - local
+        - shell
+    stage: deploy
+    needs: [build-sphinx-doc]
+    script:
+        - docker cp sphinxdoc_lv_container:/app/doc/build/. public/ 
+    artifacts:
+        paths:
+         - public
+
+################################################
+#alternative installation/environment via Conda#
+################################################
+
+build-docker-conda-test-image:
+    tags:
+       - local
+       - shell
+    stage: build
+    script:
+       - docker build --no-cache -t lv_condock -f src/VibTools/tests/Dockerfile .
+
+
+unittest-Conda-Env-all_tests:
+    tags:
+        - local
+        - shell
+    stage: unittest
+    needs: 
+        - build-docker-conda-test-image
+    script:
+        - docker run --workdir /app/src/VibTools/tests lv_condock conda run -n VibToolsCondaENV pytest -v
+
+##################
+#### CLEAN UP ##################################################################
+##################
+
+cleanup-docker:
+    stage: cleanup
+    tags: [local, shell]
+    needs:
+        - build-docker-test-image
+        - build-docker-autodoc-image
+        - build-docker-conda-test-image
+        - build-docker-example-image
+        - unittest-Molecule
+        - unittest-Modes
+        - unittest-PySNF
+        - unittest-LocVib
+        - unittest-HugAnalysis
+        - unittest-Spectrum
+        - unittest-Results
+        - unittest-Conda-Env-all_tests
+        - examples-composition
+        - examples-locmodes
+        - examples-couplings
+        - build-sphinx-doc
+        - unittest-Coverage
+    script:
+        - docker rmi -f lv_condock:latest
+        - docker rmi -f lv_sphinxdoc:latest
+        - docker rmi -f lv_unittest:latest
+        - docker rmi -f lv_example:latest
+        - docker rm $(docker ps --filter status=exited -q)
+        - docker system df
+    when: always

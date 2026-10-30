@@ -1,8 +1,8 @@
 VibrationalSCF
 --------------
 
-Module containing all Vibrational SCF classes
-G{classtree VSCF}
+Module containing all Vibrational SCF classes.
+
 
 VSCF
 ^^^^
@@ -45,6 +45,3 @@ VSCF4D
 .. autoclass:: Vibrations.VSCF4D
    :members:
    :show-inheritance:
-
-
-

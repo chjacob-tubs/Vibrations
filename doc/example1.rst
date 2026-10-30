@@ -1,41 +1,35 @@
 *******************
 Existing Potentials
 *******************
-
-Here we see the script for the first example with existing potentials:
+ 
+The first example demonstrates how to load a grid and potential energy surfaces 
+(both are provided) for a VSCF/VCI calculation.
 
 .. code-block:: console
 
-   /vibrations/examples/
+   Vibrations/examples/
             ├── 1.Existing_potentials/ 
                      ├── 1D.npy 
                      ├── 2D.npy
                      ├── Example_VCI.py
-                     └── grids.py
+                     └── grids.npy
 
-Here we see the script for the first part of the example *Example_VCI.py*:
+To perform the calculation, run the script ``Example_VCI.py``:
 
 .. literalinclude:: ../examples/1.Existing_potentials/Example1_VCI.py
     :language: python
 
-When we run the script we get:
+Running the script, generates the following output:
 
 .. code-block:: console
-
-   WARNING: Fortran routines not used for integrals,     this might be very slow.
-            see src/Vibrations/README_f2py 
    
+
     ***************************************************************************
     *
-    *  Vibrations v0.96
+    * Current Vibrations Header and Copyright *
     *
-    *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-    *  Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
-    *  Michael Welzel, and Christoph R. Jacob.
+    ***************************************************************************
     *
-   .
-   .
-   .
     *
    +------------------+
    |--- Example 1: ---|
@@ -69,9 +63,9 @@ When we run the script we get:
      11     0   1578.1
      12     0   1591.4
    Sum of eigenvalues 10930.9, SCF correction -169.4, total energy 11100.3 / cm^-1
-   .
-   .
-   .
+               .
+               .
+               .
    Iteration: 7
    Mode State   Eigv
       1     0    403.8
@@ -131,8 +125,6 @@ When we run the script we get:
    ->  [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0] 3056.7
    ->  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0] 3084.4
    ->  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1] 3111.4
-   WARNING: Fortran routines not used for integrals,             this might be very slow.
-            see src/Vibrations/README_f2py
    +---------------------------+
    |--- There are 13 states ---|
    +---------------------------+

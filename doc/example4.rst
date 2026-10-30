@@ -2,11 +2,13 @@
 Step by Step Normal Modes H2O
 *****************************
 
-Here we see the script for localized harmonic modes:
+This example demonstrates a VSCF/VCI calculation for a water molecule using normal modes. 
+It covers the workflow from grid generation to potential energy surface construction and 
+final vibrational spectrum calculation.
 
 .. code-block:: console
 
-   /vibrations/examples/
+   Vibrations/examples/
             ├── 4.StepByStep_H2O_NM/ 
                      ├── A_h2o_make_normalmode_grid.py
                      ├── B_calculate_singlepoints.README
@@ -31,40 +33,14 @@ Step A - Generate Grid
 
 .. literalinclude:: ../examples/4.StepByStep_H2O_NM/A_h2o_make_normalmode_grid.py
 
-When we run the script we get:
+Running the script, generates the following output:
 
 .. code-block:: console
 
-   WARNING: Fortran routines not used for integrals,     this might be very slow. 
-            see src/Vibrations/README_f2py 
    
     ***************************************************************************
     *
-    *  Vibrations v0.96
-    *
-    *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-    *  Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
-    *  Michael Welzel, and Christoph R. Jacob.
-    *
-    *     Vibrations is free software: you can redistribute it and/or modify
-    *     it under the terms of the GNU General Public License as published by
-    *     the Free Software Foundation, either version 3 of the License, or
-    *     (at your option) any later version.
-    *
-    *     Vibrations is distributed in the hope that it will be useful,
-    *     but WITHOUT ANY WARRANTY;      without even the implied warranty of
-    *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    *     GNU General Public License for more details.
-    *
-    *     You should have received a copy of the GNU General Public License
-    *     along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.
-    *
-    *  In scientific publications using Vibrations please cite:
-    *    P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.
-    *    P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.
-    *
-    *  The most recent version of Vibrations is available at
-    *    http://www.christophjacob.eu/software
+    * Current Vibrations Header and Copyright *
     *
     ***************************************************************************
     *
@@ -119,52 +95,43 @@ When we run the script we get:
     *** Writing  Mode:  2 , Point:  13
     *** Writing  Mode:  2 , Point:  14
     *** Writing  Mode:  2 , Point:  15
-   
-    *** Writing V2 - Mode: 0 1 , Point:  0 0
-    *** Writing V2 - Mode: 0 1 , Point:  0 1
-    ** Writing V2 - Mode: 0 2 , Point:  1 6
-    *** Writing V2 - Mode: 0 2 , Point:  1 7
-    *** Writing V2 - Mode: 0 2 , Point:  1 8
-    *** Writing V2 - Mode: 0 2 , Point:  1 9
-    *** Writing V2 - Mode: 0 2 , Point:  1 10
-    *** Writing V2 - Mode: 0 2 , Point:  1 11
-    *** Writing V2 - Mode: 0 2 , Point:  1 12
-    *** Writing V2 - Mode: 0 2 , Point:  1 13
-    *** Writing V2 - Mode: 0 2 , Point:  1 14
-                       .
-                       .
-                       .
-    *** Writing V2 - Mode: 0 2 , Point:  1 15
-    *** Writing V2 - Mode: 0 2 , Point:  2 0
-    *** Writing V2 - Mode: 0 2 , Point:  2 1
-    *** Writing V2 - Mode: 0 2 , Point:  2 2
-    *** Writing V2 - Mode: 0 2 , Point:  2 3
-    *** Writing V2 - Mode: 0 2 , Point:  2 4
-    *** Writing V2 - Mode: 0 2 , Point:  2 5
-    *** Writing V2 - Mode: 0 2 , Point:  2 6
-    *** Writing V2 - Mode: 0 2 , Point:  2 7
-    *** Writing V2 - Mode: 0 2 , Point:  2 8
-    *** Writing V2 - Mode: 0 2 , Point:  2 9
-    *** Writing V2 - Mode: 0 2 , Point:  2 10
-    *** Writing V2 - Mode: 0 2 , Point:  2 11
-    *** Writing V2 - Mode: 0 2 , Point:  2 12
-    *** Writing V2 - Mode: 0 2 , Point:  2 13
-    *** Writing V2 - Mode: 0 2 , Point:  2 14
-    *** Writing V2 - Mode: 0 2 , Point:  2 15
-    *** Writing V2 - Mode: 0 2 , Point:  3 0
-    *** Writing V2 - Mode: 0 2 , Point:  3 1
-    *** Writing V2 - Mode: 0 2 , Point:  3 2
-    *** Writing V2 - Mode: 0 2 , Point:  3 3
-    *** Writing V2 - Mode: 0 2 , Point:  3 4
-    *** Writing V2 - Mode: 0 2 , Point:  3 5
-    *** Writing V2 - Mode: 0 2 , Point:  3 6
-    *** Writing V2 - Mode: 0 2 , Point:  3 7
-    *** Writing V2 - Mode: 0 2 , Point:  3 8
-                       .
-                       .
-                       .
-    etc. etc. etc.
-
+    
+   *** Writing V2 - Mode: 0 1 , Point:  0 0
+   *** Writing V2 - Mode: 0 1 , Point:  0 1
+   *** Writing V2 - Mode: 0 1 , Point:  0 2
+   *** Writing V2 - Mode: 0 1 , Point:  0 3
+   *** Writing V2 - Mode: 0 1 , Point:  0 4
+   *** Writing V2 - Mode: 0 1 , Point:  0 5
+   *** Writing V2 - Mode: 0 1 , Point:  0 6
+   *** Writing V2 - Mode: 0 1 , Point:  0 7
+   *** Writing V2 - Mode: 0 1 , Point:  0 8
+   *** Writing V2 - Mode: 0 1 , Point:  0 9
+   *** Writing V2 - Mode: 0 1 , Point:  0 10
+   *** Writing V2 - Mode: 0 1 , Point:  0 11
+   *** Writing V2 - Mode: 0 1 , Point:  0 12
+   *** Writing V2 - Mode: 0 1 , Point:  0 13
+   *** Writing V2 - Mode: 0 1 , Point:  0 14
+   *** Writing V2 - Mode: 0 1 , Point:  0 15   
+                .
+                .
+                .
+    *** Writing V2 - Mode: 1 2 , Point:  15 0
+    *** Writing V2 - Mode: 1 2 , Point:  15 1
+    *** Writing V2 - Mode: 1 2 , Point:  15 2
+    *** Writing V2 - Mode: 1 2 , Point:  15 3
+    *** Writing V2 - Mode: 1 2 , Point:  15 4
+    *** Writing V2 - Mode: 1 2 , Point:  15 5
+    *** Writing V2 - Mode: 1 2 , Point:  15 6
+    *** Writing V2 - Mode: 1 2 , Point:  15 7
+    *** Writing V2 - Mode: 1 2 , Point:  15 8
+    *** Writing V2 - Mode: 1 2 , Point:  15 9
+    *** Writing V2 - Mode: 1 2 , Point:  15 10
+    *** Writing V2 - Mode: 1 2 , Point:  15 11
+    *** Writing V2 - Mode: 1 2 , Point:  15 12
+    *** Writing V2 - Mode: 1 2 , Point:  15 13
+    *** Writing V2 - Mode: 1 2 , Point:  15 14
+    *** Writing V2 - Mode: 1 2 , Point:  15 15
+               
 Step B - Single Points Calculations
 ===================================
 
@@ -177,7 +144,7 @@ Step C - Generate 1-Mode and 2-Mode Potentials
 
 .. literalinclude:: ../examples/4.StepByStep_H2O_NM/C_make_potentials.py
 
-When we run the script we get:
+Running the script, generates the following output:
 
 .. code-block:: console
 
@@ -204,9 +171,9 @@ When we run the script we get:
    Mode : 1 9
    ['-76.3338392543', '0.0', '0.0', '-2.1283765272']
    Energy and dipole moment -76.3338392543 0.0 0.0 -2.1283765272
-                           .
-                           .
-                           .
+               .
+               .
+               .
    Modes : 0 (14) 2 (11)
    ['-76.2544740734', '0.56099151493', '0.0', '-0.91306732825']
    Energy and dipole moment -76.2544740734 0.56099151493 0.0 -0.91306732825
@@ -231,40 +198,14 @@ Step D - VSCF/VCI Calculation
 
 .. literalinclude:: ../examples/4.StepByStep_H2O_NM/D_vscf_vci.py
 
-When we run the script we get:
+Running the script, generates the following output:
 
 .. code-block:: console
 
-   WARNING: Fortran routines not used for integrals,     this might be very slow. 
-            see src/Vibrations/README_f2py 
    
     ***************************************************************************
     *
-    *  Vibrations v0.96
-    *
-    *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-    *  Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
-    *  Michael Welzel, and Christoph R. Jacob.
-    *
-    *     Vibrations is free software: you can redistribute it and/or modify
-    *     it under the terms of the GNU General Public License as published by
-    *     the Free Software Foundation, either version 3 of the License, or
-    *     (at your option) any later version.
-    *
-    *     Vibrations is distributed in the hope that it will be useful,
-    *     but WITHOUT ANY WARRANTY;      without even the implied warranty of
-    *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    *     GNU General Public License for more details.
-    *
-    *     You should have received a copy of the GNU General Public License
-    *     along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.
-    *
-    *  In scientific publications using Vibrations please cite:
-    *    P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.
-    *    P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.
-    *
-    *  The most recent version of Vibrations is available at
-    *    http://www.christophjacob.eu/software
+    * Current Vibrations Header and Copyright *
     *
     ***************************************************************************
     *
@@ -337,8 +278,6 @@ When we run the script we get:
    
    Initial state:  [0, 0, 0]
    Transition energies in cm^-1
-   WARNING: Fortran routines not used for integrals,             this might be very slow. 
-            see src/Vibrations/README_f2py 
    +---------------------------+
    |--- There are 35 states ---|
    +---------------------------+

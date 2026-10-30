@@ -2,49 +2,32 @@
 Localized Harmonic Modes
 ************************
 
-Here we see the script for localized harmonic modes:
+This example shows how to localize normal modes into subsets and perform a **harmonic L-VCI-S** (localized-mode vibrational configuration interaction with single excitations) calculation.
 
 .. code-block:: console
 
-   /vibrations/examples/
+   Vibrations/examples/
             ├── 2.Localized_modes_harmonic/ 
                      ├── coord
                      ├── Example2_Harmonic_L-VCI-S.py
                      ├── restart
                      └── snf.out
 
-Here we see the script for the first part of the example *Example2_Harmonic_L-VCI-S.py*:
+To perform the calculation, run the script ``Example2_Harmonic_L-VCI-S.py``:
 
 .. literalinclude:: ../examples/2.Localized_modes_harmonic/Example2_Harmonic_L-VCI-S.py
     :language: python
 
-When we run the script we get:
+Running the script, generates the following output:
 
 .. code-block:: console
 
-   WARNING: Fortran routines not used for integrals,     this might be very slow.
-            see src/Vibrations/README_f2py 
    
     ***************************************************************************
     *
-    *  Vibrations v0.96
-    *
-    *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy
-    *  Copyright (C) 2014-2023 by Pawel T. Panek, Adrian A. Hoeske, Julia Brüggemann,
-    *  Michael Welzel, and Christoph R. Jacob.
-                            .
-                            .
-                            .
-    *  In scientific publications using Vibrations please cite:
-    *    P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.
-    *    P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.
-    *
-    *  The most recent version of Vibrations is available at
-    *    http://www.christophjacob.eu/software
+    * Current Vibrations Header and Copyright *
     *
     ***************************************************************************
-    *
-    *
    +------------------+
    |--- Example 2: ---|
    +------------------+
@@ -65,9 +48,9 @@ When we run the script we get:
    Normal mode localization: Cycle   6    p:    1.444   change:  0.0005905     0.04309
    Normal mode localization: Cycle   7    p:    1.444   change:  0.0003128     0.03171
    Normal mode localization: Cycle   8    p:    1.444   change:  0.0001826     0.02443
-                            .
-                            .
-                            .
+               .
+               .
+               .
    Normal mode localization: Cycle  15    p:    1.632   change:  0.0000000     0.00024
    Normal mode localization: Cycle  16    p:    1.632   change:  0.0000000     0.00013
    Normal mode localization: Cycle  17    p:    1.632   change:  0.0000000     0.00007
@@ -140,8 +123,6 @@ When we run the script we get:
    
    Initial state:  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
    Transition energies in cm^-1
-   WARNING: Fortran routines not used for integrals,             this might be very slow.
-            see src/Vibrations/README_f2py
    +---------------------------+
    |--- There are 13 states ---|
    +---------------------------+

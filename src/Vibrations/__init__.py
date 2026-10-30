@@ -1,8 +1,8 @@
 # This file is a part of Vibrations:
 # A Python Code for Anharmonic Theoretical Vibrational Spectroscopy
 # Copyright (C) 2014-2026 by Pawel T. Panek, Christoph R. Jacob,
-# Julia Brüggemann, Maria Chekmeneva, Adrian A. Hoeske, Michael Welzel
-# and Mario Wolter
+# Julia Brüggemann, Maria Chekmeneva, Adrian A. Hoeske, Wadtey S. Oung,
+# Michael Welzel, Mario Wolter and others.
 #
 #    Vibrations is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@
 #   P. T. Panek, Ch. R. Jacob, J. Chem. Phys. 144 (2016) 164111.
 #
 # The most recent version of Vibrations is available at
-# http://www.christophjacob.eu/software
-
+#   http://www.christophjacob.eu/software
 """
 Vibrations
 ==========
@@ -69,16 +68,28 @@ from .Wavefunctions import *
 from .Misc import *
 from .VibrationalCI import *
 
+import tomllib
+import pathlib
+
+# Read version and authors from pyproject.toml
+project_root = pathlib.Path(__file__).resolve().parent.parent.parent
+print(project_root)
+with open(project_root / "pyproject.toml", "rb") as f:
+    config = tomllib.load(f)
+
+project = config["project"]["name"]
+version = config["project"]["version"]
+
+
 print()
 print(' '+75*'*')
 print(' *')
-print(' *  Vibrations v0.96')
+print(' *  Vibrations v' + version)
 print(' *')
-print(' *  Vibrations - a Python Code for Anharmonic Theoretical\
- Vibrational Spectroscopy')
-print(' *  Copyright (C) 2014-2023 by Pawel T. Panek,\
- Adrian A. Hoeske, Julia Brüggemann,')
-print(' *  Michael Welzel, and Christoph R. Jacob.')
+print(' *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy')
+print(' *  Copyright (C) 2014-2026 by Pawel T. Panek, Christoph R. Jacob,')
+print(' *  Julia Brüggemann, Maria Chekmeneva, Adrian A. Hoeske, Wadtey S. Oung,')
+print(' *  Michael Welzel, Mario Wolter and others.')
 print(' *')
 print(' *     Vibrations is free software: you can redistribute it\
  and/or modify')
@@ -89,15 +100,12 @@ print(' *     the Free Software Foundation, either version 3 of the License,\
 print(' *     (at your option) any later version.')
 print(' *')
 print(' *     Vibrations is distributed in the hope that it will be useful,')
-print(' *     but WITHOUT ANY WARRANTY;\
-      without even the implied warranty of')
+print(' *     but WITHOUT ANY WARRANTY; without even the implied warranty of')
 print(' *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the')
 print(' *     GNU General Public License for more details.')
 print(' *')
-print(' *     You should have received a copy of the GNU\
- General Public License')
-print(' *     along with Vibrations.  If not, see\
- <http://www.gnu.org/licenses/>.')
+print(' *     You should have received a copy of the GNU General Public License')
+print(' *     along with Vibrations.  If not, see <http://www.gnu.org/licenses/>.')
 print(' *')
 print(' *  In scientific publications using Vibrations please cite:')
 print(' *    P. T. Panek, Ch. R. Jacob, ChemPhysChem 15 (2014) 3365.')
