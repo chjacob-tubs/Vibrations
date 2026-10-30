@@ -9,7 +9,7 @@ documentation = "https://locvibvibtools.readthedocs.io/en/latest/"
 
 [project]
 name = "vibtools"
-version = "1.4"
+version = "1.5"
 description = "LocVib/VibTools: Python tools for localizing normal modes"
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.11.4"
@@ -19,6 +19,7 @@ authors = [
     {name = "Tobias Bergmann"},
     {name = "Julia Brueggemann"},
     {name = "Maria Checkmeneva"},
+    {name = "Wadtey S. Oung"},
     {name = "Michael Welzel"},
     {name = "Mario Wolter"},
     {name = "others"},

@@ -19,10 +19,14 @@ authors:
     family-names: Chekmeneva
     affiliation: Technische Universität Braunschweig
     orcid: 'https://orcid.org/0009-0008-6520-8407'
+  - given-names: Wadtey S.
+    family-names: Oung
+    affiliation: Technische Universität Braunschweig
+    orcid: 'https://orcid.org/0000-0003-0604-6096'
   - given-names: Michael
     family-names: Welzel
     affiliation: Technische Universität Braunschweig
-    orcid: 'http://orcid.org/0000-0002-9996-9254'
+    orcid: 'https://orcid.org/0000-0002-9996-9254'
   - given-names: Mario
     family-names: Wolter
     affiliation: Technische Universität Braunschweig
@@ -42,4 +46,4 @@ keywords:
   - vibrational spectroscopy
   - normal modes
 license: GPL-3.0
-version: 1.4
+version: 1.5
