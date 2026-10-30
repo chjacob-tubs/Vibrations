@@ -1,9 +1,0 @@
-name: VibToolsCondaENV
-channels:
-  - conda-forge
-dependencies:
-  - python
-  - numpy
-  - matplotlib
-  - openbabel #in conda openbabel-wheel is not available
-
