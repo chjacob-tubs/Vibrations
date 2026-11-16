@@ -81,12 +81,6 @@ print(' *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spe
 print(' *  Copyright (C) 2014-2026 by Pawel T. Panek, Christoph R. Jacob,')
 print(' *  Julia Brüggemann, Maria Chekmeneva, Adrian A. Hoeske, Wadtey S. Oung,')
 print(' *  Michael Welzel, Mario Wolter and others.')
->>>>>>> releases
-print(' *')
-print(' *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy')
-print(' *  Copyright (C) 2014-2026 by Pawel T. Panek, Christoph R. Jacob,')
-print(' *  Julia Brüggemann, Maria Chekmeneva, Adrian A. Hoeske, Wadtey S. Oung,')
-print(' *  Michael Welzel, Mario Wolter and others.')
 print(' *')
 print(' *     Vibrations is free software: you can redistribute it\
  and/or modify')
