@@ -68,23 +68,20 @@ from .Wavefunctions import *
 from .Misc import *
 from .VibrationalCI import *
 
-import tomllib
-import pathlib
+from importlib.metadata import version
 
-# Read version and authors from pyproject.toml
-project_root = pathlib.Path(__file__).resolve().parent.parent.parent
-print(project_root)
-with open(project_root / "pyproject.toml", "rb") as f:
-    config = tomllib.load(f)
-
-project = config["project"]["name"]
-version = config["project"]["version"]
-
+__version__ = version("vibrations")
 
 print()
 print(' '+75*'*')
 print(' *')
-print(' *  Vibrations v' + version)
+print(' *  Vibrations v' + __version__)
+print(' *')
+print(' *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy')
+print(' *  Copyright (C) 2014-2026 by Pawel T. Panek, Christoph R. Jacob,')
+print(' *  Julia Brüggemann, Maria Chekmeneva, Adrian A. Hoeske, Wadtey S. Oung,')
+print(' *  Michael Welzel, Mario Wolter and others.')
+>>>>>>> releases
 print(' *')
 print(' *  Vibrations - a Python Code for Anharmonic Theoretical Vibrational Spectroscopy')
 print(' *  Copyright (C) 2014-2026 by Pawel T. Panek, Christoph R. Jacob,')
